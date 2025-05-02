@@ -3,16 +3,19 @@ import p from 'planck'
 
 export class Player extends Phaser.GameObjects.Container{
 
+    id: string
     speed = 1.2
 
     scene: Game
     pBody: p.Body
     sprite: Phaser.GameObjects.Sprite
 
-    constructor(scene: Game, x: number, y: number){
+    constructor(scene: Game, x: number, y: number, id: string){
         super(scene, x, y)
 
         this.scene = scene
+        this.id = id
+
         scene.add.existing(this)
 
         this.pBody = scene.world.createDynamicBody({
@@ -48,5 +51,10 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
+    }
+
+    destroy() {
+        this.scene.world.destroyBody(this.pBody)
+        super.destroy()
     }
 }
