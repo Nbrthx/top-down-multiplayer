@@ -1,15 +1,17 @@
-import { Game } from '../GameServer'
+import { Game } from '../GameWorld'
 import p from 'planck'
 
 export class Player{
 
+    id: string
     speed = 1.2
 
     scene: Game
     pBody: p.Body
 
-    constructor(scene: Game, x: number, y: number){
+    constructor(scene: Game, x: number, y: number, id: string){
         this.scene = scene
+        this.id = id
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x/scene.gameScale/32, y/scene.gameScale/32),
@@ -21,10 +23,14 @@ export class Player{
             filterMaskBits: 1,
         })
 
-        console.log(this.pBody, this.pBody.getPosition())
+        console.log(this.pBody.getPosition())
     }
 
     update(){
         //
+    }
+
+    destroy(){
+        this.scene.world.destroyBody(this.pBody)
     }
 }
