@@ -18,12 +18,10 @@ export class Player{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.4, 0.3, new p.Vec2(0, 0.2)),
+            shape: new p.Box(0.3, 0.5, new p.Vec2(0, 0.4)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
-
-        console.log(this.pBody.getPosition())
     }
 
     update(){

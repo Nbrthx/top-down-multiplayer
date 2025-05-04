@@ -24,6 +24,8 @@ export class Game{
         this.players = []; // { socketId: Player }
         this.monsters = [];
         this.collider = []; // Tempatkan collider di sini
+
+        this.createBounds(40, 25)
     }
 
     update(deltaTime: number) {
@@ -46,6 +48,20 @@ export class Game{
             if(dir) player.pBody.setLinearVelocity(dir)
         });
     }
+
+    createBounds(width: number, height: number){
+        const walls = [
+            { pos: new p.Vec2(width/2, -0.5), size: new p.Vec2(width, 1) },  // top
+            { pos: new p.Vec2(-0.5, height/2), size: new p.Vec2(1, height) },   // left
+            { pos: new p.Vec2(width+0.5, height/2), size: new p.Vec2(1, height) },  // right
+            { pos: new p.Vec2(width/2, height+0.5), size: new p.Vec2(width, 1) },   // bottom
+        ];
+
+        walls.forEach(wall => {
+            const body = this.world.createBody(wall.pos);
+            body.createFixture(new p.Box(wall.size.x / 2, wall.size.y / 2));
+        });
+    };
 
     addPlayer(id: string){
         const player = new Player(this, 700, 800, id)

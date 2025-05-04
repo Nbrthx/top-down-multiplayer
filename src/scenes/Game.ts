@@ -3,6 +3,7 @@ import p from 'planck';
 import { Player } from '../prefabs/Player';
 import GameUI from './GameUI';
 import { Socket } from 'socket.io-client'
+import { ContactEvents } from '../components/ContactEvents';
 
 export class Game extends Scene{
 
@@ -14,6 +15,8 @@ export class Game extends Scene{
 
     world: p.World
     gameScale = 4;
+    contactEvents: ContactEvents
+
     player: Player;
     others: Player[];
 
@@ -30,6 +33,7 @@ export class Game extends Scene{
         this.camera.setBackgroundColor(0x00ff00);
 
         this.world = new p.World()
+        this.contactEvents = new ContactEvents(this.world)
 
         this.debugGraphics = this.add.graphics().setDepth(100000000000000)
 
@@ -52,6 +56,14 @@ export class Game extends Scene{
         this.socket.on('connect', () => {
             this.player = new Player(this, 700, 800, this.socket.id as string)
             this.camera.startFollow(this.player, true, 0.1, 0.1)
+
+            this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
+                let x = _pointer.worldX-this.player.x
+                let y = _pointer.worldY-this.player.y
+                this.player.weapon.attack(Math.atan2(y, x))
+
+                console.log(Math.atan2(y, x))
+            })
 
             this.socket.emit('joinGame', 'world1')
         })
@@ -226,7 +238,7 @@ export class Game extends Scene{
                 }
                 if(shape instanceof p.Circle){
                     const center = shape.m_p.clone().add(position);
-                    this.debugGraphics.strokeCircle(center.x * this.gameScale * 32, center.y * this.gameScale * 16, shape.m_radius * this.gameScale * 32)
+                    this.debugGraphics.strokeCircle(center.x * this.gameScale * 32, center.y * this.gameScale * 32, shape.m_radius * this.gameScale * 32)
                 }
             }
         }

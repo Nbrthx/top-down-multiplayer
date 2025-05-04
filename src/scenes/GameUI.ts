@@ -1,14 +1,16 @@
 import { io, Socket } from 'socket.io-client'
+import { InventoryUI } from './InventoryUI'
 
 export default class GameUI extends Phaser.Scene {
 
     socket: Socket
     pingText: Phaser.GameObjects.Text
+    inventory: InventoryUI
 
     constructor(){
         super('GameUI')
 
-        this.socket = io('https://3000-idx-top-down-multiplayer-1745980442747.cluster-ikxjzjhlifcwuroomfkjrx437g.cloudworkstations.dev', {
+        this.socket = io('http://localhost:3000', {
             transports: ['websocket']
         })
     }
@@ -24,5 +26,17 @@ export default class GameUI extends Phaser.Scene {
                 this.pingText.setText('Ping: '+ (now-then)+'ms')
             })
         }, 1000)
+
+        this.inventory = new InventoryUI(this)
+        this.inventory.setVisible(false)
+
+        const inventoryButton = this.add.text(960, 1000, 'Inventory', {
+            fontSize: '32px',
+            color: '#fff'
+        }).setOrigin(0.5).setInteractive()
+
+        inventoryButton.on('pointerdown', () => {
+            this.inventory.setVisible(!this.inventory.visible)
+        })
     }
 }

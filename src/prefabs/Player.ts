@@ -1,5 +1,6 @@
 import { Game } from '../scenes/Game'
 import p from 'planck'
+import { Weapon } from './Weapon'
 
 export class Player extends Phaser.GameObjects.Container{
 
@@ -8,6 +9,7 @@ export class Player extends Phaser.GameObjects.Container{
 
     scene: Game
     pBody: p.Body
+    weapon: Weapon
     sprite: Phaser.GameObjects.Sprite
 
     constructor(scene: Game, x: number, y: number, id: string){
@@ -23,16 +25,16 @@ export class Player extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.4, 0.3, new p.Vec2(0, 0.2)),
+            shape: new p.Box(0.3, 0.5, new p.Vec2(0, 0.4)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
 
-        console.log(this.pBody, this.pBody.getPosition())
+        this.weapon = new Weapon(scene, this.pBody, 'punch')
 
         this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
 
-        this.add([this.sprite])
+        this.add([this.sprite, this.weapon])
     }
 
     update(){

@@ -13,12 +13,18 @@ const config: Types.Core.GameConfig = {
     width: 1920,
     height: 1080,
     parent: 'game-container',
-    backgroundColor: '#028af8',
+    backgroundColor: '#454449',
     pixelArt: true,
     roundPixels: true,
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    input: {
+        activePointers: 2, // Untuk multi-touch
+        touch: {
+            capture: true
+        }
     },
     scene: [
         Boot,

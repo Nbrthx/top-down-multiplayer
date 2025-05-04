@@ -6,9 +6,8 @@ export class Preloader extends Scene{
     }
 
     init (){
-        this.add.image(512, 384, 'background');
-        this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
-        const bar = this.add.rectangle(512-230, 384, 4, 28, 0xffffff);
+        this.add.rectangle(960, 540, 468, 32).setStrokeStyle(1, 0xffffff);
+        const bar = this.add.rectangle(960-230, 540, 4, 28, 0xffffff);
 
         this.load.on('progress', (progress: number) => {
             bar.width = 4 + (460 * progress);
@@ -20,10 +19,14 @@ export class Preloader extends Scene{
         this.load.setPath('assets');
 
         this.load.spritesheet('char', 'char.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('punch', 'punch.png', { frameWidth: 64, frameHeight: 64 })
+
         this.load.image('tilemaps', 'tilemaps.png')
 
         this.load.tilemapTiledJSON('test', 'test.json')
+        this.load.json('dummy-items', 'dummy-items.json');
 
+        this.load.image('inventory', 'inventory.png')
         this.load.image('logo', 'logo.png');
     }
 
@@ -45,6 +48,12 @@ export class Preloader extends Scene{
             frames: this.anims.generateFrameNumbers('char', { frames: [16, 17, 18, 18, 18, 19, 20, 21, 22, 22, 22, 23] }),
             frameRate: 20,
             repeat: -1
+        })
+
+        this.anims.create({
+            key: 'punching',
+            frames: this.anims.generateFrameNumbers('punch', { frames: [0, 1, 2,3, 4] }),
+            frameRate: 20
         })
 
         this.scene.start('MainMenu');

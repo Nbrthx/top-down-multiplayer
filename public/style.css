@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'PixelFont';
+    src: url(assets/m6x11.ttf);
+}
+
 body {
     margin: 0;
     padding: 0;
