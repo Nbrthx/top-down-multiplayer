@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io';
-import { GameManager } from './GameManager';
+import { GameManager, InputData } from './GameManager';
 import { Server as HTTPServer } from 'http'
 
 export class SocketManager {
@@ -16,8 +16,6 @@ export class SocketManager {
 
     private setupSocketListeners(socket: Socket): void {
 
-        console.log(`User connected: ${socket.id}`);
-
         socket.on('joinGame', worldId => {
             worldId;
             const world = this.gameManager.getWorld('world1')
@@ -26,7 +24,7 @@ export class SocketManager {
             socket.broadcast.emit('playerJoined', socket.id);
         })
 
-        socket.on('playerInput', (worldId: string, input: { dir: { x: number, y: number } }) => {
+        socket.on('playerInput', (worldId: string, input: InputData) => {
             this.gameManager.handleInput(socket.id, worldId, input);
         });
 
@@ -35,8 +33,6 @@ export class SocketManager {
         })
 
         socket.on('disconnect', () => {
-            console.log(`User disconnected: ${socket.id}`);
-
             socket.broadcast.emit('playerLeft', socket.id);
             this.gameManager.getWorld('world1')?.removePlayer(socket.id);
         });

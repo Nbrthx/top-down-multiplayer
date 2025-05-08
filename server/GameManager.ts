@@ -1,6 +1,11 @@
 import { Server } from "socket.io";
 import { Game } from "./GameWorld";
 
+export interface InputData {
+    dir: { x: number, y: number }
+    attackDir: { x: number, y: number }
+}
+
 export class GameManager{
     
     worlds: Game[]
@@ -27,7 +32,7 @@ export class GameManager{
         return this.worlds.find(world => world.id == worldId)
     }
 
-    public handleInput(id: string, worldId: string, input: { dir: { x: number, y: number } }){
+    public handleInput(id: string, worldId: string, input: InputData){
         if(!this.getWorld(worldId)?.players.find(player => player.id == id)) return
 
         if(!this.getWorld(worldId)?.inputData.has(id)) this.getWorld(worldId)?.inputData.set(id, [])
@@ -37,16 +42,6 @@ export class GameManager{
     update() {
         this.worlds.forEach((world) => {
             world.update(1/20);
-
-            const gameState = world.players.map(v => {
-                return {
-                    id: v.id,
-                    worldId: world.id,
-                    pos: v.pBody.getPosition()
-                }
-            })
-
-            this.io.emit('output', gameState)
         });
     }
     

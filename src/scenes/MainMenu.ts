@@ -1,33 +1,36 @@
 import { Scene, GameObjects } from 'phaser';
 
 export class MainMenu extends Scene{
-    background: GameObjects.Image;
-    logo: GameObjects.Image;
-    title: GameObjects.Text;
-    mainText: GameObjects.Text;
 
     constructor (){
         super('MainMenu');
     }
 
     create (){
-        this.logo = this.add.image(1920-20, 1080-10, 'logo');
-        this.logo.setOrigin(1)
-        this.logo.setScale(0.5)
+        const logo = this.add.image(1920-20, 1080-10, 'logo');
+        logo.setOrigin(1)
+        logo.setScale(0.4)
 
-        this.title = this.add.text(960, 420, 'Insiace: Open-World', {
+        this.add.text(960, 420, 'Insiace: Open-World', {
             fontFamily: 'PixelFont', fontSize: 96, color: '#ffffcc',
             stroke: '#330022', strokeThickness: 16,
             align: 'center'
         }).setOrigin(0.5);
 
-        this.mainText = this.add.text(960, 640, 'Main Menu', {
+        const play = this.add.text(960, 640, 'Play', {
             fontFamily: 'PixelFont', fontSize: 38, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5);
+        play.setInteractive()
 
-        this.input.once('pointerdown', () => {
+        this.add.text(1920-230, 1080-10, 'Made with', {
+            fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
+            stroke: '#000000', strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(1);
+
+        play.once('pointerdown', () => {
 
             this.scene.start('Game');
 

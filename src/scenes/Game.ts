@@ -5,6 +5,14 @@ import GameUI from './GameUI';
 import { Socket } from 'socket.io-client'
 import { ContactEvents } from '../components/ContactEvents';
 
+interface OutputData{
+    id: string,
+    worldId: string,
+    pos: { x: number, y: number },
+    attackDir: { x: number, y: number },
+    health: number
+}
+
 export class Game extends Scene{
 
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -19,6 +27,7 @@ export class Game extends Scene{
 
     player: Player;
     others: Player[];
+    otherBodys: p.Body[];
 
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
@@ -29,9 +38,6 @@ export class Game extends Scene{
     }
 
     create (){
-        this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
-
         this.world = new p.World()
         this.contactEvents = new ContactEvents(this.world)
 
@@ -48,34 +54,24 @@ export class Game extends Scene{
             v.setScale(4)
         })
 
+        this.camera = this.cameras.main;
+        this.camera.setBackgroundColor(0x00ff00);
+        this.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
+
         this.UI = (this.scene.get('GameUI') || this.scene.add('GameUI', new GameUI(), true)) as GameUI
         this.socket = this.UI.socket
 
         this.others = []
 
-        this.socket.on('connect', () => {
-            this.player = new Player(this, 700, 800, this.socket.id as string)
-            this.camera.startFollow(this.player, true, 0.1, 0.1)
-
-            this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
-                let x = _pointer.worldX-this.player.x
-                let y = _pointer.worldY-this.player.y
-                this.player.weapon.attack(Math.atan2(y, x))
-
-                console.log(Math.atan2(y, x))
-            })
-
-            this.socket.emit('joinGame', 'world1')
-        })
-
-        this.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
-
         this.accumulator = 0
         this.previousTime = performance.now()
 
         this.createBounds(map.width, map.height)
-
-        this.eventHandler()
+        
+        if(this.socket.id) this.connectionHandler()
+        else this.socket.on('connect', () => {
+            this.connectionHandler()
+        })
     }
 
     update(currentTime: number) {
@@ -87,7 +83,6 @@ export class Game extends Scene{
             this.accumulator -= 1/20;
 
             if(this.player){
-                this.player.update()
                 this.handleInput()
             }
 
@@ -95,12 +90,30 @@ export class Game extends Scene{
         }
     }
 
-    eventHandler(){
+    connectionHandler(){
+        this.player = new Player(this, 700, 800, this.socket.id as string)
+        this.camera.startFollow(this.player, true, 0.1, 0.1)
+
+        this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
+            let x = _pointer.worldX-this.player.x
+            let y = _pointer.worldY-this.player.y
+
+            const dir = new p.Vec2(x, y)
+            dir.normalize()
+
+            this.player.attackDir = dir
+        })
+
+        this.socket.emit('joinGame', 'world1')
+
         this.socket.on('joinGame', (ids: string[]) => {
             ids.forEach(id => {
                 if(id == this.socket.id) return
                 console.log(id)
-                this.others.push(new Player(this, 700, 800, id))
+
+                const other = new Player(this, 700, 800, id)
+                this.others.push(other)
+                this.otherBodys.push(other.pBody)
             })
         })
 
@@ -114,16 +127,19 @@ export class Game extends Scene{
             if(!existPlayer) return
 
             this.others.splice(this.others.indexOf(existPlayer), 1)
+            this.otherBodys.splice(this.otherBodys.indexOf(existPlayer.pBody), 1)
             existPlayer.destroy()
         })
 
-        this.socket.on('output', (data: { id: string, worldId: string, pos: { x: number, y: number } }[]) => {
+        this.socket.on('output', (data: OutputData[]) => {
             const playerData = data.find(v => v.id == this.player.id)
             if(playerData){
                 const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
                 const currentPosition = this.player.pBody.getPosition()
-                this.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.1)))
-                // this.player.pBody.setPosition(new p.Vec2(playerData.pos.x as number, playerData.pos.y as number))
+                this.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
+
+                this.player.health = playerData.health
+                if(this.player.health <= 0) this.scene.start('GameOver')
             }
             this.others.forEach(other => {
                 const otherData = data.find(v => v.id == other.id)
@@ -131,15 +147,21 @@ export class Game extends Scene{
                     const targetPosition = new p.Vec2(otherData.pos.x, otherData.pos.y)
                     const currentPosition = other.pBody.getPosition()
 
-                    const normalized = targetPosition.clone().sub(currentPosition).add(new p.Vec2(0, 0.1))
+                    const normalized = targetPosition.clone().sub(currentPosition).add(new p.Vec2())
 
                     if(normalized.length() > 0.1) other.pBody.setLinearVelocity(normalized)
                     else other.pBody.setLinearVelocity(new p.Vec2(0, 0))
                 
                     normalized.normalize()
 
-                    other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.1)))
-                    // other.pBody.setPosition(new p.Vec2(otherData.pos.x as number, otherData.pos.y as number))
+                    other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
+                    other.attackDir = new p.Vec2(otherData.attackDir.x, otherData.attackDir.y)
+                    
+                    other.health = otherData.health
+                    if(other.health <= 0){
+                        this.others.splice(this.others.indexOf(other), 1)
+                        other.destroy()
+                    }
                 }
             })
         })
@@ -173,8 +195,11 @@ export class Game extends Scene{
         vel.mul(this.player.speed);
         this.player.pBody.setLinearVelocity(vel)
 
-        if(vel.length() > 0){
-            this.socket.emit('playerInput', 'world1', { dir: { x: vel.x, y: vel.y } })
+        if(vel.length() > 0 || this.player.attackDir.length() > 0){
+            this.socket.emit('playerInput', 'world1', {
+                dir: { x: vel.x, y: vel.y },
+                attackDir: { x: this.player.attackDir.x, y: this.player.attackDir.y }
+            })
         }
 
         this.player.update()

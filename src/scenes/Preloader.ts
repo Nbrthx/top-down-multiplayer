@@ -18,15 +18,16 @@ export class Preloader extends Scene{
     preload (){
         this.load.setPath('assets');
 
-        this.load.spritesheet('char', 'char.png', { frameWidth: 64, frameHeight: 64 })
-        this.load.spritesheet('punch', 'punch.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('char', 'character/char.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
 
-        this.load.image('tilemaps', 'tilemaps.png')
+        this.load.image('tilemaps', 'environment/tilemaps.png')
 
-        this.load.tilemapTiledJSON('test', 'test.json')
-        this.load.json('dummy-items', 'dummy-items.json');
+        this.load.tilemapTiledJSON('test', 'environment/test.json')
 
-        this.load.image('inventory', 'inventory.png')
+        this.load.image('inventory', 'ui/inventory.png')
+        this.load.image('hotbar', 'ui/hotbar.png')
+
         this.load.image('logo', 'logo.png');
     }
 
@@ -40,13 +41,13 @@ export class Preloader extends Scene{
         this.anims.create({
             key: 'run-down',
             frames: this.anims.generateFrameNumbers('char', { frames: [8, 9, 10, 10, 10, 11, 12, 13, 14, 14, 14, 15] }),
-            frameRate: 20,
+            frameRate: 24,
             repeat: -1
         })
         this.anims.create({
             key: 'run-up',
             frames: this.anims.generateFrameNumbers('char', { frames: [16, 17, 18, 18, 18, 19, 20, 21, 22, 22, 22, 23] }),
-            frameRate: 20,
+            frameRate: 24,
             repeat: -1
         })
 

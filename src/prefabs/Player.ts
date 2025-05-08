@@ -5,12 +5,17 @@ import { Weapon } from './Weapon'
 export class Player extends Phaser.GameObjects.Container{
 
     id: string
-    speed = 1.2
+    maxHealth: number
+    health: number
+    speed = 1.4
 
     scene: Game
-    pBody: p.Body
     weapon: Weapon
     sprite: Phaser.GameObjects.Sprite
+    healthBar: Phaser.GameObjects.Rectangle
+
+    pBody: p.Body
+    attackDir: p.Vec2
 
     constructor(scene: Game, x: number, y: number, id: string){
         super(scene, x, y)
@@ -30,18 +35,25 @@ export class Player extends Phaser.GameObjects.Container{
             filterMaskBits: 1,
         })
 
+        this.maxHealth = 100
+        this.health = this.maxHealth
+
+        const bar = scene.add.rectangle(0, -110, 162, 14, 0x696669)
+        this.healthBar = scene.add.rectangle(0, -110, 162, 14, 0x44ff55)
+
+        this.attackDir = new p.Vec2(0, 0)
         this.weapon = new Weapon(scene, this.pBody, 'punch')
 
         this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
 
-        this.add([this.sprite, this.weapon])
+        this.add([this.sprite, this.weapon, bar, this.healthBar])
     }
 
     update(){
         const vel = this.pBody.getLinearVelocity()
 
         if(vel.x != 0 || vel.y != 0){
-            if(vel.y >= 0) this.sprite.play('run-down', true)
+            if(vel.y > -0.1) this.sprite.play('run-down', true)
             else this.sprite.play('run-up', true)
         
             if(vel.x > 0) this.sprite.flipX = false
@@ -49,14 +61,24 @@ export class Player extends Phaser.GameObjects.Container{
         }
         else this.sprite.play('idle', true)
 
+        if(this.attackDir.length() > 0){
+            this.weapon.attack(Math.atan2(this.attackDir.y, this.attackDir.x))
+            this.attackDir = new p.Vec2(0, 0)
+        }
+
         this.setDepth(this.y/this.scene.gameScale)
 
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
+        
+        this.healthBar.setSize(160*this.health/this.maxHealth, 12)
+        this.healthBar.setX(-80-80*this.health/-this.maxHealth)
     }
 
     destroy() {
         this.scene.world.destroyBody(this.pBody)
+        this.scene.contactEvents.destroyEventByBody(this.pBody)
+        this.weapon.destroy()
         super.destroy()
     }
 }

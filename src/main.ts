@@ -36,3 +36,5 @@ const config: Types.Core.GameConfig = {
 };
 
 export default new Game(config);
+
+document.addEventListener('contextmenu', event => event.preventDefault())

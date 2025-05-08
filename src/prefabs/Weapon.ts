@@ -1,15 +1,18 @@
-import planck from "planck";
+import p from "planck";
 import { Game } from "../scenes/Game";
 
 export class Weapon extends Phaser.GameObjects.Container{
 
     scene: Game
     image: Phaser.GameObjects.Sprite;
-    hitbox: planck.Body;
-    parentBody: planck.Body
+    hitbox: p.Body;
+    parentBody: p.Body
     attackState: boolean;
 
-    constructor(scene: Game, parentBody: planck.Body, texture: string){
+    timestamp: number
+    cooldown: number
+
+    constructor(scene: Game, parentBody: p.Body, texture: string){
         super(scene, 0, 16);
         this.scene = scene
         scene.add.existing(this);
@@ -24,16 +27,21 @@ export class Weapon extends Phaser.GameObjects.Container{
 
         this.hitbox = scene.world.createKinematicBody();
         this.hitbox.createFixture({
-            shape: new planck.Circle(new planck.Vec2(0, 0), 14/32),
+            shape: new p.Box(0.7, 0.2, new p.Vec2(0, 0)),
             isSensor: true
-        });
+        })
         this.hitbox.setActive(false); // Nonaktifkan awal
+
+        this.timestamp = 0
+        this.cooldown = 500
 
         this.add(this.image)
     }
 
     attack(rad: number){
         if(this.image.visible) return
+        if(this.timestamp+this.cooldown > Date.now()) return
+        this.timestamp = Date.now()
 
         this.image.setFlipY(this.attackState)
         this.attackState = !this.attackState
@@ -48,12 +56,13 @@ export class Weapon extends Phaser.GameObjects.Container{
                 enable = true
                 
                 this.hitbox.setPosition(
-                    new planck.Vec2(
-                        (this.parentBody.getPosition().x + Math.cos(rad) * 1.4),
-                        (this.parentBody.getPosition().y + 0.1 + Math.sin(rad) * 1.4)
+                    new p.Vec2(
+                        (this.parentBody.getPosition().x + Math.cos(rad) * 1.1),
+                        (this.parentBody.getPosition().y + 0.1 + Math.sin(rad) * 1.1)
                     )
                 );
-                this.hitbox.setActive(true) 
+                this.hitbox.setAngle(rad)
+                this.hitbox.setActive(true)
             }
             else this.hitbox.setActive(false)
         })

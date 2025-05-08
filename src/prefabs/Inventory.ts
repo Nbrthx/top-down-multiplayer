@@ -1,11 +1,11 @@
-export class InventoryUI extends Phaser.GameObjects.Container {
+export class Inventory extends Phaser.GameObjects.Container {
 
     scene: Phaser.Scene;
     image: Phaser.GameObjects.Image;
     inventory: Phaser.GameObjects.Container;
     hotbar: Phaser.GameObjects.Container;
     items: { id: string; name: string }[];
-    activeItems: { id: string; name: string }[];
+    hotItems: { id: string; name: string }[];
 
     constructor(scene: Phaser.Scene) {
         super(scene);
@@ -14,12 +14,8 @@ export class InventoryUI extends Phaser.GameObjects.Container {
         scene.add.existing(this);
 
         this.items = [];
-        this.activeItems = [];
+        this.hotItems = [];
 
-        this.create();
-    }
-
-    create() {
         this.image = this.scene.add.image(960, 540, 'inventory');
         this.image.setScale(4)
 
@@ -32,7 +28,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
             { id: 'item5', name: 'Item 5' },
             { id: 'item6', name: 'Item 6' },
         ];
-        this.activeItems = [
+        this.hotItems = [
             { id: 'item1', name: 'Item 7' },
             { id: 'item2', name: 'Item 8' },
             { id: 'item3', name: 'Item 9' },
@@ -40,17 +36,19 @@ export class InventoryUI extends Phaser.GameObjects.Container {
         ];
 
         // Create inventory grid
-        this.inventory = this.scene.add.container(960 - 320 + 16, 148);
-        this.createGrid(this.inventory, 5, 5, this.items);
+        this.inventory = this.scene.add.container(960 - 320 + 16, 212);
+        this.createGrid(this.inventory, 4, 5, this.items);
 
         // Create hotbar
-        this.hotbar = this.scene.add.container(960 - 320 + 16, 836);
-        this.createGrid(this.hotbar, 1, 5, this.activeItems, true);
+        this.hotbar = this.scene.add.container(960 - 320 + 16, 772);
+        this.createGrid(this.hotbar, 1, 5, this.hotItems, true);
 
         this.add([this.image, this.inventory, this.hotbar])
     }
 
     createGrid(container: Phaser.GameObjects.Container, row: number, col: number, items: { id: string; name: string }[], isHotbar: boolean = false) {
+        container.removeAll(true);
+
         for (let i = 0; i < row; i++) {
             for (let j = 0; j < col; j++) {
                 const x = j * 128;
@@ -101,22 +99,23 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                     const index = parseInt(target.name.split('-')[1])
 
                     if(itemSpace == 'hotbar'){
-                        items[i*5 + j] = this.activeItems[index] || null
-                        this.activeItems[index] = temp
+                        items[i*5 + j] = this.hotItems[index] || null
+                        this.hotItems[index] = temp
                     } else {
                         items[i*5 + j] = this.items[index] || null
                         this.items[index] = temp
                     }
 
-                    this.inventory.removeAll(true)
-                    this.hotbar.removeAll(true)
+                    if(itemSpace == 'hotbar' || isHotbar) this.onHotbarChange()
     
                     this.createGrid(this.inventory, 5, 5, this.items)
-                    this.createGrid(this.hotbar, 1, 5, this.activeItems, true);
+                    this.createGrid(this.hotbar, 1, 5, this.hotItems, true);
                 })
 
                 container.add(itemText);
             }
         }
     }
+
+    onHotbarChange(){}
 }
