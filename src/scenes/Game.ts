@@ -1,9 +1,11 @@
-import { Scene, Tilemaps } from 'phaser';
+import { Scene } from 'phaser';
 import p from 'planck';
 import { Player } from '../prefabs/Player';
 import GameUI from './GameUI';
 import { Socket } from 'socket.io-client'
 import { ContactEvents } from '../components/ContactEvents';
+import { createDebugGraphics } from '../components/PhysicsDebug';
+import { MapSetup } from '../components/MapSetup';
 
 interface OutputData{
     id: string,
@@ -24,6 +26,7 @@ export class Game extends Scene{
     world: p.World
     gameScale = 4;
     contactEvents: ContactEvents
+    mapSetup: MapSetup
 
     player: Player;
     others: Player[];
@@ -32,6 +35,8 @@ export class Game extends Scene{
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
     previousTime: number;
+
+    isDebug: boolean = false
 
     constructor (){
         super('Game');
@@ -43,30 +48,18 @@ export class Game extends Scene{
 
         this.debugGraphics = this.add.graphics().setDepth(100000000000000)
 
-        const map = this.add.tilemap('test')
-        const tileset = map.addTilesetImage('tilemaps', 'tilemaps') as Tilemaps.Tileset
-        const waterLayer = map.createLayer('water', tileset, 0, 0) as Tilemaps.TilemapLayer
-        const groundLayer = map.createLayer('ground', tileset, 0, 0) as Tilemaps.TilemapLayer
-        const grassLayer = map.createLayer('grass', tileset, 0, 0) as Tilemaps.TilemapLayer
-        const otherLayer = map.createLayer('other', tileset, 0, 0) as Tilemaps.TilemapLayer
-
-        [waterLayer, groundLayer, grassLayer, otherLayer].forEach(v => {
-            v.setScale(4)
-        })
-
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x00ff00);
-        this.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
 
         this.UI = (this.scene.get('GameUI') || this.scene.add('GameUI', new GameUI(), true)) as GameUI
         this.socket = this.UI.socket
+
+        this.mapSetup = new MapSetup(this, 'test')
 
         this.others = []
 
         this.accumulator = 0
         this.previousTime = performance.now()
-
-        this.createBounds(map.width, map.height)
         
         if(this.socket.id) this.connectionHandler()
         else this.socket.on('connect', () => {
@@ -86,7 +79,7 @@ export class Game extends Scene{
                 this.handleInput()
             }
 
-            this.createDebugGraphics()
+            if(this.isDebug) createDebugGraphics(this, this.debugGraphics)
         }
     }
 
@@ -207,65 +200,5 @@ export class Game extends Scene{
         this.others.forEach(other => {
             other.update()
         })
-    }
-
-    createBounds(width: number, height: number){
-        const walls = [
-            { pos: new p.Vec2(width/2, -0.5), size: new p.Vec2(width, 1) },  // top
-            { pos: new p.Vec2(-0.5, height/2), size: new p.Vec2(1, height) },   // left
-            { pos: new p.Vec2(width+0.5, height/2), size: new p.Vec2(1, height) },  // right
-            { pos: new p.Vec2(width/2, height+0.5), size: new p.Vec2(width, 1) },   // bottom
-        ];
-
-        walls.forEach(wall => {
-            const body = this.world.createBody(wall.pos);
-            body.createFixture(new p.Box(wall.size.x / 2, wall.size.y / 2));
-        });
-    };
-
-    createDebugGraphics() {
-        this.debugGraphics.clear()
-
-        for (let body = this.world.getBodyList(); body; body = body.getNext()) {
-            const position = body.getPosition();
-            const angle = body.getAngle();
-
-            let color: number = 0x999999
-            switch(body.getType()){
-                case p.Body.KINEMATIC: color = 0xffff00; break;
-                case p.Body.DYNAMIC: color = 0x00ffff; break;
-                case p.Body.STATIC: color = 0x0000ff; 
-            }
-            color = body.isActive() ? color : 0x999999
-
-            this.debugGraphics.lineStyle(2, color, 1);
-            for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
-                const shape = fixture.getShape();
-
-                if (shape instanceof p.Box) {
-                    const vertices = shape.m_vertices
-
-                    const transformedVertices = vertices.map(v => {
-                        return v.clone().add(shape.m_centroid);
-                    }).map(v => {
-                        const rotatedX = v.x * Math.cos(angle) - v.y * Math.sin(angle);
-                        const rotatedY = v.x * Math.sin(angle) + v.y * Math.cos(angle);
-                        return new p.Vec2(rotatedX, rotatedY).add(position).sub(shape.m_centroid);
-                    });
-
-                    this.debugGraphics.beginPath()
-                    this.debugGraphics.moveTo(transformedVertices[0].x * this.gameScale * 32, transformedVertices[0].y * this.gameScale * 32);
-                    for (let i = 1; i < transformedVertices.length; i++) {
-                        this.debugGraphics.lineTo(transformedVertices[i].x * this.gameScale * 32, transformedVertices[i].y * this.gameScale * 32);
-                    }
-                    this.debugGraphics.closePath();
-                    this.debugGraphics.strokePath();
-                }
-                if(shape instanceof p.Circle){
-                    const center = shape.m_p.clone().add(position);
-                    this.debugGraphics.strokeCircle(center.x * this.gameScale * 32, center.y * this.gameScale * 32, shape.m_radius * this.gameScale * 32)
-                }
-            }
-        }
     }
 }

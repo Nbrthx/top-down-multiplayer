@@ -3,6 +3,7 @@ import { Player } from './prefabs/Player'
 import { GameManager, InputData } from './GameManager'
 import { ContactEvents } from './components/ContactEvents'
 import { Weapon } from './prefabs/Weapon'
+import { MapSetup } from './components/MapSetup'
 
 export class Game{
 
@@ -16,8 +17,8 @@ export class Game{
     players: Player[]
     playerBodys: p.Body[]
     monsters: string[]
-    collider: []
     inputData: Map<string, InputData[]>
+    mapSetup: MapSetup
 
     constructor(gameManager: GameManager, id: string){
         this.gameManager = gameManager
@@ -31,9 +32,8 @@ export class Game{
         this.players = []; // { socketId: Player }
         this.playerBodys = [];
         this.monsters = [];
-        this.collider = []; // Tempatkan collider di sini
 
-        this.createBounds(40, 25)
+        this.mapSetup = new MapSetup(this, 'test')
     }
 
     update(deltaTime: number) {
@@ -89,20 +89,6 @@ export class Game{
 
         this.gameManager.io.emit('output', gameState)
     }
-
-    createBounds(width: number, height: number){
-        const walls = [
-            { pos: new p.Vec2(width/2, -0.5), size: new p.Vec2(width, 1) },  // top
-            { pos: new p.Vec2(-0.5, height/2), size: new p.Vec2(1, height) },   // left
-            { pos: new p.Vec2(width+0.5, height/2), size: new p.Vec2(1, height) },  // right
-            { pos: new p.Vec2(width/2, height+0.5), size: new p.Vec2(width, 1) },   // bottom
-        ];
-
-        walls.forEach(wall => {
-            const body = this.world.createBody(wall.pos);
-            body.createFixture(new p.Box(wall.size.x / 2, wall.size.y / 2));
-        });
-    };
 
     addPlayer(id: string){
         const player = new Player(this, 700, 800, id)

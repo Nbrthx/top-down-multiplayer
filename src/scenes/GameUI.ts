@@ -62,5 +62,14 @@ export default class GameUI extends Phaser.Scene {
             this.hotbar.setVisible(false)
             inventoryButton.setVisible(false)
         })
+
+        const debugToggle = this.add.text(1870, 50, 'Debug?', {
+            fontSize: 24, color: '#000000', fontStyle: 'bold'
+        }).setOrigin(1, 0)
+        debugToggle.setInteractive()
+        debugToggle.on('pointerdown', () => {
+            GameScene.isDebug = !GameScene.isDebug
+            GameScene.debugGraphics.clear()
+        })
     }
 }

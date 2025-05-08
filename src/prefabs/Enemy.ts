@@ -2,12 +2,12 @@ import { Game } from '../scenes/Game'
 import p from 'planck'
 import { Weapon } from './Weapon'
 
-export class Player extends Phaser.GameObjects.Container{
+export class Enemy extends Phaser.GameObjects.Container{
 
     id: string
     maxHealth: number
     health: number
-    speed = 1.4
+    speed = 1.1
 
     scene: Game
     weapon: Weapon
@@ -30,7 +30,7 @@ export class Player extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.3, 0.4, new p.Vec2(0, 0.5)),
+            shape: new p.Box(0.3, 0.5, new p.Vec2(0, 0.4)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -38,13 +38,13 @@ export class Player extends Phaser.GameObjects.Container{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        const bar = scene.add.rectangle(0, -120, 162, 14, 0x696669)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x44ff55)
+        const bar = scene.add.rectangle(0, -110, 162, 14, 0x696669)
+        this.healthBar = scene.add.rectangle(0, -110, 162, 14, 0xff4455)
 
         this.attackDir = new p.Vec2(0, 0)
         this.weapon = new Weapon(scene, this.pBody, 'punch')
 
-        this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
+        this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
 
         this.add([this.sprite, this.weapon, bar, this.healthBar])
     }
