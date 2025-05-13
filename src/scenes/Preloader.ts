@@ -18,6 +18,11 @@ export class Preloader extends Scene{
     preload (){
         this.load.setPath('assets');
 
+        this.load.image('bg', 'bg.png')
+
+        this.load.html('loginform', 'html/loginform.html')
+        this.load.html('registerform', 'html/registerform.html')
+
         this.load.spritesheet('char', 'character/char.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
 

@@ -21,16 +21,24 @@
         "build-nolog": "vite build --config vite/config.prod.mjs"
     },
     "devDependencies": {
+        "@types/aes-js": "^3.1.4",
+        "@types/body-parser": "^1.19.5",
+        "@types/elliptic": "^6.4.18",
         "@types/express": "^5.0.1",
+        "@types/sha256": "^0.2.2",
         "terser": "^5.31.0",
         "typescript": "^5.4.5",
         "vite": "^6.2.2"
     },
     "dependencies": {
+        "aes-js": "^3.1.2",
+        "body-parser": "^2.2.0",
+        "elliptic": "^6.6.1",
         "express": "^5.1.0",
         "fs": "^0.0.1-security",
         "phaser": "^3.88.2",
         "planck": "^1.3.0",
+        "sha256": "^0.2.0",
         "socket.io": "^4.8.1",
         "socket.io-client": "^4.8.1"
     }

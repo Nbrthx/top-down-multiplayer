@@ -57,6 +57,7 @@ export class Game extends Scene{
         this.mapSetup = new MapSetup(this, 'test')
 
         this.others = []
+        this.otherBodys = []
 
         this.accumulator = 0
         this.previousTime = performance.now()
@@ -99,7 +100,16 @@ export class Game extends Scene{
 
         this.socket.emit('joinGame', 'world1')
 
-        this.socket.on('joinGame', (ids: string[]) => {
+        this.socket.on('joinGame', (ids: string[], data: {
+            username: string,
+            xp: number,
+            inventory: {
+                id: string
+                name: string
+            }[]
+        }) => {
+            console.log(data)
+
             ids.forEach(id => {
                 if(id == this.socket.id) return
                 console.log(id)

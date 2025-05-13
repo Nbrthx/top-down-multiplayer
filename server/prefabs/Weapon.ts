@@ -41,11 +41,12 @@ export class Weapon{
             );
             this.hitbox.setAngle(rad)
             this.hitbox.setActive(true) 
+
             setTimeout(() => {
                 this.hitbox.setActive(false);
                 this.attackDir = new p.Vec2(0, 0); // Bersihkan vektor serangan setelah selesai
             }, 1000/20)
-        }, 1000/20*3)
+        }, 1000/20)
 
         return true
     }

@@ -1,7 +1,8 @@
-import { io, Socket } from 'socket.io-client'
+import { Socket } from 'socket.io-client'
 import { Inventory } from '../prefabs/Inventory'
 import { Hotbar } from '../prefabs/Hotbar'
 import { Game } from './Game'
+import { socket } from './MainMenu'
 
 export default class GameUI extends Phaser.Scene {
 
@@ -13,9 +14,7 @@ export default class GameUI extends Phaser.Scene {
     constructor(){
         super('GameUI')
 
-        this.socket = io('http://localhost:3000', {
-            transports: ['websocket']
-        })
+        this.socket = socket
     }
 
     create(){

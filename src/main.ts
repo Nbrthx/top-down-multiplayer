@@ -26,6 +26,9 @@ const config: Types.Core.GameConfig = {
             capture: true
         }
     },
+    dom: {
+        createContainer: true
+    },
     scene: [
         Boot,
         Preloader,
