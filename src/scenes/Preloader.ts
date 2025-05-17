@@ -24,7 +24,9 @@ export class Preloader extends Scene{
         this.load.html('registerform', 'html/registerform.html')
 
         this.load.spritesheet('char', 'character/char.png', { frameWidth: 64, frameHeight: 64 })
+
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 64, frameHeight: 64 })
 
         this.load.image('tilemaps', 'environment/tilemaps.png')
 
@@ -57,8 +59,13 @@ export class Preloader extends Scene{
         })
 
         this.anims.create({
-            key: 'punching',
-            frames: this.anims.generateFrameNumbers('punch', { frames: [0, 1, 2,3, 4] }),
+            key: 'punch-attack',
+            frames: this.anims.generateFrameNumbers('punch', { frames: [0, 1, 2, 3, 4] }),
+            frameRate: 20
+        })
+        this.anims.create({
+            key: 'sword-attack',
+            frames: this.anims.generateFrameNumbers('sword', { frames: [0, 1, 2, 3, 4, 5, 5, 5, 5] }),
             frameRate: 20
         })
 

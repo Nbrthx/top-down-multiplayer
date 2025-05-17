@@ -1,20 +1,22 @@
-export class Hotbar extends Phaser.GameObjects.Container {
+import { Inventory } from "./Inventory";
+
+export class HotbarUI extends Phaser.GameObjects.Container {
 
     scene: Phaser.Scene;
     image: Phaser.GameObjects.Image;
-    hotbar: Phaser.GameObjects.Container;
-    items: { id: string; name: string }[];
+    hotbarContainer: Phaser.GameObjects.Container;
+    inventory: Inventory;
 
     activeIndex: number;
     border: Phaser.GameObjects.Rectangle;
 
-    constructor(scene: Phaser.Scene, items: { id: string; name: string }[]) {
+    constructor(scene: Phaser.Scene, inventory: Inventory) {
         super(scene);
 
         this.scene = scene;
         scene.add.existing(this);
 
-        this.items = items || [];
+        this.inventory = inventory
         this.activeIndex = 0
 
         this.image = this.scene.add.image(1880, 1040, 'hotbar');
@@ -22,8 +24,8 @@ export class Hotbar extends Phaser.GameObjects.Container {
         this.image.setScale(4)
 
         // Create hotbar
-        this.hotbar = this.scene.add.container(1880 - 648 + 16, 920);
-        this.createGrid(this.hotbar);
+        this.hotbarContainer = this.scene.add.container(1880 - 648 + 16, 920);
+        this.createGrid(this.hotbarContainer);
 
         this.border = this.scene.add.rectangle(1880 - 648 + 8, 904 + 8, 112, 112)
         this.border.setStrokeStyle(4, 0xeedd33)
@@ -31,20 +33,22 @@ export class Hotbar extends Phaser.GameObjects.Container {
 
         this.wheelHandle()
 
-        this.add([this.image, this.hotbar, this.border])
+        this.add([this.image, this.hotbarContainer, this.border])
     }
 
     wheelHandle(){
         this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
-            if (deltaY > 0) {
+            if (deltaY >= 50) {
                 this.activeIndex = (this.activeIndex + 1) % 5;
-            } else if (deltaY < 0) {
+            } else if (deltaY <= -50) {
                 this.activeIndex = (this.activeIndex - 1 + 5) % 5;
             }
 
             this.border.setX(1880 - 648 + 8 + this.activeIndex * 128)
 
-            this.createGrid(this.hotbar);
+            this.inventory.setActiveIndex(this.activeIndex)
+
+            this.createGrid(this.hotbarContainer);
         })
     }
 
@@ -55,7 +59,7 @@ export class Hotbar extends Phaser.GameObjects.Container {
             const x = i * 128;
             const y = 0;
 
-            const item = this.items[i];
+            const item = this.inventory.hotItems[i];
 
             if(!item) continue
 
@@ -71,7 +75,8 @@ export class Hotbar extends Phaser.GameObjects.Container {
         }
     }
 
-    getActiveItem() {
-        return this.items[this.activeIndex];
+    destroy() {
+        this.scene.input.off('wheel')
+        super.destroy(true)
     }
 }

@@ -1,8 +1,13 @@
 import { Game } from '../GameWorld'
 import p from 'planck'
-import { Weapon } from './Weapon'
+import { Account } from '../server'
+import { Inventory } from './Inventory'
+import { BaseWeapon } from './BaseWeapon'
+import { AnyWeapon } from './WeaponList'
 
 export class Player{
+
+    account: Account
 
     id: string
     health: number
@@ -11,14 +16,16 @@ export class Player{
 
     scene: Game
     pBody: p.Body
-    weapon: Weapon
+    weapon: BaseWeapon
     attackDir: p.Vec2
     knockback: number
     knockbackDir: p.Vec2
+    inventory: Inventory
 
-    constructor(scene: Game, x: number, y: number, id: string){
+    constructor(scene: Game, x: number, y: number, id: string, account: Account){
         this.scene = scene
         this.id = id
+        this.account = account
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x/scene.gameScale/32, y/scene.gameScale/32),
@@ -31,10 +38,12 @@ export class Player{
         })
         this.pBody.setUserData(this)
 
+        this.inventory = new Inventory(this)
+
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        this.weapon = new Weapon(scene, this.pBody)
+        this.weapon = new AnyWeapon(scene, this.pBody, 'punch').weaponInstance
 
         this.attackDir = new p.Vec2(0, 0)
 
@@ -44,7 +53,7 @@ export class Player{
 
     update(){
         if(this.attackDir.length() > 0){
-            this.weapon.attack(Math.atan2(this.attackDir.y, this.attackDir.x))
+            this.weapon.attack(this.attackDir.x, this.attackDir.y)
             this.attackDir = new p.Vec2(0, 0)
         }
 
@@ -53,6 +62,17 @@ export class Player{
             this.knockback -= 0.5
         }
 
+    }
+
+    equipItem(item: string){
+        if(this.weapon) this.weapon.destroy()
+
+        const newWeapon = new AnyWeapon(this.scene, this.pBody, item).weaponInstance
+        newWeapon.timestamp = Date.now()+1000
+
+        this.weapon = newWeapon
+
+        console.log(item)
     }
 
     destroy(){

@@ -1,25 +1,15 @@
 import { ec as EC } from 'elliptic'
 import * as express from 'express';
+import { Account } from './server';
 
 const ec = new EC('secp256k1');
 
-interface Accounts{
-    username: string,
-    pubKey: string,
-    akey: string,
-    xp: number,
-    inventory: {
-        id: string
-        name: string
-    }[]
-}
-
 export class RestApi{
 
-    accounts: Accounts[]
+    accounts: Account[]
     authedId: Map<string, string>
 
-    constructor(app: express.Application, accounts: Accounts[], authedId: Map<string, string>){
+    constructor(app: express.Application, accounts: Account[], authedId: Map<string, string>){
         this.accounts = accounts
         this.authedId = authedId
 
@@ -42,7 +32,13 @@ export class RestApi{
                 pubKey: pubKey as string,
                 akey: akey as string,
                 xp: 0,
-                inventory: []
+                inventory: {
+                    items: [],
+                    hotItems: [{
+                        id: 'sword',
+                        name: 'Sword'
+                    }]
+                }
             });
 
             console.log("User registered: "+username, akey)

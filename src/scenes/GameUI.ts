@@ -1,15 +1,16 @@
 import { Socket } from 'socket.io-client'
-import { Inventory } from '../prefabs/Inventory'
-import { Hotbar } from '../prefabs/Hotbar'
+import { InventoryUI } from '../prefabs/InventoryUI'
+import { HotbarUI } from '../prefabs/HotbarUI'
 import { Game } from './Game'
 import { socket } from './MainMenu'
+import { Player } from '../prefabs/Player'
 
 export default class GameUI extends Phaser.Scene {
 
     socket: Socket
     pingText: Phaser.GameObjects.Text
-    inventory: Inventory
-    hotbar: Hotbar
+    inventoryUI: InventoryUI
+    hotbarUI: HotbarUI
 
     constructor(){
         super('GameUI')
@@ -29,36 +30,26 @@ export default class GameUI extends Phaser.Scene {
             })
         }, 1000)
 
-        this.inventory = new Inventory(this)
-        this.inventory.setVisible(false)
+        const GameScene = (this.scene.get('Game') || this.scene.add('Game', new Game(), true)) as Game
 
-        this.hotbar = new Hotbar(this, this.inventory.hotItems)
-
-        this.inventory.onHotbarChange = () => {
-            this.hotbar.createGrid(this.hotbar.hotbar)
-        }
-
-        const inventoryButton = this.add.text(960, 1000, 'Inventory', {
-            fontSize: '32px',
+        const inventoryButton = this.add.text(960, 1000, 'INVENTORY', {
+            fontSize: '32px', fontStyle: 'bold',
             color: '#fff'
         }).setOrigin(0.5).setInteractive()
 
         inventoryButton.on('pointerdown', () => {
-            this.inventory.setVisible(!this.inventory.visible)
-            this.hotbar.setVisible(!this.hotbar.visible)
+            this.inventoryUI.setVisible(!this.inventoryUI.visible)
+            this.hotbarUI.setVisible(!this.hotbarUI.visible)
         })
-
-        const GameScene = (this.scene.get('Game') || this.scene.add('Game', new Game(), true)) as Game
 
         GameScene.events.on('start', () => {
             this.pingText.setVisible(true)
-            this.hotbar.setVisible(true)
             inventoryButton.setVisible(true)
         })
         GameScene.events.on('shutdown', () => {
             this.pingText.setVisible(false)
-            this.inventory.setVisible(false)
-            this.hotbar.setVisible(false)
+            this.inventoryUI.destroy()
+            this.hotbarUI.destroy()
             inventoryButton.setVisible(false)
         })
 
@@ -70,5 +61,30 @@ export default class GameUI extends Phaser.Scene {
             GameScene.isDebug = !GameScene.isDebug
             GameScene.debugGraphics.clear()
         })
+    }
+
+    setupInventory(player: Player){
+        this.inventoryUI = new InventoryUI(this, player.inventory)
+        this.inventoryUI.setVisible(false)
+
+        this.hotbarUI = new HotbarUI(this, player.inventory)
+
+        player.inventory.onInventoryUpdate = () => {
+            this.inventoryUI.updateItems()
+            this.hotbarUI.createGrid(this.hotbarUI.hotbarContainer)
+        }
+
+        player.inventory.onInventorySwap = (index, isHotbar, index2, isToHotbar) => {
+            this.hotbarUI.createGrid(this.hotbarUI.hotbarContainer)
+
+            const swap = { index, isHotbar, index2, isToHotbar }
+            console.log(swap)
+
+            this.socket.emit('updateInventory', 'world1', swap)
+        }
+
+        player.inventory.onSetActiveIndex = () => {
+            this.socket.emit('updateHotbar', 'world1', player.inventory.activeIndex)
+        }
     }
 }

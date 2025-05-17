@@ -2,8 +2,8 @@ import p from 'planck'
 import { Player } from './prefabs/Player'
 import { GameManager, InputData } from './GameManager'
 import { ContactEvents } from './components/ContactEvents'
-import { Weapon } from './prefabs/Weapon'
 import { MapSetup } from './components/MapSetup'
+import { Account } from './server'
 
 export class Game{
 
@@ -51,7 +51,7 @@ export class Game{
                 const idir = new p.Vec2(v.dir.x, v.dir.y)
                 idir.normalize()
 
-                if(v.attackDir.x != 0 || v.attackDir.y != 0){
+                if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.weapon.timestamp < Date.now()){
                     attackDir.x = v.attackDir.x
                     attackDir.y = v.attackDir.y
                 }
@@ -90,26 +90,17 @@ export class Game{
         this.gameManager.io.emit('output', gameState)
     }
 
-    addPlayer(id: string){
-        const player = new Player(this, 700, 800, id)
+    addPlayer(id: string, account: Account){
+        const player = new Player(this, 700, 800, id, account)
+        player.inventory.updateInventory(account.inventory)
+        
+        player.account.inventory.items = player.inventory.items
+        player.account.inventory.hotItems = player.inventory.hotItems
 
         this.players.push(player)
         this.playerBodys.push(player.pBody)
 
         this.gameManager.playerMap.set(id, this.id);
-
-        this.contactEvents.addEvent(player.weapon.hitbox, this.playerBodys, (bodyA, bodyB) => {
-            const other = bodyB.getUserData() as Player
-            const weapon = bodyA.getUserData() as Weapon
-
-            if(other.id == id) return
-
-            if (weapon && weapon.attackDir.length() > 0) {
-                other.health -= 5;
-                other.knockback = 4;
-                other.knockbackDir = new p.Vec2(weapon.attackDir.x, weapon.attackDir.y);
-            }
-        })
 
         console.log('Player '+id+' has added to game')
     }

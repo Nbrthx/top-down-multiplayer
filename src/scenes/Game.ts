@@ -30,7 +30,6 @@ export class Game extends Scene{
 
     player: Player;
     others: Player[];
-    otherBodys: p.Body[];
 
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
@@ -57,7 +56,6 @@ export class Game extends Scene{
         this.mapSetup = new MapSetup(this, 'test')
 
         this.others = []
-        this.otherBodys = []
 
         this.accumulator = 0
         this.previousTime = performance.now()
@@ -100,28 +98,42 @@ export class Game extends Scene{
 
         this.socket.emit('joinGame', 'world1')
 
-        this.socket.on('joinGame', (ids: string[], data: {
+        this.socket.on('joinGame', (account: {
             username: string,
             xp: number,
             inventory: {
-                id: string
-                name: string
-            }[]
-        }) => {
-            console.log(data)
+                items: { id: string; name: string }[],
+                hotItems: { id: string; name: string }[]
+            }
+        }, others: { id: string, hotItems: { id: string; name: string }[] }[]) => {
+            console.log(account)
 
-            ids.forEach(id => {
-                if(id == this.socket.id) return
-                console.log(id)
+            this.player.inventory.updateInventory(account.inventory)
 
-                const other = new Player(this, 700, 800, id)
+            this.UI.setupInventory(this.player)
+
+            others.forEach(v => {
+                if(v.id == this.socket.id) return
+                console.log(v.id)
+
+                const other = new Player(this, 700, 800, v.id)
+                other.inventory.updateInventory({
+                    items: [],
+                    hotItems: v.hotItems
+                })
+                
                 this.others.push(other)
-                this.otherBodys.push(other.pBody)
             })
         })
 
-        this.socket.on('playerJoined', (id: string) => {
-            this.others.push(new Player(this, 700, 800, id))
+        this.socket.on('playerJoined', (id: string, hotItems: { id: string; name: string }[]) => {
+            const other = new Player(this, 700, 800, id)
+            other.inventory.updateInventory({
+                items: [],
+                hotItems: hotItems
+            })
+
+            this.others.push(other)
         })
 
         this.socket.on('playerLeft', (id: string) => {
@@ -130,7 +142,6 @@ export class Game extends Scene{
             if(!existPlayer) return
 
             this.others.splice(this.others.indexOf(existPlayer), 1)
-            this.otherBodys.splice(this.otherBodys.indexOf(existPlayer.pBody), 1)
             existPlayer.destroy()
         })
 
@@ -152,7 +163,7 @@ export class Game extends Scene{
 
                     const normalized = targetPosition.clone().sub(currentPosition).add(new p.Vec2())
 
-                    if(normalized.length() > 0.1) other.pBody.setLinearVelocity(normalized)
+                    if(normalized.length() > 0.08) other.pBody.setLinearVelocity(normalized)
                     else other.pBody.setLinearVelocity(new p.Vec2(0, 0))
                 
                     normalized.normalize()
@@ -167,6 +178,30 @@ export class Game extends Scene{
                     }
                 }
             })
+        })
+
+        this.socket.on('updateInventory', (data: {
+            items: { id: string; name: string }[],
+            hotItems: { id: string; name: string }[]
+        }) => {
+            this.player.inventory.updateInventory(data)
+        })
+
+        this.socket.on('otherUpdateInventory', (id: string, hotItems: { id: string; name: string }[]) => {
+            const other = this.others.find(v => v.id == id)
+            if(!other) return
+
+            other.inventory.updateInventory({
+                items: [],
+                hotItems: hotItems
+            })
+        })
+
+        this.socket.on('otherUpdateHotbar', (id: string, index: number) => {
+            const other = this.others.find(v => v.id == id)
+            if(!other) return
+
+            other.inventory.setActiveIndex(index)
         })
     }
 

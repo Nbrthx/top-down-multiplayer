@@ -29,9 +29,7 @@ export class Inventory {
             this.items[index2] = temp
         }
 
-        this.onInventorySwap(index, isHotbar, index2, isToHotbar)
         this.parent.equipItem(this.hotItems[this.activeIndex]?.id || '')
-        return true
     }
 
     updateInventory(inventory: {
@@ -46,20 +44,12 @@ export class Inventory {
         })
 
         this.parent.equipItem(this.hotItems[this.activeIndex]?.id || '')
-        this.onInventoryUpdate()
     }
 
     setActiveIndex(index: number){
         if(index >= 5) index = 0
         this.activeIndex = index
 
-        this.onSetActiveIndex()
         this.parent.equipItem(this.hotItems[index]?.id || '')
     }
-
-    onInventoryUpdate() {}
-
-    onInventorySwap(index: number, isHotbar: boolean, index2: number, isToHotbar: boolean) { index; isHotbar; index2; isToHotbar; }
-
-    onSetActiveIndex() {}
 }

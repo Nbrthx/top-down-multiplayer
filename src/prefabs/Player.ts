@@ -1,6 +1,8 @@
 import { Game } from '../scenes/Game'
 import p from 'planck'
-import { Weapon } from './Weapon'
+import { BaseWeapon } from './BaseWeapon'
+import { AnyWeapon } from './WeaponList'
+import { Inventory } from './Inventory'
 
 export class Player extends Phaser.GameObjects.Container{
 
@@ -10,9 +12,10 @@ export class Player extends Phaser.GameObjects.Container{
     speed = 1.4
 
     scene: Game
-    weapon: Weapon
+    weapon: BaseWeapon
     sprite: Phaser.GameObjects.Sprite
     healthBar: Phaser.GameObjects.Rectangle
+    inventory: Inventory
 
     pBody: p.Body
     attackDir: p.Vec2
@@ -35,6 +38,8 @@ export class Player extends Phaser.GameObjects.Container{
             filterMaskBits: 1,
         })
 
+        this.inventory = new Inventory(this)
+
         this.maxHealth = 100
         this.health = this.maxHealth
 
@@ -42,11 +47,11 @@ export class Player extends Phaser.GameObjects.Container{
         this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x44ff55)
 
         this.attackDir = new p.Vec2(0, 0)
-        this.weapon = new Weapon(scene, this.pBody, 'punch')
+        this.weapon = new AnyWeapon(scene, this.pBody, 'punch').weaponInstance
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
 
-        this.add([this.sprite, this.weapon, bar, this.healthBar])
+        this.add([this.weapon, this.sprite, bar, this.healthBar])
     }
 
     update(){
@@ -62,7 +67,7 @@ export class Player extends Phaser.GameObjects.Container{
         else this.sprite.play('idle', true)
 
         if(this.attackDir.length() > 0){
-            this.weapon.attack(Math.atan2(this.attackDir.y, this.attackDir.x))
+            if(this.weapon) this.weapon.attack(this.attackDir.x, this.attackDir.y)
             this.attackDir = new p.Vec2(0, 0)
         }
 
@@ -75,10 +80,22 @@ export class Player extends Phaser.GameObjects.Container{
         this.healthBar.setX(-80-80*this.health/-this.maxHealth)
     }
 
+    equipItem(item: string){
+        if(this.weapon) this.remove(this.weapon, true)
+
+        const newWeapon = new AnyWeapon(this.scene, this.pBody, item).weaponInstance
+        newWeapon.timestamp = Date.now()+1000
+
+        this.weapon = newWeapon
+        this.addAt(this.weapon, 0)
+
+        console.log(item)
+    }
+
     destroy() {
         this.scene.world.destroyBody(this.pBody)
         this.scene.contactEvents.destroyEventByBody(this.pBody)
-        this.weapon.destroy()
+        if(this.weapon) this.weapon.destroy()
         super.destroy()
     }
 }
