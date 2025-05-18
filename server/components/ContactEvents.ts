@@ -1,4 +1,4 @@
-import p from 'planck'
+import * as p from 'planck'
 
 interface ContactEvent{
     bodyA: p.Body | p.Body[]

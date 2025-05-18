@@ -1,4 +1,4 @@
-import p from "planck";
+import * as p from "planck";
 import { Game } from "../../GameWorld";
 import { BaseWeapon } from "../BaseWeapon";
 import { Player } from "../Player";

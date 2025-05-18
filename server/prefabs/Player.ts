@@ -1,5 +1,5 @@
 import { Game } from '../GameWorld'
-import p from 'planck'
+import * as p from 'planck'
 import { Account } from '../server'
 import { Inventory } from './Inventory'
 import { BaseWeapon } from './BaseWeapon'

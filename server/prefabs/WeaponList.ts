@@ -1,6 +1,6 @@
 import { Game } from "../GameWorld";
 import { BasicMelee } from "./weapons/BasicMelee";
-import p from 'planck'
+import * as p from 'planck'
 
 
 

@@ -1,4 +1,4 @@
-import p from 'planck'
+import * as p from 'planck'
 import { Player } from './prefabs/Player'
 import { GameManager, InputData } from './GameManager'
 import { ContactEvents } from './components/ContactEvents'

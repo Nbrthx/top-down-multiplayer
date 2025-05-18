@@ -17,6 +17,7 @@
         "start": "npx ts-node server/server",
         "dev": "node log.js dev & vite --config vite/config.dev.mjs",
         "build": "node log.js build & vite build --config vite/config.prod.mjs",
+        "server-build": "npx tsc --module commonjs server/server.ts --outdir serverjs && copyfiles -u 1 server/**/*.json serverjs",
         "dev-nolog": "vite --config vite/config.dev.mjs",
         "build-nolog": "vite build --config vite/config.prod.mjs"
     },
@@ -26,6 +27,7 @@
         "@types/elliptic": "^6.4.18",
         "@types/express": "^5.0.1",
         "@types/sha256": "^0.2.2",
+        "copyfiles": "^2.4.1",
         "terser": "^5.31.0",
         "typescript": "^5.4.5",
         "vite": "^6.2.2"

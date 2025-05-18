@@ -1,4 +1,4 @@
-import p from 'planck'
+import * as p from 'planck'
 import * as fs from 'fs'
 import { Game } from '../GameWorld'
 

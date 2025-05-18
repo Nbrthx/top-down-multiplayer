@@ -19,7 +19,7 @@ export interface Account{
 
 const app = express()
 const httpServer = createServer(app)
-var htmlPath = __dirname+'/dist';
+var htmlPath = __dirname+'/../dist';
 
 app.use(express.static(htmlPath));
 app.use(cors())
@@ -27,6 +27,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+
+app.get('/', (_req, res) => res.sendFile(htmlPath+'/index.html'))
 
 const accounts: Account[] = [
     {
