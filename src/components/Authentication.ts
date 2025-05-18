@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { generateSecurity, verifyAccount } from '../components/SyasymAuth';
+import { HOST_ADDRESS } from '../scenes/MainMenu';
 
 function xhrApi(method: string, url: string, json: {}, callback: (data: any) => void){
     const xhr = new XMLHttpRequest();
@@ -82,13 +83,13 @@ export class Authentication{
     }
 
     login(username: string, password: string, isTrust: boolean){
-        xhrApi('GET', 'http://localhost:3000/get-akey?username='+username, {}, (data: { akey?: string, message?: string }) => {
+        xhrApi('GET', HOST_ADDRESS+'/get-akey?username='+username, {}, (data: { akey?: string, message?: string }) => {
             if(data.akey){
                 const decrypted = verifyAccount(data.akey, username, this.socket.id, password, isTrust)
 
                 if(!decrypted) return alert('invalid password')
                     
-                xhrApi('POST', 'http://localhost:3000/login', decrypted, (data: { message: string }) => {
+                xhrApi('POST', HOST_ADDRESS+'/login', decrypted, (data: { message: string }) => {
                     if(data.message == 'User logged in successfully!'){
                         localStorage.setItem('username', username)
                         this.element.setVisible(false)
@@ -108,7 +109,7 @@ export class Authentication{
 
     register(username: string, password: string){
             const akey = generateSecurity(username, password)
-            xhrApi('POST', 'http://localhost:3000/register', akey, (data: { message: string }) => {
+            xhrApi('POST', HOST_ADDRESS+'/register', akey, (data: { message: string }) => {
                 alert(data.message)
                 if(data.message == 'User registered successfully!') this.onChange()
             })

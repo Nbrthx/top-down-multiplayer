@@ -2,7 +2,8 @@ import { Scene } from 'phaser';
 import { io } from 'socket.io-client';
 import { Authentication } from '../components/Authentication';
 
-export const socket = io('http://localhost:3000', { transports: ['websocket'] })
+export const HOST_ADDRESS = 'https://insiace.nbrthx.my.id'
+export const socket = io(HOST_ADDRESS, { transports: ['websocket'] })
 
 export class MainMenu extends Scene{
 
