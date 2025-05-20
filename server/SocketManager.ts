@@ -33,10 +33,10 @@ export class SocketManager {
             socket.emit('joinGame', account, world?.players.map(v => {
                 return {
                     id: v.id,
-                    hotItems: v.inventory.hotItems
+                    items: v.inventory.items
                 }
             }))
-            socket.broadcast.emit('playerJoined', socket.id, account.inventory.hotItems);
+            socket.broadcast.emit('playerJoined', socket.id, account.inventory);
         })
 
         socket.on('playerInput', (worldId: string, input: InputData) => {
@@ -45,20 +45,15 @@ export class SocketManager {
 
         socket.on('updateInventory', (_worldId: string, swap: {
             index: number,
-            isHotbar: boolean,
             index2: number
-            isToHotbar: boolean
         }) => {
             const player = this.gameManager.getWorld('world1')?.players.find(v => v.id == socket.id)
             if(!player) return
 
-            player.inventory.swapItem(swap.index, swap.isHotbar, swap.index2, swap.isToHotbar)
+            player.inventory.swapItem(swap.index, swap.index2)
 
-            socket.emit('updateInventory', {
-                items: player.inventory.items,
-                hotItems: player.inventory.hotItems
-            })
-            socket.broadcast.emit('otherUpdateInventory', socket.id, player.inventory.hotItems)
+            socket.emit('updateInventory', player.inventory.items)
+            socket.broadcast.emit('otherUpdateInventory', socket.id, player.inventory.items)
         })
 
         socket.on('updateHotbar', (_worldId: string, index: number) => {

@@ -1,9 +1,10 @@
 import * as p from 'planck'
-import { Player } from './prefabs/Player'
 import { GameManager, InputData } from './GameManager'
 import { ContactEvents } from './components/ContactEvents'
 import { MapSetup } from './components/MapSetup'
 import { Account } from './server'
+import { Player } from './prefabs/Player'
+import { Enemy } from './prefabs/Enemy'
 
 export class Game{
 
@@ -15,8 +16,10 @@ export class Game{
     contactEvents: ContactEvents
 
     players: Player[]
-    playerBodys: p.Body[]
-    monsters: string[]
+    enemies: Enemy[]
+
+    entityBodys: p.Body[]
+
     inputData: Map<string, InputData[]>
     mapSetup: MapSetup
 
@@ -30,8 +33,9 @@ export class Game{
         this.inputData = new Map()
 
         this.players = []; // { socketId: Player }
-        this.playerBodys = [];
-        this.monsters = [];
+        this.enemies = [];
+        
+        this.entityBodys = [];
 
         this.mapSetup = new MapSetup(this, 'test')
     }
@@ -51,7 +55,7 @@ export class Game{
                 const idir = new p.Vec2(v.dir.x, v.dir.y)
                 idir.normalize()
 
-                if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.weapon.timestamp < Date.now()){
+                if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
                     attackDir.x = v.attackDir.x
                     attackDir.y = v.attackDir.y
                 }
@@ -74,18 +78,47 @@ export class Game{
             }
             else player.update()
         })
+
+        this.enemies.forEach(enemy => {
+            if(enemy.health <= 0){
+                const { x, y } = enemy.defaultPos.clone()
+                const id = enemy.id
+
+                this.entityBodys.splice(this.entityBodys.indexOf(enemy.pBody), 1)
+                this.enemies.splice(this.enemies.indexOf(enemy), 1)
+                enemy.destroy()
+
+                setTimeout(() => {
+                    const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32, id)
+                    this.entityBodys.push(newEnemy.pBody)
+                    this.enemies.push(newEnemy)
+                }, 5000)
+            }
+            else enemy.update()
+        })
     }
 
     broadcastOutput(){
-        const gameState = this.players.map(v => {
-            return {
-                id: v.id,
-                worldId: this.id,
-                pos: v.pBody.getPosition(),
-                attackDir: v.attackDir,
-                health: v.health
-            }
-        })
+        const gameState = {
+            players: this.players.map(v => {
+                return {
+                    id: v.id,
+                    worldId: this.id,
+                    pos: v.pBody.getPosition(),
+                    attackDir: v.attackDir,
+                    health: v.health
+                }
+            }),
+            enemies: this.enemies.map(v => {
+                return {
+                    id: v.id,
+                    worldId: this.id,
+                    pos: v.pBody.getPosition(),
+                    attackDir: v.attackDir,
+                    health: v.health
+                }
+            })
+        }
 
         this.gameManager.io.emit('output', gameState)
     }
@@ -94,11 +127,10 @@ export class Game{
         const player = new Player(this, 700, 800, id, account)
         player.inventory.updateInventory(account.inventory)
         
-        player.account.inventory.items = player.inventory.items
-        player.account.inventory.hotItems = player.inventory.hotItems
+        player.account.inventory = player.inventory.items
 
+        this.entityBodys.push(player.pBody)
         this.players.push(player)
-        this.playerBodys.push(player.pBody)
 
         this.gameManager.playerMap.set(id, this.id);
 
@@ -113,7 +145,7 @@ export class Game{
         this.gameManager.playerMap.delete(id);
 
         this.players.splice(this.players.indexOf(existPlayer), 1)
-        this.playerBodys.splice(this.playerBodys.indexOf(existPlayer.pBody), 1)
+        this.entityBodys.splice(this.entityBodys.indexOf(existPlayer.pBody), 1)
 
         existPlayer.destroy()
     }

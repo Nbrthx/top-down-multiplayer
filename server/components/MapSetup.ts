@@ -1,6 +1,7 @@
 import * as p from 'planck'
 import * as fs from 'fs'
 import { Game } from '../GameWorld'
+import { Enemy } from '../prefabs/Enemy'
 
 interface Tilemap{
     width: number
@@ -30,9 +31,9 @@ export class MapSetup{
 
         const map = JSON.parse(fs.readFileSync(__dirname+'/../json/'+mapName+'.json', {encoding: 'utf8'}))
 
-        this.createBounds(map.width, map.height)
-
         this.initCollision(scene, map)
+        this.createEnemy(scene, map)
+        this.createBounds(map.width, map.height)
     }
 
     initCollision(scene: Game, map: Tilemap){
@@ -66,6 +67,17 @@ export class MapSetup{
             const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y+2)/32))
             body.createFixture(new p.Box(42/2/32, 10/2/32))
             this.collision.push(body)
+        })
+    }
+
+    createEnemy(scene: Game, map: Tilemap){
+        map.layers.find(v => v.name == 'enemys')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, name: string }
+
+            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale, o.name)
+
+            scene.entityBodys.push(enemy.pBody)
+            scene.enemies.push(enemy)
         })
     }
 

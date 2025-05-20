@@ -38,9 +38,9 @@ export class HotbarUI extends Phaser.GameObjects.Container {
 
     wheelHandle(){
         this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
-            if (deltaY >= 50) {
+            if (deltaY > 0) {
                 this.activeIndex = (this.activeIndex + 1) % 5;
-            } else if (deltaY <= -50) {
+            } else if (deltaY < 0) {
                 this.activeIndex = (this.activeIndex - 1 + 5) % 5;
             }
 
@@ -59,7 +59,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
             const x = i * 128;
             const y = 0;
 
-            const item = this.inventory.hotItems[i];
+            const item = this.inventory.items[i];
 
             if(!item) continue
 

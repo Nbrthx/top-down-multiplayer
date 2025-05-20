@@ -1,14 +1,16 @@
-import p from "planck";
-import { Game } from "../../scenes/Game";
-import { BaseWeapon } from "../BaseWeapon";
+import * as p from "planck";
+import { Game } from "../../GameWorld";
+import { BaseItem } from "../BaseItem";
+import { Player } from "../Player";
+import { Enemy } from "../Enemy";
 
-export class BasicMelee extends BaseWeapon{
+export class MeleeWeapon extends BaseItem{
 
-    image: Phaser.GameObjects.Sprite;
     hitbox: p.Body;
     attackState: boolean;
 
     attackDelay: number
+    attackDir: p.Vec2
 
     constructor(scene: Game, parentBody: p.Body, config: {
         texture: string
@@ -23,14 +25,9 @@ export class BasicMelee extends BaseWeapon{
     }){
         super(scene, parentBody);
         
-        scene.add.existing(this);
         this.config = config
         
         this.attackState = false
-
-        this.image = scene.add.sprite(128*config.offsetMultipler, 0, config.texture)
-        this.image.setScale(4)
-        this.image.setVisible(false)
 
         this.hitbox = scene.world.createKinematicBody();
         this.hitbox.createFixture({
@@ -42,23 +39,45 @@ export class BasicMelee extends BaseWeapon{
         this.timestamp = 0
         this.cooldown = config.cooldown
 
-        this.add(this.image)
+        this.scene.contactEvents.addEvent(this.hitbox, this.scene.entityBodys, (_bodyA, bodyB) => {
+            const parent = parentBody.getUserData() 
+            const target = bodyB.getUserData()
+            
+            if(parent instanceof Player && target instanceof Player){
+                if(target.id == parent.id) return
+
+                if (this.attackDir.length() > 0) {
+                    target.health -= 5;
+                    target.knockback = 4;
+                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
+                }
+            }
+            else if(parent instanceof Player && target instanceof Enemy){
+                if (this.attackDir.length() > 0) {
+                    target.health -= 5;
+                    target.knockback = 4;
+                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
+                }
+            }
+            else if(parent instanceof Enemy && target instanceof Player){
+                if (this.attackDir.length() > 0) {
+                    target.health -= 5;
+                    target.knockback = 4;
+                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
+                }
+            }
+        })
     }
 
-    attack(x: number, y: number){
-        if(this.image.visible) return
-        if(!this.canAttack()) return
+    use(x: number, y: number){
+        if(!this.canUse()) return
 
         this.timestamp = Date.now()
 
-        this.image.setFlipY(this.attackState)
         this.attackState = !this.attackState
-
-        this.image.play(this.config.texture+'-attack', true)
-        this.image.setVisible(true)
+        this.attackDir = new p.Vec2(x, y)
 
         const rad = Math.atan2(y, x)
-        this.setRotation(rad)
 
         setTimeout(() => {
             this.hitbox.setPosition(
@@ -72,12 +91,9 @@ export class BasicMelee extends BaseWeapon{
             
             setTimeout(() => {
                 this.hitbox.setActive(false)
+                this.attackDir = new p.Vec2(0, 0)
             }, 100)
         }, this.config.attackDelay)
-
-        this.image.once('animationcomplete', () => {
-            this.image.setVisible(false)
-        })
     }
 
     destroy(){
@@ -85,6 +101,5 @@ export class BasicMelee extends BaseWeapon{
         this.hitbox.getWorld().queueUpdate(world => {
             world.destroyBody(this.hitbox)
         })
-        super.destroy()
     }
 }

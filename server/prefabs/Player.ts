@@ -2,8 +2,8 @@ import { Game } from '../GameWorld'
 import * as p from 'planck'
 import { Account } from '../server'
 import { Inventory } from './Inventory'
-import { BaseWeapon } from './BaseWeapon'
-import { AnyWeapon } from './WeaponList'
+import { BaseItem } from './BaseItem'
+import { ItemInstance } from './ItemInstance'
 
 export class Player{
 
@@ -16,7 +16,8 @@ export class Player{
 
     scene: Game
     pBody: p.Body
-    weapon: BaseWeapon
+    itemInstance: BaseItem
+    
     attackDir: p.Vec2
     knockback: number
     knockbackDir: p.Vec2
@@ -43,7 +44,7 @@ export class Player{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        this.weapon = new AnyWeapon(scene, this.pBody, 'punch').weaponInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
 
         this.attackDir = new p.Vec2(0, 0)
 
@@ -53,7 +54,7 @@ export class Player{
 
     update(){
         if(this.attackDir.length() > 0){
-            this.weapon.attack(this.attackDir.x, this.attackDir.y)
+            this.itemInstance.use(this.attackDir.x, this.attackDir.y)
             this.attackDir = new p.Vec2(0, 0)
         }
 
@@ -65,12 +66,12 @@ export class Player{
     }
 
     equipItem(item: string){
-        if(this.weapon) this.weapon.destroy()
+        if(this.itemInstance) this.itemInstance.destroy()
 
-        const newWeapon = new AnyWeapon(this.scene, this.pBody, item).weaponInstance
-        newWeapon.timestamp = Date.now()+1000
+        const newItemInstance = new ItemInstance(this.scene, this.pBody, item).weaponInstance
+        newItemInstance.timestamp = Date.now()+1000
 
-        this.weapon = newWeapon
+        this.itemInstance = newItemInstance
 
         console.log(item)
     }
@@ -78,6 +79,6 @@ export class Player{
     destroy(){
         this.scene.world.destroyBody(this.pBody)
         this.scene.contactEvents.destroyEventByBody(this.pBody)
-        this.weapon.destroy()
+        this.itemInstance.destroy()
     }
 }

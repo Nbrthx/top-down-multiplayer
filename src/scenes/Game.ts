@@ -6,14 +6,8 @@ import { Socket } from 'socket.io-client'
 import { ContactEvents } from '../components/ContactEvents';
 import { createDebugGraphics } from '../components/PhysicsDebug';
 import { MapSetup } from '../components/MapSetup';
-
-interface OutputData{
-    id: string,
-    worldId: string,
-    pos: { x: number, y: number },
-    attackDir: { x: number, y: number },
-    health: number
-}
+import { Enemy } from '../prefabs/Enemy';
+import { NetworkHandler } from '../components/NetworkHandler';
 
 export class Game extends Scene{
 
@@ -27,15 +21,17 @@ export class Game extends Scene{
     gameScale = 4;
     contactEvents: ContactEvents
     mapSetup: MapSetup
+    networkHandler: NetworkHandler
 
     player: Player;
     others: Player[];
+    enemies: Enemy[]
 
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
     previousTime: number;
 
-    isDebug: boolean = false
+    isDebug: boolean = true
 
     constructor (){
         super('Game');
@@ -53,6 +49,8 @@ export class Game extends Scene{
         this.UI = (this.scene.get('GameUI') || this.scene.add('GameUI', new GameUI(), true)) as GameUI
         this.socket = this.UI.socket
 
+        this.enemies = []
+
         this.mapSetup = new MapSetup(this, 'test')
 
         this.others = []
@@ -60,9 +58,9 @@ export class Game extends Scene{
         this.accumulator = 0
         this.previousTime = performance.now()
         
-        if(this.socket.id) this.connectionHandler()
+        if(this.socket.id) this.networkHandler = new NetworkHandler(this)
         else this.socket.on('connect', () => {
-            this.connectionHandler()
+            this.networkHandler = new NetworkHandler(this)
         })
     }
 
@@ -78,131 +76,12 @@ export class Game extends Scene{
                 this.handleInput()
             }
 
+            this.enemies.forEach(v => {
+                v.update()
+            })
+
             if(this.isDebug) createDebugGraphics(this, this.debugGraphics)
         }
-    }
-
-    connectionHandler(){
-        this.player = new Player(this, 700, 800, this.socket.id as string)
-        this.camera.startFollow(this.player, true, 0.1, 0.1)
-
-        this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
-            let x = _pointer.worldX-this.player.x
-            let y = _pointer.worldY-this.player.y
-
-            const dir = new p.Vec2(x, y)
-            dir.normalize()
-
-            this.player.attackDir = dir
-        })
-
-        this.socket.emit('joinGame', 'world1')
-
-        this.socket.on('joinGame', (account: {
-            username: string,
-            xp: number,
-            inventory: {
-                items: { id: string; name: string }[],
-                hotItems: { id: string; name: string }[]
-            }
-        }, others: { id: string, hotItems: { id: string; name: string }[] }[]) => {
-            console.log(account)
-
-            this.player.inventory.updateInventory(account.inventory)
-
-            this.UI.setupInventory(this.player)
-
-            others.forEach(v => {
-                if(v.id == this.socket.id) return
-                console.log(v.id)
-
-                const other = new Player(this, 700, 800, v.id)
-                other.inventory.updateInventory({
-                    items: [],
-                    hotItems: v.hotItems
-                })
-                
-                this.others.push(other)
-            })
-        })
-
-        this.socket.on('playerJoined', (id: string, hotItems: { id: string; name: string }[]) => {
-            const other = new Player(this, 700, 800, id)
-            other.inventory.updateInventory({
-                items: [],
-                hotItems: hotItems
-            })
-
-            this.others.push(other)
-        })
-
-        this.socket.on('playerLeft', (id: string) => {
-            const existPlayer = this.others.find(other => other.id == id)
-
-            if(!existPlayer) return
-
-            this.others.splice(this.others.indexOf(existPlayer), 1)
-            existPlayer.destroy()
-        })
-
-        this.socket.on('output', (data: OutputData[]) => {
-            const playerData = data.find(v => v.id == this.player.id)
-            if(playerData){
-                const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
-                const currentPosition = this.player.pBody.getPosition()
-                this.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
-
-                this.player.health = playerData.health
-                if(this.player.health <= 0) this.scene.start('GameOver')
-            }
-            this.others.forEach(other => {
-                const otherData = data.find(v => v.id == other.id)
-                if(otherData){
-                    const targetPosition = new p.Vec2(otherData.pos.x, otherData.pos.y)
-                    const currentPosition = other.pBody.getPosition()
-
-                    const normalized = targetPosition.clone().sub(currentPosition).add(new p.Vec2())
-
-                    if(normalized.length() > 0.08) other.pBody.setLinearVelocity(normalized)
-                    else other.pBody.setLinearVelocity(new p.Vec2(0, 0))
-                
-                    normalized.normalize()
-
-                    other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
-                    other.attackDir = new p.Vec2(otherData.attackDir.x, otherData.attackDir.y)
-                    
-                    other.health = otherData.health
-                    if(other.health <= 0){
-                        this.others.splice(this.others.indexOf(other), 1)
-                        other.destroy()
-                    }
-                }
-            })
-        })
-
-        this.socket.on('updateInventory', (data: {
-            items: { id: string; name: string }[],
-            hotItems: { id: string; name: string }[]
-        }) => {
-            this.player.inventory.updateInventory(data)
-        })
-
-        this.socket.on('otherUpdateInventory', (id: string, hotItems: { id: string; name: string }[]) => {
-            const other = this.others.find(v => v.id == id)
-            if(!other) return
-
-            other.inventory.updateInventory({
-                items: [],
-                hotItems: hotItems
-            })
-        })
-
-        this.socket.on('otherUpdateHotbar', (id: string, index: number) => {
-            const other = this.others.find(v => v.id == id)
-            if(!other) return
-
-            other.inventory.setActiveIndex(index)
-        })
     }
 
     handleInput(){

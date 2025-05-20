@@ -2,7 +2,7 @@ import { Scene } from 'phaser';
 import { io } from 'socket.io-client';
 import { Authentication } from '../components/Authentication';
 
-export const HOST_ADDRESS = 'https://insiace.nbrthx.my.id'
+export const HOST_ADDRESS = 'http://localhost:3000'
 export const socket = io(HOST_ADDRESS, { transports: ['websocket'] })
 
 export class MainMenu extends Scene{
@@ -56,7 +56,7 @@ export class MainMenu extends Scene{
 
         play.on('pointerdown', () => {
             if(authentication.element.visible) return
-
+            console.log('game start')
             this.scene.start('Game');
         });
 

@@ -1,10 +1,10 @@
 import { Game } from "../scenes/Game";
-import { BasicMelee } from "./weapons/BasicMelee";
+import { MeleeWeapon } from "./items/MeleeWeapon";
 import p from 'planck'
 
 
 
-export class AnyWeapon{
+export class ItemInstance{
 
     scene: Game;
     parentBody: p.Body;
@@ -13,7 +13,7 @@ export class AnyWeapon{
         type: string
         config: any
     }[];
-    weaponInstance: BasicMelee
+    weaponInstance: MeleeWeapon
 
     constructor(scene: Game, parentBody: p.Body, weaponId?: string){
         this.scene = scene;
@@ -51,14 +51,14 @@ export class AnyWeapon{
 
         if(weapon){
             if(weapon.type === 'melee'){
-                this.weaponInstance = new BasicMelee(this.scene, this.parentBody, weapon.config);
+                this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, weapon.config);
             }
             else{
-                this.weaponInstance = new BasicMelee(this.scene, this.parentBody, defaultWeapon.config);
+                this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
             }
         }
         else{
-            this.weaponInstance = new BasicMelee(this.scene, this.parentBody, defaultWeapon.config);
+            this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
         }
     }
 }

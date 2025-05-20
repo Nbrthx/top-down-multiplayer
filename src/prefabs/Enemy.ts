@@ -2,23 +2,27 @@ import { Game } from '../scenes/Game'
 import p from 'planck'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
-import { Inventory } from './Inventory'
+import { Player } from './Player'
 
-export class Player extends Phaser.GameObjects.Container{
+export class Enemy extends Phaser.GameObjects.Container{
 
     id: string
     maxHealth: number
     health: number
-    speed = 1.4
+    speed = 1
 
     scene: Game
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
     healthBar: Phaser.GameObjects.Rectangle
-    inventory: Inventory
 
     pBody: p.Body
     attackDir: p.Vec2
+
+    defaultPos: p.Vec2
+    triggerArea: p.Body
+    visionArea: p.Body
+    target: Player | null
 
     constructor(scene: Game, x: number, y: number, id: string){
         super(scene, x, y)
@@ -39,18 +43,23 @@ export class Player extends Phaser.GameObjects.Container{
         })
         this.pBody.setUserData(this)
 
-        this.inventory = new Inventory(this)
+
+        this.defaultPos = this.pBody.getPosition().clone()
 
         this.maxHealth = 100
         this.health = this.maxHealth
 
         const bar = scene.add.rectangle(0, -120, 162, 14, 0x696669)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x44ff55)
+        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xff5544)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
+        this.sprite.setTint(0xff9999)
+
+        this.triggerArea = this.createArea(2)
+        this.visionArea = this.createArea(6)
 
         this.add([this.itemInstance, this.sprite, bar, this.healthBar])
     }
@@ -76,26 +85,31 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
+
+        this.triggerArea.setPosition(this.pBody.getPosition())
         
         this.healthBar.setSize(160*this.health/this.maxHealth, 12)
         this.healthBar.setX(-80-80*this.health/-this.maxHealth)
     }
 
-    equipItem(item: string){
-        if(this.itemInstance) this.itemInstance.destroy()
-
-        const newItemInstance = new ItemInstance(this.scene, this.pBody, item).weaponInstance
-        newItemInstance.timestamp = Date.now()+1000
-
-        this.itemInstance = newItemInstance
-        this.addAt(this.itemInstance, 0)
-
-        console.log(item)
+    createArea(radius: number){
+        const pBody = this.scene.world.createKinematicBody()
+        pBody.createFixture({
+            shape: new p.Circle(new p.Vec2(0, 0), radius),
+            isSensor: true
+        })
+        pBody.setUserData(this)
+        pBody.setPosition(this.pBody.getPosition())
+        return pBody
     }
 
     destroy() {
-        this.scene.contactEvents.destroyEventByBody(this.pBody)
         this.scene.world.destroyBody(this.pBody)
+        this.scene.world.destroyBody(this.triggerArea)
+        this.scene.world.destroyBody(this.visionArea)
+        this.scene.contactEvents.destroyEventByBody(this.pBody)
+        this.scene.contactEvents.destroyEventByBody(this.triggerArea)
+        this.scene.contactEvents.destroyEventByBody(this.visionArea)
         if(this.itemInstance) this.itemInstance.destroy()
         super.destroy()
     }

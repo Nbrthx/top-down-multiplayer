@@ -1,5 +1,6 @@
 import p from 'planck'
 import { Game } from '../scenes/Game'
+import { Enemy } from '../prefabs/Enemy'
 
 export class MapSetup{
 
@@ -25,9 +26,9 @@ export class MapSetup{
 
         scene.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
 
-        this.createBounds(map.width, map.height)
-
         this.initCollision(scene, map)
+        this.createEnemy(scene, map)
+        this.createBounds(map.width, map.height)
     }
 
     initCollision(scene: Game, map: Phaser.Tilemaps.Tilemap){
@@ -69,6 +70,16 @@ export class MapSetup{
             const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y+2)/32))
             body.createFixture(new p.Box(42/2/32, 10/2/32))
             this.collision.push(body)
+        })
+    }
+
+    createEnemy(scene: Game, map: Phaser.Tilemaps.Tilemap){
+        map.getObjectLayer('enemys')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, name: string }
+
+            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale, o.name)
+
+            scene.enemies.push(enemy)
         })
     }
 

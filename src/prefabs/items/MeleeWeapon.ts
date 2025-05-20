@@ -1,15 +1,14 @@
-import * as p from "planck";
-import { Game } from "../../GameWorld";
-import { BaseWeapon } from "../BaseWeapon";
-import { Player } from "../Player";
+import p from "planck";
+import { Game } from "../../scenes/Game";
+import { BaseItem } from "../BaseItem";
 
-export class BasicMelee extends BaseWeapon{
+export class MeleeWeapon extends BaseItem{
 
+    sprite: Phaser.GameObjects.Sprite;
     hitbox: p.Body;
     attackState: boolean;
 
     attackDelay: number
-    attackDir: p.Vec2
 
     constructor(scene: Game, parentBody: p.Body, config: {
         texture: string
@@ -24,9 +23,14 @@ export class BasicMelee extends BaseWeapon{
     }){
         super(scene, parentBody);
         
+        scene.add.existing(this);
         this.config = config
         
         this.attackState = false
+
+        this.sprite = scene.add.sprite(128*config.offsetMultipler, 0, config.texture)
+        this.sprite.setScale(4)
+        this.sprite.setVisible(false)
 
         this.hitbox = scene.world.createKinematicBody();
         this.hitbox.createFixture({
@@ -38,29 +42,23 @@ export class BasicMelee extends BaseWeapon{
         this.timestamp = 0
         this.cooldown = config.cooldown
 
-        this.scene.contactEvents.addEvent(this.hitbox, this.scene.playerBodys, (_bodyA, bodyB) => {
-            const player = parentBody.getUserData() as Player
-            const other = bodyB.getUserData() as Player
-
-            if(other.id == player.id) return
-
-            if (this.attackDir.length() > 0) {
-                other.health -= 5;
-                other.knockback = 4;
-                other.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
-            }
-        })
+        this.add(this.sprite)
     }
 
-    attack(x: number, y: number){
-        if(!this.canAttack()) return
+    use(x: number, y: number){
+        if(this.sprite.visible) return
+        if(!this.canUse()) return
 
         this.timestamp = Date.now()
 
+        this.sprite.setFlipY(this.attackState)
         this.attackState = !this.attackState
-        this.attackDir = new p.Vec2(x, y)
+
+        this.sprite.play(this.config.texture+'-attack', true)
+        this.sprite.setVisible(true)
 
         const rad = Math.atan2(y, x)
+        this.setRotation(rad)
 
         setTimeout(() => {
             this.hitbox.setPosition(
@@ -74,9 +72,12 @@ export class BasicMelee extends BaseWeapon{
             
             setTimeout(() => {
                 this.hitbox.setActive(false)
-                this.attackDir = new p.Vec2(0, 0)
             }, 100)
         }, this.config.attackDelay)
+
+        this.sprite.once('animationcomplete', () => {
+            this.sprite.setVisible(false)
+        })
     }
 
     destroy(){
@@ -84,5 +85,6 @@ export class BasicMelee extends BaseWeapon{
         this.hitbox.getWorld().queueUpdate(world => {
             world.destroyBody(this.hitbox)
         })
+        super.destroy()
     }
 }

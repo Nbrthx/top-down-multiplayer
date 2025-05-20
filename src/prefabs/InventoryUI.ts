@@ -37,7 +37,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
     createGrid(container: Phaser.GameObjects.Container, row: number, col: number) {
         const isHotbar = container.name == 'hotbar'
-        const items = isHotbar ? this.inventory.hotItems : this.inventory.items;
+        const startIndex = isHotbar ? 0 : 5
 
         container.removeAll(true);
 
@@ -47,7 +47,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                 const y = i * 128;
 
                 const slot = this.scene.add.rectangle(x + 48, y + 48, 128, 128);
-                slot.setName((isHotbar ? 'hotbar' : 'inventory')+'-'+(i*5 + j))
+                slot.setName((isHotbar ? 'hotbar' : 'inventory')+'-'+(i*5 + j + startIndex))
                 slot.setInteractive({ dropZone: true });
 
                 container.add(slot);
@@ -59,7 +59,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                 const x = j * 128;
                 const y = i * 128;
 
-                const item = items[i*5 + j];
+                const item = this.inventory.items[i*5 + j + startIndex];
 
                 if(!item) continue
 
@@ -86,9 +86,8 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 itemText.on('drop', (_pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {
                     const index = parseInt(target.name.split('-')[1])
-                    const isToHotbar = target.name.split('-')[0] == 'hotbar'
 
-                    this.inventory.swapItem(i*5 + j, isHotbar, index, isToHotbar)
+                    this.inventory.swapItem(i*5 + j + startIndex, index)
     
                     this.updateItems()
                 })

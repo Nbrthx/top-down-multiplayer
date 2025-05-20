@@ -30,7 +30,7 @@ export default class GameUI extends Phaser.Scene {
             })
         }, 1000)
 
-        const GameScene = (this.scene.get('Game') || this.scene.add('Game', new Game(), true)) as Game
+        const GameScene = this.scene.get('Game') as Game
 
         const inventoryButton = this.add.text(960, 1000, 'INVENTORY', {
             fontSize: '32px', fontStyle: 'bold',
@@ -74,10 +74,10 @@ export default class GameUI extends Phaser.Scene {
             this.hotbarUI.createGrid(this.hotbarUI.hotbarContainer)
         }
 
-        player.inventory.onInventorySwap = (index, isHotbar, index2, isToHotbar) => {
+        player.inventory.onInventorySwap = (index, index2) => {
             this.hotbarUI.createGrid(this.hotbarUI.hotbarContainer)
 
-            const swap = { index, isHotbar, index2, isToHotbar }
+            const swap = { index, index2 }
             console.log(swap)
 
             this.socket.emit('updateInventory', 'world1', swap)

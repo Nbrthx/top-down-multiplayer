@@ -32,13 +32,10 @@ export class RestApi{
                 pubKey: pubKey as string,
                 akey: akey as string,
                 xp: 0,
-                inventory: {
-                    items: [],
-                    hotItems: [{
-                        id: 'sword',
-                        name: 'Sword'
-                    }]
-                }
+                inventory: [{
+                    id: 'sword',
+                    name: 'Sword'
+                }]
             });
 
             console.log("User registered: "+username, akey)
