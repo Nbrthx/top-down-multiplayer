@@ -5,6 +5,7 @@ import { MapSetup } from './components/MapSetup'
 import { Account } from './server'
 import { Player } from './prefabs/Player'
 import { Enemy } from './prefabs/Enemy'
+import { DroppedItem } from './prefabs/DroppedItem'
 
 export class Game{
 
@@ -17,6 +18,7 @@ export class Game{
 
     players: Player[]
     enemies: Enemy[]
+    droppedItems: DroppedItem[]
 
     entityBodys: p.Body[]
 
@@ -34,6 +36,7 @@ export class Game{
 
         this.players = []; // { socketId: Player }
         this.enemies = [];
+        this.droppedItems = [];
         
         this.entityBodys = [];
 
@@ -87,6 +90,10 @@ export class Game{
                 this.entityBodys.splice(this.entityBodys.indexOf(enemy.pBody), 1)
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
+                
+                const droppedItem = new DroppedItem(this, x, y, 'sword', 'Sword')
+                this.droppedItems.push(droppedItem)
+                droppedItem.onDestroy = () => this.droppedItems.splice(this.droppedItems.indexOf(droppedItem), 1)
 
                 setTimeout(() => {
                     const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32, id)
@@ -116,6 +123,15 @@ export class Game{
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
                     health: v.health
+                }
+            }),
+            droppedItems: this.droppedItems.map(v => {
+                return {
+                    uid: v.uid,
+                    id: v.id,
+                    name: v.name,
+                    worldId: this.id,
+                    pos: v.pBody.getPosition(),
                 }
             })
         }

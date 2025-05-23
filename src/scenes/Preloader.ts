@@ -23,7 +23,7 @@ export class Preloader extends Scene{
         this.load.html('loginform', 'html/loginform.html')
         this.load.html('registerform', 'html/registerform.html')
 
-        this.load.spritesheet('char', 'character/char.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
 
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 64, frameHeight: 64 })
@@ -41,20 +41,20 @@ export class Preloader extends Scene{
     create (){
         this.anims.create({
             key: 'idle',
-            frames: this.anims.generateFrameNumbers('char', { frames: [0, 0, 0, 1, 2, 3] }),
+            frames: this.anims.generateFrameNumbers('char', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }),
             frameRate: 10,
             repeat: -1
         })
         this.anims.create({
             key: 'run-down',
-            frames: this.anims.generateFrameNumbers('char', { frames: [8, 9, 10, 10, 10, 11, 12, 13, 14, 14, 14, 15] }),
-            frameRate: 24,
+            frames: this.anims.generateFrameNumbers('char', { frames: [12, 13, 14, 15, 16, 17, 18, 19] }),
+            frameRate: 12,
             repeat: -1
         })
         this.anims.create({
             key: 'run-up',
-            frames: this.anims.generateFrameNumbers('char', { frames: [16, 17, 18, 18, 18, 19, 20, 21, 22, 22, 22, 23] }),
-            frameRate: 24,
+            frames: this.anims.generateFrameNumbers('char', { frames: [24, 25, 26, 27, 28, 29, 30, 31] }),
+            frameRate: 12,
             repeat: -1
         })
 

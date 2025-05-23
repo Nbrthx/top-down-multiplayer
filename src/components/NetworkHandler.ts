@@ -3,6 +3,7 @@ import { Socket } from "socket.io-client";
 import { Game } from "../scenes/Game";
 import { Player } from "../prefabs/Player";
 import { Enemy } from '../prefabs/Enemy';
+import { DroppedItem } from '../prefabs/DroppedItem';
 
 
 interface OutputData{
@@ -16,6 +17,13 @@ interface OutputData{
 interface GameState{
     players: OutputData[]
     enemies: OutputData[]
+    droppedItems: {
+        uid: string
+        id: string
+        name: string
+        worldId: string
+        pos: { x: number, y: number }
+    }[]
 }
 
 interface Account{
@@ -175,6 +183,20 @@ export class NetworkHandler{
                     enemy.destroy()
                 }
             }
+        })
+
+        data.droppedItems.forEach(itemData => {
+            const item = scene.droppedItems.find(v => v.uid == itemData.uid)
+            if(!item){
+                console.log('spawn item', itemData)
+                const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.name, itemData.uid)
+                this.scene.droppedItems.push(newItem)
+            }
+        })
+
+        scene.droppedItems.forEach(item => {
+            const itemData = data.droppedItems.find(v => v.uid == item.uid)
+            if(!itemData) item.destroy()
         })
     }
 

@@ -8,18 +8,18 @@ export class ItemInstance{
 
     scene: Game;
     parentBody: p.Body;
-    weaponList: {
+    itemList: {
         id: string
         type: string
         config: any
     }[];
-    weaponInstance: MeleeWeapon
+    itemInstance: MeleeWeapon
 
     constructor(scene: Game, parentBody: p.Body, weaponId?: string){
         this.scene = scene;
         this.parentBody = parentBody;
 
-        this.weaponList = [
+        this.itemList = [
             {
                 id: 'punch',
                 type: 'melee',
@@ -46,19 +46,19 @@ export class ItemInstance{
             }
         ]
 
-        const defaultWeapon = this.weaponList[0];
-        const weapon = this.weaponList.find(weapon => weapon.id === weaponId || '');
+        const defaultWeapon = this.itemList[0];
+        const weapon = this.itemList.find(weapon => weapon.id === weaponId || '');
 
         if(weapon){
             if(weapon.type === 'melee'){
-                this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, weapon.config);
+                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, weapon.config);
             }
             else{
-                this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
+                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
             }
         }
         else{
-            this.weaponInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
+            this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
         }
     }
 }

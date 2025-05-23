@@ -53,7 +53,7 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xff5544)
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
         this.sprite.setTint(0xff9999)

@@ -12,6 +12,19 @@ export class Inventory {
         this.activeIndex = 0
     }
 
+    addItem(item: { id: string; name: string }) {
+        for(let i = 0; i < 25; i++){
+            if(this.items[i] === undefined){
+                this.items[i] = item
+
+                if(i == this.activeIndex) this.parent.equipItem(this.items[this.activeIndex]?.id || '')
+                this.onInventoryUpdate()
+                return true
+            }
+        }
+        return false
+    }
+
     swapItem(index: number, index2: number) {
         if((index >= 25)) return false
         if((index2 >= 25)) return false

@@ -44,8 +44,7 @@ export class Player{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
-
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
         this.attackDir = new p.Vec2(0, 0)
 
         this.knockback = 0
@@ -66,14 +65,16 @@ export class Player{
     }
 
     equipItem(item: string){
-        if(this.itemInstance) this.itemInstance.destroy()
+        this.scene.world.queueUpdate(() => {
+            if(this.itemInstance) this.itemInstance.destroy()
 
-        const newItemInstance = new ItemInstance(this.scene, this.pBody, item).weaponInstance
-        newItemInstance.timestamp = Date.now()+1000
+            const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
+            newItemInstance.timestamp = Date.now()+1000
 
-        this.itemInstance = newItemInstance
+            this.itemInstance = newItemInstance
 
-        console.log(item)
+            console.log(item)
+        })
     }
 
     destroy(){

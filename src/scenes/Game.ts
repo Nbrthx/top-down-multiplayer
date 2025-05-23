@@ -8,6 +8,7 @@ import { createDebugGraphics } from '../components/PhysicsDebug';
 import { MapSetup } from '../components/MapSetup';
 import { Enemy } from '../prefabs/Enemy';
 import { NetworkHandler } from '../components/NetworkHandler';
+import { DroppedItem } from '../prefabs/DroppedItem';
 
 export class Game extends Scene{
 
@@ -26,6 +27,7 @@ export class Game extends Scene{
     player: Player;
     others: Player[];
     enemies: Enemy[]
+    droppedItems: DroppedItem[];
 
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
@@ -50,6 +52,7 @@ export class Game extends Scene{
         this.socket = this.UI.socket
 
         this.enemies = []
+        this.droppedItems = []
 
         this.mapSetup = new MapSetup(this, 'test')
 

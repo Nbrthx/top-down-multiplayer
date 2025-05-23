@@ -46,7 +46,7 @@ export class Enemy{
         this.health = this.maxHealth
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
         this.triggerArea = this.createArea(2)
         this.visionArea = this.createArea(6)

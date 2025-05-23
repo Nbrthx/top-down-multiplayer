@@ -48,7 +48,7 @@ export class Player extends Phaser.GameObjects.Container{
         this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x44ff55)
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').weaponInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
 
@@ -82,15 +82,17 @@ export class Player extends Phaser.GameObjects.Container{
     }
 
     equipItem(item: string){
-        if(this.itemInstance) this.itemInstance.destroy()
+        this.scene.world.queueUpdate(() => {
+            if(this.itemInstance) this.itemInstance.destroy()
 
-        const newItemInstance = new ItemInstance(this.scene, this.pBody, item).weaponInstance
-        newItemInstance.timestamp = Date.now()+1000
+            const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
+            newItemInstance.timestamp = Date.now()+1000
 
-        this.itemInstance = newItemInstance
-        this.addAt(this.itemInstance, 0)
+            this.itemInstance = newItemInstance
+            this.addAt(this.itemInstance, 0)
 
-        console.log(item)
+            console.log(item)
+        })
     }
 
     destroy() {
