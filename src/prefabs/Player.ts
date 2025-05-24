@@ -33,7 +33,7 @@ export class Player extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.3, 0.4, new p.Vec2(0, 0.5)),
+            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -82,7 +82,7 @@ export class Player extends Phaser.GameObjects.Container{
     }
 
     equipItem(item: string){
-        this.scene.world.queueUpdate(() => {
+        this.pBody.getWorld().queueUpdate(() => {
             if(this.itemInstance) this.itemInstance.destroy()
 
             const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
@@ -90,8 +90,6 @@ export class Player extends Phaser.GameObjects.Container{
 
             this.itemInstance = newItemInstance
             this.addAt(this.itemInstance, 0)
-
-            console.log(item)
         })
     }
 

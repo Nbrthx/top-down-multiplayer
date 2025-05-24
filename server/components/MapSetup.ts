@@ -2,6 +2,7 @@ import * as p from 'planck'
 import * as fs from 'fs'
 import { Game } from '../GameWorld'
 import { Enemy } from '../prefabs/Enemy'
+import { Player } from '../prefabs/Player'
 
 interface Tilemap{
     width: number
@@ -23,20 +24,27 @@ export class MapSetup{
     scene: Game
     gameScale: number
     collision: p.Body[]
+    enterpoint: Map<string, p.Vec2>
 
     constructor(scene: Game, mapName: string){
         this.collision = []
+        this.enterpoint = new Map()
+
         this.scene = scene
         this.gameScale = scene.gameScale
 
         const map = JSON.parse(fs.readFileSync(__dirname+'/../json/'+mapName+'.json', {encoding: 'utf8'}))
 
-        this.initCollision(scene, map)
-        this.createEnemy(scene, map)
+        this.initCollision(map)
+        this.createEnemy(map)
+        this.createEntrances(map)
         this.createBounds(map.width, map.height)
+        this.createEnterPoint(map)
     }
 
-    initCollision(scene: Game, map: Tilemap){
+    initCollision(map: Tilemap){
+        const scene = this.scene
+
         map.layers.find(v => v.name == 'collision')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, width: number, height: number }
 
@@ -70,7 +78,9 @@ export class MapSetup{
         })
     }
 
-    createEnemy(scene: Game, map: Tilemap){
+    createEnemy(map: Tilemap){
+        const scene = this.scene
+
         map.layers.find(v => v.name == 'enemys')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, name: string }
 
@@ -78,6 +88,32 @@ export class MapSetup{
 
             scene.entityBodys.push(enemy.pBody)
             scene.enemies.push(enemy)
+        })
+    }
+
+    createEntrances(map: Tilemap){
+        const scene = this.scene
+
+        map.layers.find(v => v.name == 'entrance')?.objects.map(_o => {
+            const o = _o as { name: string, x: number, y: number, width: number, height: number}
+
+            const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
+            body.createFixture({
+                shape: new p.Box(o.width/2/32, o.height/2/32),
+                isSensor: true
+            })
+            body.setUserData(o.name)
+
+            scene.contactEvents.addEvent(scene.entityBodys, body, (bodyA) => {
+                const player = bodyA.getUserData()
+
+                if(player instanceof Player){
+                    scene.removePlayer(player.id)
+                    scene.gameManager.io.to(player.id).emit('changeWorld', scene.id, o.name, () => {
+                        scene.gameManager.getWorld(o.name)?.addPlayer(player.id, player.account, scene.id)
+                    })
+                }
+            })
         })
     }
 
@@ -93,5 +129,17 @@ export class MapSetup{
             const body = this.scene.world.createBody(wall.pos);
             body.createFixture(new p.Box(wall.size.x / 2, wall.size.y / 2));
         });
+    }
+
+    createEnterPoint(map: Tilemap) {
+        const scene = this.scene
+
+        let gameScale = scene.gameScale
+        map.layers.find(v => v.name == 'enterpoint')?.objects.forEach(_o => {
+            const o = _o as { name: string, x: number, y: number }
+            
+            const pos = new p.Vec2(o.x*gameScale, o.y*gameScale)
+            this.enterpoint.set(o.name, pos)
+        })
     }
 }

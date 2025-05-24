@@ -26,11 +26,12 @@ export class Preloader extends Scene{
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
 
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
-        this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
 
         this.load.image('tilemaps', 'environment/tilemaps.png')
 
         this.load.tilemapTiledJSON('test', 'environment/test.json')
+        this.load.tilemapTiledJSON('test2', 'environment/test2.json')
 
         this.load.image('inventory', 'ui/inventory.png')
         this.load.image('hotbar', 'ui/hotbar.png')

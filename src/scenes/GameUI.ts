@@ -43,14 +43,12 @@ export default class GameUI extends Phaser.Scene {
         })
 
         GameScene.events.on('start', () => {
-            this.pingText.setVisible(true)
-            inventoryButton.setVisible(true)
+            this.scene.setVisible(true)
         })
         GameScene.events.on('shutdown', () => {
-            this.pingText.setVisible(false)
-            this.inventoryUI.destroy()
+            this.scene.setVisible(false)
             this.hotbarUI.destroy()
-            inventoryButton.setVisible(false)
+            this.inventoryUI.destroy()
         })
 
         const debugToggle = this.add.text(1870, 50, 'Debug?', {
@@ -80,11 +78,11 @@ export default class GameUI extends Phaser.Scene {
             const swap = { index, index2 }
             console.log(swap)
 
-            this.socket.emit('updateInventory', 'world1', swap)
+            this.socket.emit('updateInventory', swap)
         }
 
         player.inventory.onSetActiveIndex = () => {
-            this.socket.emit('updateHotbar', 'world1', player.inventory.activeIndex)
+            this.socket.emit('updateHotbar', player.inventory.activeIndex)
         }
     }
 }

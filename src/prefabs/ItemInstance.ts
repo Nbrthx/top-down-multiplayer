@@ -38,9 +38,9 @@ export class ItemInstance{
                 config: {
                     texture: 'sword',
                     offsetMultipler: 0.5,
-                    hitboxSize: { width: 0.5, height: 0.4 },
-                    hitboxOffsetMultipler: 0.8,
-                    cooldown: 600,
+                    hitboxSize: { width: 0.6, height: 0.6 },
+                    hitboxOffsetMultipler: 1.2,
+                    cooldown: 1000,
                     attackDelay: 200
                 }
             }

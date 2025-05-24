@@ -29,7 +29,9 @@ export class ItemInstance{
                     hitboxSize: { width: 0.7, height: 0.2 },
                     hitboxOffsetMultipler: 1.1,
                     cooldown: 500,
-                    attackDelay: 100
+                    attackDelay: 100,
+                    damage: 2,
+                    knockback: 5
                 }
             },
             {
@@ -38,10 +40,12 @@ export class ItemInstance{
                 config: {
                     texture: 'sword',
                     offsetMultipler: 0.5,
-                    hitboxSize: { width: 0.5, height: 0.4 },
-                    hitboxOffsetMultipler: 0.8,
-                    cooldown: 600,
-                    attackDelay: 200
+                    hitboxSize: { width: 0.6, height: 0.6 },
+                    hitboxOffsetMultipler: 1.2,
+                    cooldown: 1000,
+                    attackDelay: 200,
+                    damage: 5,
+                    knockback: 6
                 }
             }
         ]

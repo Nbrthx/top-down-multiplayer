@@ -6,32 +6,41 @@ export class MapSetup{
 
     scene: Game
     gameScale: number
+    layers: Phaser.Tilemaps.TilemapLayer[]
     collision: p.Body[]
+    entrances: p.Body[]
+    enterpoint: Map<string, p.Vec2>
 
     constructor(scene: Game, mapName: string){
-        this.collision = []
         this.scene = scene
         this.gameScale = scene.gameScale
+        
+        this.layers = []
+        this.collision = []
+        this.entrances = []
+        this.enterpoint = new Map()
 
         const map = scene.add.tilemap(mapName)
         const tileset = map.addTilesetImage('tilemaps', 'tilemaps') as Phaser.Tilemaps.Tileset
-        const waterLayer = map.createLayer('water', tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
-        const groundLayer = map.createLayer('ground', tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
-        const grassLayer = map.createLayer('grass', tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
-        const otherLayer = map.createLayer('other', tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
 
-        [waterLayer, groundLayer, grassLayer, otherLayer].forEach(v => {
-            v.setScale(4)
+        map.layers.forEach(v => {
+            const layer = map.createLayer(v.name, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
+            layer.setScale(4)
+            this.layers.push(layer)
         })
 
         scene.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
 
-        this.initCollision(scene, map)
-        this.createEnemy(scene, map)
+        this.initCollision(map)
+        this.createEnemy(map)
         this.createBounds(map.width, map.height)
+        this.createEntrances(map)
+        this.createEnterPoint(map)
     }
 
-    initCollision(scene: Game, map: Phaser.Tilemaps.Tilemap){
+    initCollision(map: Phaser.Tilemaps.Tilemap){
+        const scene = this.scene
+
         map.getObjectLayer('collision')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, width: number, height: number}
             const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y)/32))
@@ -73,13 +82,32 @@ export class MapSetup{
         })
     }
 
-    createEnemy(scene: Game, map: Phaser.Tilemaps.Tilemap){
+    createEnemy(map: Phaser.Tilemaps.Tilemap){
+        const scene = this.scene
+
+
         map.getObjectLayer('enemys')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, name: string }
 
             const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale, o.name)
 
             scene.enemies.push(enemy)
+        })
+    }
+
+    createEntrances(map: Phaser.Tilemaps.Tilemap){
+        const scene = this.scene
+
+        map.getObjectLayer('entrance')?.objects.map(_o => {
+            const o = _o as { name: string, x: number, y: number, width: number, height: number}
+
+            const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
+            body.createFixture({
+                shape: new p.Box(o.width/2/32, o.height/2/32),
+                isSensor: true
+            })
+            body.setUserData(o.name)
+            this.entrances.push(body)
         })
     }
 
@@ -94,6 +122,42 @@ export class MapSetup{
         walls.forEach(wall => {
             const body = this.scene.world.createBody(wall.pos);
             body.createFixture(new p.Box(wall.size.x / 2, wall.size.y / 2));
+            this.collision.push(body)
         });
+    }
+
+    destroy(){
+        this.collision.forEach(v => {
+            this.scene.world.destroyBody(v)
+        })
+        this.collision = []
+        this.scene.others.forEach(v => {
+            v.destroy()
+        })
+        this.scene.others = []
+        this.scene.enemies.forEach(v => {
+            v.destroy()
+        })
+        this.scene.enemies = []
+        this.layers.forEach(v => {
+            v.destroy()
+        })
+        this.layers = []
+        this.entrances.forEach(v => {
+            this.scene.world.destroyBody(v)
+        })
+        this.entrances = []
+    }
+
+    createEnterPoint(map: Phaser.Tilemaps.Tilemap) {
+        const scene = this.scene
+
+        let gameScale = scene.gameScale
+        map.getObjectLayer('enterpoint')?.objects.forEach(_o => {
+            const o = _o as { name: string, x: number, y: number }
+            
+            const pos = new p.Vec2(o.x*gameScale, o.y*gameScale)
+            this.enterpoint.set(o.name, pos)
+        })
     }
 }

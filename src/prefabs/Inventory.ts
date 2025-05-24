@@ -39,7 +39,6 @@ export class Inventory {
     }
 
     updateInventory(inventory: { id: string; name: string }[]){
-        console.log(inventory)
         inventory.forEach((v, i) => {
             this.items[i] = v
         })

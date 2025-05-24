@@ -34,7 +34,7 @@ export class Enemy{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.3, 0.4, new p.Vec2(0, 0.5)),
+            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -46,7 +46,7 @@ export class Enemy{
         this.health = this.maxHealth
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
 
         this.triggerArea = this.createArea(2)
         this.visionArea = this.createArea(6)

@@ -22,6 +22,8 @@ export class MeleeWeapon extends BaseItem{
         hitboxOffsetMultipler: number
         cooldown: number
         attackDelay: number
+        damage: number
+        knockback: number
     }){
         super(scene, parentBody);
         
@@ -42,29 +44,26 @@ export class MeleeWeapon extends BaseItem{
         this.scene.contactEvents.addEvent(this.hitbox, this.scene.entityBodys, (_bodyA, bodyB) => {
             const parent = parentBody.getUserData() 
             const target = bodyB.getUserData()
+
+            const isPlayer = (obj: any) => obj instanceof Player
+            const isEnemy = (obj: any) => obj instanceof Enemy
+
+            const hit = () => {
+                if(!isEnemy(target) && !isPlayer(target)) return;
+                if (this.attackDir.length() > 0) {
+                    target.health -= config.damage;
+                    target.knockback = config.knockback;
+                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
+                }
+            }
             
-            if(parent instanceof Player && target instanceof Player){
+            if(isPlayer(parent) && isPlayer(target)){
                 if(target.id == parent.id) return
 
-                if (this.attackDir.length() > 0) {
-                    target.health -= 5;
-                    target.knockback = 4;
-                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
-                }
+                hit()
             }
-            else if(parent instanceof Player && target instanceof Enemy){
-                if (this.attackDir.length() > 0) {
-                    target.health -= 5;
-                    target.knockback = 4;
-                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
-                }
-            }
-            else if(parent instanceof Enemy && target instanceof Player){
-                if (this.attackDir.length() > 0) {
-                    target.health -= 5;
-                    target.knockback = 4;
-                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
-                }
+            else if((isPlayer(parent) && isEnemy(target)) || (isEnemy(parent) && isPlayer(target))){
+                hit()
             }
         })
     }

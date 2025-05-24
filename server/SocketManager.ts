@@ -21,47 +21,40 @@ export class SocketManager {
 
     private setupSocketListeners(socket: Socket): void {
 
-        socket.on('joinGame', worldId => {
-            worldId;
-
+        socket.on('joinGame', () => {
             const account = this.getAccountData(socket.id)
             if(!account) return
 
-            const world = this.gameManager.getWorld('world1')
+            const world = this.gameManager.getWorld('test')
             world?.addPlayer(socket.id, account);
-            
-            socket.emit('joinGame', account, world?.players.map(v => {
-                return {
-                    id: v.id,
-                    items: v.inventory.items
-                }
-            }))
-            socket.broadcast.emit('playerJoined', socket.id, account.inventory);
         })
 
-        socket.on('playerInput', (worldId: string, input: InputData) => {
-            this.gameManager.handleInput(socket.id, worldId, input);
+        socket.on('playerInput', (input: InputData) => {
+            this.gameManager.handleInput(socket.id, input);
         });
 
-        socket.on('updateInventory', (_worldId: string, swap: {
+        socket.on('updateInventory', (swap: {
             index: number,
             index2: number
         }) => {
-            const player = this.gameManager.getWorld('world1')?.players.find(v => v.id == socket.id)
+            const world = this.gameManager.getPlayerWorld(socket.id)
+            if(!world) return
+
+            const player = world.players.find(v => v.id == socket.id)
             if(!player) return
 
             player.inventory.swapItem(swap.index, swap.index2)
 
             socket.emit('updateInventory', player.inventory.items)
-            socket.broadcast.emit('otherUpdateInventory', socket.id, player.inventory.items)
+            socket.broadcast.to(world.id).emit('otherUpdateInventory', socket.id, player.inventory.items)
         })
 
-        socket.on('updateHotbar', (_worldId: string, index: number) => {
-            const player = this.gameManager.getWorld('world1')?.players.find(v => v.id == socket.id)
+        socket.on('updateHotbar', (index: number) => {
+            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
             if(!player) return
 
             player.inventory.setActiveIndex(index)
-            socket.broadcast.emit('otherUpdateHotbar', socket.id, index)
+            socket.broadcast.to(player.scene.id).emit('otherUpdateHotbar', socket.id, index)
         })
 
         socket.on('ping', (callback) => {
@@ -69,8 +62,7 @@ export class SocketManager {
         })
 
         socket.on('disconnect', () => {
-            socket.broadcast.emit('playerLeft', socket.id);
-            this.gameManager.getWorld('world1')?.removePlayer(socket.id);
+            this.gameManager.getPlayerWorld(socket.id)?.removePlayer(socket.id);
             this.removeAuthedId(socket.id)
         });
         

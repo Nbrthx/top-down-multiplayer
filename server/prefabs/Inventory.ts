@@ -18,7 +18,11 @@ export class Inventory {
                 this.items[i] = item
 
                 if(i == this.activeIndex) this.parent.equipItem(this.items[this.activeIndex]?.id || '')
-                this.parent.scene.gameManager.io.to(this.parent.id).emit('updateInventory', this.items)
+
+                const io = this.parent.scene.gameManager.io
+                io.to(this.parent.id).emit('updateInventory', this.items)
+                io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.id, this.items)
+
                 return true
             }
         }

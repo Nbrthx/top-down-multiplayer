@@ -4,6 +4,7 @@ import { Game } from "../scenes/Game";
 import { Player } from "../prefabs/Player";
 import { Enemy } from '../prefabs/Enemy';
 import { DroppedItem } from '../prefabs/DroppedItem';
+import { MapSetup } from './MapSetup';
 
 
 interface OutputData{
@@ -41,12 +42,14 @@ export class NetworkHandler{
 
     scene: Game
     socket: Socket
+    isAuthed: boolean = false
 
     constructor(scene: Game){
         this.scene = scene
         this.socket = scene.socket
 
-        scene.player = new Player(scene, 700, 800, this.socket.id as string)
+        const enterPos = scene.mapSetup.enterpoint.get('spawn') || { x: 100, y: 100 }
+        scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string)
         scene.camera.startFollow(scene.player, true, 0.1, 0.1)
 
         scene.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
@@ -59,7 +62,7 @@ export class NetworkHandler{
             scene.player.attackDir = dir
         })
 
-        this.socket.emit('joinGame', 'world1')
+        this.socket.emit('joinGame')
 
         this.socket.on('joinGame', this.joinGame.bind(this))
 
@@ -74,11 +77,14 @@ export class NetworkHandler{
         this.socket.on('otherUpdateInventory', this.otherUpdateInventory.bind(this))
 
         this.socket.on('otherUpdateHotbar', this.otherUpdateHotbar.bind(this))
+
+        this.socket.on('changeWorld', this.changeWorld.bind(this))
     }
 
-    joinGame(account: Account, others: { id: string, items: Item[] }[]){
+    joinGame(account: Account, others: { id: string, items: Item[], activeIndex: number, pos: { x: number, y: number } }[]){
         const scene = this.scene
         console.log(account)
+        if(account && account.inventory) this.isAuthed = true
 
         scene.player.inventory.updateInventory(account.inventory)
 
@@ -88,17 +94,20 @@ export class NetworkHandler{
             if(v.id == this.socket.id) return
             console.log(v.id)
 
-            const other = new Player(scene, 700, 800, v.id)
+            const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.id)
             other.inventory.updateInventory(v.items)
+            other.inventory.setActiveIndex(v.activeIndex)
             
             scene.others.push(other)
         })
     }
 
-    playerJoined(id: string, items: Item[]){
+    playerJoined(id: string, items: Item[], from: string){
         const scene = this.scene
 
-        const other = new Player(scene, 700, 800, id)
+        const pos = scene.mapSetup.enterpoint.get(from) || { x: 100, y: 100 }
+
+        const other = new Player(scene, pos.x, pos.y, id)
         other.inventory.updateInventory(items)
 
         scene.others.push(other)
@@ -208,6 +217,8 @@ export class NetworkHandler{
         const other = this.scene.others.find(v => v.id == id)
         if(!other) return
 
+        console.log('other updated', items)
+
         other.inventory.updateInventory(items)
     }
 
@@ -215,7 +226,25 @@ export class NetworkHandler{
         const other = this.scene.others.find(v => v.id = id)
         if(!other) return
 
+        console.log('other updated hotbar', index)
+
         other.inventory.setActiveIndex(index)
+    }
+
+    changeWorld(from: string, worldId: string, callback: () => void){
+        const scene = this.scene
+        
+        scene.mapSetup.destroy()
+        scene.mapSetup = new MapSetup(scene, worldId)
+        
+        const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+        
+        scene.camera.centerOn(enterPos.x, enterPos.y)
+        scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+
+        console.log('change position by client')
+
+        callback()
     }
 
     destroy(){

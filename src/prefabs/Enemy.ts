@@ -37,12 +37,11 @@ export class Enemy extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.3, 0.4, new p.Vec2(0, 0.5)),
+            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
         this.pBody.setUserData(this)
-
 
         this.defaultPos = this.pBody.getPosition().clone()
 
@@ -53,7 +52,7 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xff5544)
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
         this.sprite.setTint(0xff9999)

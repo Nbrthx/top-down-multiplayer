@@ -17,7 +17,8 @@ export class GameManager{
         this.playerMap = new Map();
         this.io = io
 
-        this.createWorld('world1')
+        this.createWorld('test')
+        this.createWorld('test2')
 
         setInterval(() => {
             this.update();
@@ -32,11 +33,18 @@ export class GameManager{
         return this.worlds.find(world => world.id == worldId)
     }
 
-    public handleInput(id: string, worldId: string, input: InputData){
-        if(!this.getWorld(worldId)?.players.find(player => player.id == id)) return
+    public getPlayerWorld(playerId: string){
+        return this.getWorld(this.playerMap.get(playerId) || '')
+    }
 
-        if(!this.getWorld(worldId)?.inputData.has(id)) this.getWorld(worldId)?.inputData.set(id, [])
-        this.getWorld(worldId)?.inputData.get(id)?.push(input)
+    public handleInput(id: string, input: InputData){
+        const world = this.getPlayerWorld(id)
+
+        if(!world) return
+        if(!world.players.find(player => player.id == id)) return
+
+        if(!world.inputData.has(id)) world.inputData.set(id, [])
+        world.inputData.get(id)?.push(input)
     }
 
     update() {

@@ -40,7 +40,7 @@ export class Game{
         
         this.entityBodys = [];
 
-        this.mapSetup = new MapSetup(this, 'test')
+        this.mapSetup = new MapSetup(this, id)
     }
 
     update(deltaTime: number) {
@@ -84,6 +84,7 @@ export class Game{
 
         this.enemies.forEach(enemy => {
             if(enemy.health <= 0){
+                const enemyPos = enemy.pBody.getPosition()
                 const { x, y } = enemy.defaultPos.clone()
                 const id = enemy.id
 
@@ -91,7 +92,7 @@ export class Game{
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
                 
-                const droppedItem = new DroppedItem(this, x, y, 'sword', 'Sword')
+                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, 'sword', 'Sword')
                 this.droppedItems.push(droppedItem)
                 droppedItem.onDestroy = () => this.droppedItems.splice(this.droppedItems.indexOf(droppedItem), 1)
 
@@ -136,11 +137,12 @@ export class Game{
             })
         }
 
-        this.gameManager.io.emit('output', gameState)
+        this.gameManager.io.to(this.id).emit('output', gameState)
     }
 
-    addPlayer(id: string, account: Account){
-        const player = new Player(this, 700, 800, id, account)
+    addPlayer(id: string, account: Account, from?: string){
+        const enterPos = this.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+        const player = new Player(this, enterPos.x, enterPos.y, id, account)
         player.inventory.updateInventory(account.inventory)
         
         player.account.inventory = player.inventory.items
@@ -148,9 +150,22 @@ export class Game{
         this.entityBodys.push(player.pBody)
         this.players.push(player)
 
-        this.gameManager.playerMap.set(id, this.id);
+        const socket = this.gameManager.io.sockets.sockets.get(id)
 
-        console.log('Player '+id+' has added to game')
+        this.gameManager.playerMap.set(id, this.id);
+        socket?.join(this.id)
+
+        socket?.emit('joinGame', account, this.players.map(v => {
+            return {
+                id: v.id,
+                items: v.inventory.items,
+                activeIndex: v.inventory.activeIndex,
+                pos: v.pBody.getPosition()
+            }
+        }))
+        socket?.broadcast.to(this.id).emit('playerJoined', socket.id, account.inventory, from || 'spawn');
+
+        console.log('Player '+id+' has added to '+this.id)
     }
 
     removePlayer(id: string){
@@ -164,5 +179,12 @@ export class Game{
         this.entityBodys.splice(this.entityBodys.indexOf(existPlayer.pBody), 1)
 
         existPlayer.destroy()
+
+        const socket = this.gameManager.io.sockets.sockets.get(id)
+
+        socket?.leave(this.id)
+        socket?.broadcast.emit('playerLeft', socket.id);
+        
+        console.log('Player '+id+' has removed from '+this.id)
     }
 }

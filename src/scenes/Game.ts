@@ -33,7 +33,7 @@ export class Game extends Scene{
     accumulator: number;
     previousTime: number;
 
-    isDebug: boolean = true
+    isDebug: boolean = false
 
     constructor (){
         super('Game');
@@ -68,6 +68,8 @@ export class Game extends Scene{
     }
 
     update(currentTime: number) {
+        if(!this.networkHandler.isAuthed) return;
+
         const frameTime = (currentTime - this.previousTime) / 1000; // in seconds
         this.previousTime = currentTime;
         this.accumulator += frameTime * 3;
@@ -116,7 +118,7 @@ export class Game extends Scene{
         this.player.pBody.setLinearVelocity(vel)
 
         if(vel.length() > 0 || this.player.attackDir.length() > 0){
-            this.socket.emit('playerInput', 'world1', {
+            this.socket.emit('playerInput', {
                 dir: { x: vel.x, y: vel.y },
                 attackDir: { x: this.player.attackDir.x, y: this.player.attackDir.y }
             })
