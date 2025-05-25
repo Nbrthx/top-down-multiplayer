@@ -68,7 +68,7 @@ export class Game extends Scene{
     }
 
     update(currentTime: number) {
-        if(!this.networkHandler.isAuthed) return;
+        if(!this.networkHandler || !this.networkHandler.isAuthed) return;
 
         const frameTime = (currentTime - this.previousTime) / 1000; // in seconds
         this.previousTime = currentTime;

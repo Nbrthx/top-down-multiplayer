@@ -19,15 +19,15 @@ export class HotbarUI extends Phaser.GameObjects.Container {
         this.inventory = inventory
         this.activeIndex = 0
 
-        this.image = this.scene.add.image(1880, 1040, 'hotbar');
+        this.image = this.scene.add.image(scene.scale.width-40, 1040, 'hotbar');
         this.image.setOrigin(1, 1)
         this.image.setScale(4)
 
         // Create hotbar
-        this.hotbarContainer = this.scene.add.container(1880 - 648 + 16, 920);
+        this.hotbarContainer = this.scene.add.container(scene.scale.width-688 + 16, 920);
         this.createGrid(this.hotbarContainer);
 
-        this.border = this.scene.add.rectangle(1880 - 648 + 8, 904 + 8, 112, 112)
+        this.border = this.scene.add.rectangle(scene.scale.width-688 + 8, 904 + 8, 112, 112)
         this.border.setStrokeStyle(4, 0xeedd33)
         this.border.setOrigin(0)
 
@@ -44,7 +44,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
                 this.activeIndex = (this.activeIndex - 1 + 5) % 5;
             }
 
-            this.border.setX(1880 - 648 + 8 + this.activeIndex * 128)
+            this.border.setX(this.scene.scale.width - 688 + 8 + this.activeIndex * 128)
 
             this.inventory.setActiveIndex(this.activeIndex)
 

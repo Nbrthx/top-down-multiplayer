@@ -20,7 +20,10 @@ export default class GameUI extends Phaser.Scene {
 
     create(){
 
-        this.pingText = this.add.text(100, 100, 'Ping: 0ms')
+        this.pingText = this.add.text(100, 50, 'Ping: 0ms', {
+            fontSize: 24, fontStyle: 'bold',
+            color: '#fff'
+        })
 
         setInterval(() => {
             const then = Date.now()
@@ -32,7 +35,7 @@ export default class GameUI extends Phaser.Scene {
 
         const GameScene = this.scene.get('Game') as Game
 
-        const inventoryButton = this.add.text(960, 1000, 'INVENTORY', {
+        const inventoryButton = this.add.text(this.scale.width/2, 1000, 'INVENTORY', {
             fontSize: '32px', fontStyle: 'bold',
             color: '#fff'
         }).setOrigin(0.5).setInteractive()
@@ -51,7 +54,7 @@ export default class GameUI extends Phaser.Scene {
             this.inventoryUI.destroy()
         })
 
-        const debugToggle = this.add.text(1870, 50, 'Debug?', {
+        const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
             fontSize: 24, color: '#000000', fontStyle: 'bold'
         }).setOrigin(1, 0)
         debugToggle.setInteractive()

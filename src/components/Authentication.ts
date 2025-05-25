@@ -30,6 +30,7 @@ export class Authentication{
     element: Phaser.GameObjects.DOMElement
     changeAction: Element | null
     submit: Element | null
+    isLoading: boolean = false
 
     constructor(scene: Phaser.Scene, socket: Socket){
         this.socket = socket
@@ -58,6 +59,9 @@ export class Authentication{
     }
 
     onSubmit(isLogin: boolean){
+        if(this.isLoading) return
+        this.isLoading = true
+
         if(isLogin){
             const username = (this.element.getChildByID('username') as HTMLInputElement).value
             const password = (this.element.getChildByID('password') as HTMLInputElement).value
@@ -96,6 +100,7 @@ export class Authentication{
                     }
                     else{
                         alert(data.message)
+                        this.isLoading = false
                     }
                 })
             }
@@ -103,15 +108,17 @@ export class Authentication{
                 alert(data.message)
                 this.element.setVisible(true)
                 localStorage.removeItem('username')
+                this.isLoading = false
             }
         })
     }
 
     register(username: string, password: string){
-            const akey = generateSecurity(username, password)
-            xhrApi('POST', HOST_ADDRESS+'/register', akey, (data: { message: string }) => {
-                alert(data.message)
-                if(data.message == 'User registered successfully!') this.onChange()
-            })
-        }
+        const akey = generateSecurity(username, password)
+        xhrApi('POST', HOST_ADDRESS+'/register', akey, (data: { message: string }) => {
+            alert(data.message)
+            if(data.message == 'User registered successfully!') this.onChange()
+            this.isLoading = false
+        })
+    }
 }

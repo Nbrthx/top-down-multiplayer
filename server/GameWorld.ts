@@ -158,12 +158,18 @@ export class Game{
         socket?.emit('joinGame', account, this.players.map(v => {
             return {
                 id: v.id,
+                username: v.account.username,
                 items: v.inventory.items,
                 activeIndex: v.inventory.activeIndex,
                 pos: v.pBody.getPosition()
             }
         }))
-        socket?.broadcast.to(this.id).emit('playerJoined', socket.id, account.inventory, from || 'spawn');
+        socket?.broadcast.to(this.id).emit('playerJoined', {
+            id: socket.id,
+            username: account.username,
+            items: account.inventory,
+            from: from || 'spawn'
+        });
 
         console.log('Player '+id+' has added to '+this.id)
     }
@@ -180,10 +186,10 @@ export class Game{
 
         existPlayer.destroy()
 
+        this.gameManager.io.to(this.id).emit('playerLeft', id);
+        
         const socket = this.gameManager.io.sockets.sockets.get(id)
-
         socket?.leave(this.id)
-        socket?.broadcast.emit('playerLeft', socket.id);
         
         console.log('Player '+id+' has removed from '+this.id)
     }

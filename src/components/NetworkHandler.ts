@@ -49,7 +49,7 @@ export class NetworkHandler{
         this.socket = scene.socket
 
         const enterPos = scene.mapSetup.enterpoint.get('spawn') || { x: 100, y: 100 }
-        scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string)
+        scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string, localStorage.getItem('username') || 'null')
         scene.camera.startFollow(scene.player, true, 0.1, 0.1)
 
         scene.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
@@ -61,6 +61,11 @@ export class NetworkHandler{
 
             scene.player.attackDir = dir
         })
+
+        setTimeout(() => {
+            if(this.isAuthed) return;
+            window.location.reload()
+        }, 5000)
 
         this.socket.emit('joinGame')
 
@@ -81,8 +86,15 @@ export class NetworkHandler{
         this.socket.on('changeWorld', this.changeWorld.bind(this))
     }
 
-    joinGame(account: Account, others: { id: string, items: Item[], activeIndex: number, pos: { x: number, y: number } }[]){
+    joinGame(account: Account, others: {
+        id: string
+        username: string
+        items: Item[]
+        activeIndex: number
+        pos: { x: number, y: number }
+    }[]){
         const scene = this.scene
+        
         console.log(account)
         if(account && account.inventory) this.isAuthed = true
 
@@ -94,7 +106,7 @@ export class NetworkHandler{
             if(v.id == this.socket.id) return
             console.log(v.id)
 
-            const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.id)
+            const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.id, v.username)
             other.inventory.updateInventory(v.items)
             other.inventory.setActiveIndex(v.activeIndex)
             
@@ -102,13 +114,18 @@ export class NetworkHandler{
         })
     }
 
-    playerJoined(id: string, items: Item[], from: string){
+    playerJoined(data: {
+        id: string
+        username: string
+        items: Item[]
+        from: string
+    }){
         const scene = this.scene
 
-        const pos = scene.mapSetup.enterpoint.get(from) || { x: 100, y: 100 }
+        const pos = scene.mapSetup.enterpoint.get(data.from) || { x: 100, y: 100 }
 
-        const other = new Player(scene, pos.x, pos.y, id)
-        other.inventory.updateInventory(items)
+        const other = new Player(scene, pos.x, pos.y, data.id, data.username)
+        other.inventory.updateInventory(data.items)
 
         scene.others.push(other)
     }
@@ -136,7 +153,10 @@ export class NetworkHandler{
                 const currentPosition = scene.player.pBody.getPosition()
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
 
-                scene.player.health = playerData.health
+                if(scene.player.health != playerData.health){
+                    scene.player.health = playerData.health
+                    scene.player.hitEffect()
+                }
                 if(scene.player.health <= 0){
                     this.destroy()
                     scene.scene.start('GameOver')
@@ -156,7 +176,10 @@ export class NetworkHandler{
                 other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 other.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 
-                other.health = playerData.health
+                if(other.health != playerData.health){
+                    other.health = playerData.health
+                    other.hitEffect()
+                }
                 if(other.health <= 0){
                     scene.others.splice(scene.others.indexOf(other), 1)
                     other.destroy()
@@ -186,7 +209,10 @@ export class NetworkHandler{
                 enemy.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 enemy.attackDir = new p.Vec2(enemyData.attackDir.x, enemyData.attackDir.y)
                 
-                enemy.health = enemyData.health
+                if(enemy.health != enemyData.health){
+                    enemy.health = enemyData.health
+                    enemy.hitEffect()
+                }
                 if(enemy.health <= 0){
                     scene.enemies.splice(scene.enemies.indexOf(enemy), 1)
                     enemy.destroy()

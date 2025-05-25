@@ -22,33 +22,33 @@ export class MainMenu extends Scene{
         }
 
         const bg = this.add.image(this.scale.width/2, this.scale.height/2, 'bg')
-        bg.setScale(1.34);
+        bg.setScale(0.75*(this.scale.width/this.scale.height > 2 ? this.scale.width/this.scale.height : 2));
 
-        const logo = this.add.image(1920-20, 1080-10, 'logo');
+        const logo = this.add.image(this.scale.width-20, this.scale.height-10, 'logo');
         logo.setOrigin(1)
         logo.setScale(0.4)
 
-        this.add.text(960, 160, 'Insiace: Survival World', {
+        this.add.text(this.scale.width/2, 160, 'Insiace: Survival World', {
             fontFamily: 'PixelFont', fontSize: 128, color: '#ffffcc',
             stroke: '#290f00', strokeThickness: 16,
             align: 'center'
         }).setOrigin(0.5);
 
-        const play = this.add.text(960, 480, 'Play', {
+        const play = this.add.text(this.scale.width/2, 480, 'Play', {
             fontFamily: 'PixelFont', fontSize: 56, color: '#ffffff',
             stroke: '#000000', strokeThickness: 12,
             align: 'center'
         }).setOrigin(0.5);
         play.setInteractive()
 
-        const logout = this.add.text(960, 580, 'Logout', {
+        const logout = this.add.text(this.scale.width/2, 580, 'Logout', {
             fontFamily: 'PixelFont', fontSize: 56, color: '#ffffff',
             stroke: '#000000', strokeThickness: 12,
             align: 'center'
         }).setOrigin(0.5);
         logout.setInteractive()
 
-        this.add.text(1920-230, 1080-10, 'Made with', {
+        this.add.text(this.scale.width-230, this.scale.height-10, 'Made with', {
             fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
             stroke: '#000000', strokeThickness: 4,
             align: 'center'

@@ -102,6 +102,17 @@ export class Enemy extends Phaser.GameObjects.Container{
         return pBody
     }
 
+    hitEffect(){
+        this.scene.tweens.add({
+            targets: this.sprite,
+            duration: 50,
+            repeat: 2,
+            yoyo: true,
+            ease: 'Cubic.easeOut',
+            alpha: 0.4
+        })
+    }
+
     destroy() {
         this.scene.world.destroyBody(this.pBody)
         this.scene.world.destroyBody(this.triggerArea)

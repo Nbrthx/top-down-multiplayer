@@ -6,8 +6,8 @@ export class Preloader extends Scene{
     }
 
     init (){
-        this.add.rectangle(960, 540, 468, 32).setStrokeStyle(1, 0xffffff);
-        const bar = this.add.rectangle(960-230, 540, 4, 28, 0xffffff);
+        this.add.rectangle(this.scale.width/2, 540, 468, 32).setStrokeStyle(1, 0xffffff);
+        const bar = this.add.rectangle(this.scale.width/2-230, 540, 4, 28, 0xffffff);
 
         this.load.on('progress', (progress: number) => {
             bar.width = 4 + (460 * progress);

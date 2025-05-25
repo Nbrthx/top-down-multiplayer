@@ -1,5 +1,5 @@
 import { Game } from '../GameWorld'
-import p from 'planck'
+import * as p from 'planck'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Player } from './Player'

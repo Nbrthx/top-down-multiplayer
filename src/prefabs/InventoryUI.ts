@@ -16,11 +16,11 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
         this.inventory = inventory;
 
-        this.image = this.scene.add.image(960, 540, 'inventory');
+        this.image = this.scene.add.image(scene.scale.width / 2, scene.scale.height / 2, 'inventory');
         this.image.setScale(4)
 
-        this.inventoryContainer = this.scene.add.container(960 - 320 + 16, 212).setName('inventory');
-        this.hotbarContainer = this.scene.add.container(960 - 320 + 16, 772).setName('hotbar');
+        this.inventoryContainer = this.scene.add.container(scene.scale.width / 2 - 320 + 16, 212).setName('inventory');
+        this.hotbarContainer = this.scene.add.container(scene.scale.width / 2 - 320 + 16, 772).setName('hotbar');
 
         this.add([this.image, this.inventoryContainer, this.hotbarContainer])
 

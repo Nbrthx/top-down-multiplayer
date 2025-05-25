@@ -16,11 +16,12 @@ export class Player extends Phaser.GameObjects.Container{
     sprite: Phaser.GameObjects.Sprite
     healthBar: Phaser.GameObjects.Rectangle
     inventory: Inventory
+    nameText: Phaser.GameObjects.Text
 
     pBody: p.Body
     attackDir: p.Vec2
 
-    constructor(scene: Game, x: number, y: number, id: string){
+    constructor(scene: Game, x: number, y: number, id: string, username: string){
         super(scene, x, y)
 
         this.scene = scene
@@ -52,7 +53,12 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
 
-        this.add([this.itemInstance, this.sprite, bar, this.healthBar])
+        this.nameText = scene.add.text(0, -38*scene.gameScale, username, {
+            fontFamily: 'PixelFont', fontSize: 32, letterSpacing: 2,
+            stroke: '#000000', strokeThickness: 8
+        }).setOrigin(0.5)
+
+        this.add([this.itemInstance, this.sprite, bar, this.healthBar, this.nameText])
     }
 
     update(){
@@ -90,6 +96,17 @@ export class Player extends Phaser.GameObjects.Container{
 
             this.itemInstance = newItemInstance
             this.addAt(this.itemInstance, 0)
+        })
+    }
+
+    hitEffect(){
+        this.scene.tweens.add({
+            targets: this.sprite,
+            duration: 50,
+            repeat: 2,
+            yoyo: true,
+            ease: 'Cubic.easeOut',
+            alpha: 0.4
         })
     }
 
