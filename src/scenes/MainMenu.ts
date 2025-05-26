@@ -54,13 +54,15 @@ export class MainMenu extends Scene{
             align: 'center'
         }).setOrigin(1);
 
-        play.on('pointerdown', () => {
+        play.once('pointerup', () => {
             if(authentication.element.visible) return
-            console.log('game start')
+
+            this.scale.startFullscreen();
+
             this.scene.start('Game');
         });
 
-        logout.on('pointerdown', () => {
+        logout.on('pointerup', () => {
             localStorage.removeItem('username')
             localStorage.removeItem('salt')
 

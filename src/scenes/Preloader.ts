@@ -28,6 +28,8 @@ export class Preloader extends Scene{
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
 
+        this.load.image('icon-sword', 'icon/sword.png')
+
         this.load.image('tilemaps', 'environment/tilemaps.png')
 
         this.load.tilemapTiledJSON('test', 'environment/test.json')

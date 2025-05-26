@@ -111,6 +111,11 @@ export class Game extends Scene{
         if(input.right){
             vel.x = 1;
         }
+
+        if(vel.length() == 0){
+            vel.x = this.UI.joystick.x;
+            vel.y = this.UI.joystick.y;
+        }
         
         vel.normalize();
 

@@ -7,22 +7,27 @@ export class InventoryUI extends Phaser.GameObjects.Container {
     inventory: Inventory;
     inventoryContainer: Phaser.GameObjects.Container;
     hotbarContainer: Phaser.GameObjects.Container;
+    background: Phaser.GameObjects.Rectangle;
 
     constructor(scene: Phaser.Scene, inventory: Inventory) {
-        super(scene);
+        super(scene, scene.scale.width / 2, scene.scale.height / 2);
 
         this.scene = scene;
         scene.add.existing(this);
 
         this.inventory = inventory;
 
-        this.image = this.scene.add.image(scene.scale.width / 2, scene.scale.height / 2, 'inventory');
+        this.image = this.scene.add.image(0, 0, 'inventory');
         this.image.setScale(4)
+        this.image.setInteractive()
 
-        this.inventoryContainer = this.scene.add.container(scene.scale.width / 2 - 320 + 16, 212).setName('inventory');
-        this.hotbarContainer = this.scene.add.container(scene.scale.width / 2 - 320 + 16, 772).setName('hotbar');
+        this.inventoryContainer = this.scene.add.container(-320 + 16, -328).setName('inventory');
+        this.hotbarContainer = this.scene.add.container(-320 + 16, 232).setName('hotbar');
 
-        this.add([this.image, this.inventoryContainer, this.hotbarContainer])
+        this.background = scene.add.rectangle(0, 0, 1920, 1080)
+        this.background.setInteractive()
+
+        this.add([this.background, this.image, this.inventoryContainer, this.hotbarContainer])
 
         this.updateItems()
     }
@@ -63,28 +68,24 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 if(!item) continue
 
-                const itemText = this.scene.add.text(x + 5, y + 5, item.name, {
-                    fontSize: '18px',
-                    color: '#000',
-                    fontStyle: 'bold'
-                });
-                itemText.setDepth(100);
-                itemText.setInteractive({ draggable: true });
+                const itemIcon = this.scene.add.image(x + 48, y + 48, 'icon-'+item.id);
+                itemIcon.setScale(4).setDepth(100);
+                itemIcon.setInteractive({ draggable: true });
 
                 // Drag & drop functionality
-                this.scene.input.setDraggable(itemText);
-                itemText.on('drag', (_pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => {
-                    itemText.x = dragX;
-                    itemText.y = dragY;
+                this.scene.input.setDraggable(itemIcon);
+                itemIcon.on('drag', (_pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => {
+                    itemIcon.x = dragX;
+                    itemIcon.y = dragY;
                 });
 
-                itemText.on('dragend', () => {
+                itemIcon.on('dragend', () => {
                     // Snap back to slot if not dropped on a valid slot
-                    itemText.x = x + 5;
-                    itemText.y = y + 5;
+                    itemIcon.x = x + 5;
+                    itemIcon.y = y + 5;
                 });
 
-                itemText.on('drop', (_pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {
+                itemIcon.on('drop', (_pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {
                     const index = parseInt(target.name.split('-')[1])
 
                     this.inventory.swapItem(i*5 + j + startIndex, index)
@@ -92,7 +93,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                     this.updateItems()
                 })
 
-                container.add(itemText);
+                container.add(itemIcon);
             }
         }
     }

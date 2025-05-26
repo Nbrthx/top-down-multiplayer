@@ -10,7 +10,7 @@ const width = screen.width>screen.height?screen.width/screen.height:screen.heigh
 
 const config: Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 1080*width,
+    width: Math.max(Math.min(1080*width, 2400), 1440),
     height: 1080,
     parent: 'game-container',
     backgroundColor: '#454449',
