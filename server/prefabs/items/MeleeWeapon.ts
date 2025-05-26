@@ -59,6 +59,7 @@ export class MeleeWeapon extends BaseItem{
             
             if(isPlayer(parent) && isPlayer(target)){
                 if(target.id == parent.id) return
+                if(!this.scene.isPvpAllowed) return
 
                 hit()
             }

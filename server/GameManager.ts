@@ -18,15 +18,15 @@ export class GameManager{
         this.io = io
 
         this.createWorld('test')
-        this.createWorld('test2')
+        this.createWorld('test2', true)
 
         setInterval(() => {
             this.update();
         }, 1000 / 60);
     }
 
-    public createWorld(worldId: string){
-        this.worlds.push(new Game(this, worldId))
+    public createWorld(worldId: string, isPvpAllowed: boolean = false){
+        this.worlds.push(new Game(this, worldId, isPvpAllowed))
     }
 
     public getWorld(worldId: string){

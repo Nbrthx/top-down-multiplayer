@@ -11,6 +11,7 @@ export class Game{
 
     id: string
     gameManager: GameManager
+    isPvpAllowed: boolean
 
     world: p.World
     gameScale = 4
@@ -25,9 +26,11 @@ export class Game{
     inputData: Map<string, InputData[]>
     mapSetup: MapSetup
 
-    constructor(gameManager: GameManager, id: string){
+    constructor(gameManager: GameManager, id: string, isPvpAllowed: boolean){
         this.gameManager = gameManager
         this.id = id
+        this.isPvpAllowed = isPvpAllowed
+
         this.world = new p.World()
 
         this.contactEvents = new ContactEvents(this.world)
