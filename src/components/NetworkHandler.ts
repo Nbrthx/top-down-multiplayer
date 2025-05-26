@@ -51,6 +51,7 @@ export class NetworkHandler{
         const enterPos = scene.mapSetup.enterpoint.get('spawn') || { x: 100, y: 100 }
         scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string, localStorage.getItem('username') || 'null')
         scene.camera.startFollow(scene.player, true, 0.1, 0.1)
+        scene.spatialAudio.addListenerBody(scene.player.pBody)
 
         scene.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
             let x = _pointer.worldX-scene.player.x
@@ -154,8 +155,11 @@ export class NetworkHandler{
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
 
                 if(scene.player.health != playerData.health){
+                    if(scene.player.health > playerData.health){
+                        scene.camera.shake(100, 0.005)
+                        scene.player.hitEffect()
+                    }
                     scene.player.health = playerData.health
-                    scene.player.hitEffect()
                 }
                 if(scene.player.health <= 0){
                     this.destroy()
@@ -177,8 +181,10 @@ export class NetworkHandler{
                 other.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 
                 if(other.health != playerData.health){
+                    if(other.health > playerData.health){
+                        other.hitEffect()
+                    }
                     other.health = playerData.health
-                    other.hitEffect()
                 }
                 if(other.health <= 0){
                     scene.others.splice(scene.others.indexOf(other), 1)
@@ -210,8 +216,10 @@ export class NetworkHandler{
                 enemy.attackDir = new p.Vec2(enemyData.attackDir.x, enemyData.attackDir.y)
                 
                 if(enemy.health != enemyData.health){
+                    if(enemy.health > enemyData.health){
+                        enemy.hitEffect()
+                    }
                     enemy.health = enemyData.health
-                    enemy.hitEffect()
                 }
                 if(enemy.health <= 0){
                     scene.enemies.splice(scene.enemies.indexOf(enemy), 1)

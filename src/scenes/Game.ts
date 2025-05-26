@@ -9,6 +9,7 @@ import { MapSetup } from '../components/MapSetup';
 import { Enemy } from '../prefabs/Enemy';
 import { NetworkHandler } from '../components/NetworkHandler';
 import { DroppedItem } from '../prefabs/DroppedItem';
+import { SpatialAudio } from '../components/SpatialAudio';
 
 export class Game extends Scene{
 
@@ -22,6 +23,7 @@ export class Game extends Scene{
     gameScale = 4;
     contactEvents: ContactEvents
     mapSetup: MapSetup
+    spatialAudio: SpatialAudio
     networkHandler: NetworkHandler
 
     player: Player;
@@ -42,6 +44,10 @@ export class Game extends Scene{
     create (){
         this.world = new p.World()
         this.contactEvents = new ContactEvents(this.world)
+        
+        this.spatialAudio = new SpatialAudio(this)
+        this.spatialAudio.addSound('audio-step')
+        this.spatialAudio.addSound('audio-hit')
 
         this.debugGraphics = this.add.graphics().setDepth(100000000000000)
 

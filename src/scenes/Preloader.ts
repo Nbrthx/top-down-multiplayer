@@ -20,25 +20,37 @@ export class Preloader extends Scene{
 
         this.load.image('bg', 'bg.png')
 
+        // HTML
         this.load.html('loginform', 'html/loginform.html')
         this.load.html('registerform', 'html/registerform.html')
 
+        // Character
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
 
+        // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
 
+        // Icon
         this.load.image('icon-sword', 'icon/sword.png')
 
+        // Environtment
         this.load.image('tilemaps', 'environment/tilemaps.png')
 
         this.load.tilemapTiledJSON('test', 'environment/test.json')
         this.load.tilemapTiledJSON('test2', 'environment/test2.json')
 
+        // UI
         this.load.image('inventory', 'ui/inventory.png')
         this.load.image('hotbar', 'ui/hotbar.png')
 
         this.load.image('logo', 'logo.png');
+
+        // Audio
+        this.load.audio('audio-hit', 'audio/hit.ogg')
+        this.load.audio('audio-punch', 'audio/punch.wav')
+        this.load.audio('audio-sword', 'audio/sword.mp3')
+        this.load.audio('audio-step', 'audio/step.wav')
     }
 
     create (){

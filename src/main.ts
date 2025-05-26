@@ -29,6 +29,9 @@ const config: Types.Core.GameConfig = {
     dom: {
         createContainer: true
     },
+    audio: {
+        disableWebAudio: false
+    },
     scene: [
         Boot,
         Preloader,

@@ -1,10 +1,12 @@
 import p from "planck";
 import { Game } from "../../scenes/Game";
 import { BaseItem } from "../BaseItem";
+import { SpatialSound } from "../../components/SpatialAudio";
 
 export class MeleeWeapon extends BaseItem{
 
     sprite: Phaser.GameObjects.Sprite;
+    useSound: SpatialSound
     hitbox: p.Body;
     attackState: boolean;
 
@@ -31,6 +33,8 @@ export class MeleeWeapon extends BaseItem{
         this.sprite = scene.add.sprite(128*config.offsetMultipler, 0, config.texture)
         this.sprite.setScale(4)
         this.sprite.setVisible(false)
+
+        this.useSound = scene.spatialAudio.addSound('audio-'+config.texture)
 
         this.hitbox = scene.world.createKinematicBody();
         this.hitbox.createFixture({
@@ -59,6 +63,9 @@ export class MeleeWeapon extends BaseItem{
 
         const rad = Math.atan2(y, x)
         this.setRotation(rad)
+
+        const audioPos = this.parentBody.getPosition()
+        this.useSound.playSound(audioPos.x, audioPos.y, true, false)
 
         setTimeout(() => {
             this.hitbox.setPosition(

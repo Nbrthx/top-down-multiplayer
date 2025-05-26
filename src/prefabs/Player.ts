@@ -3,6 +3,7 @@ import p from 'planck'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Inventory } from './Inventory'
+import { SpatialSound } from '../components/SpatialAudio'
 
 export class Player extends Phaser.GameObjects.Container{
 
@@ -17,6 +18,8 @@ export class Player extends Phaser.GameObjects.Container{
     healthBar: Phaser.GameObjects.Rectangle
     inventory: Inventory
     nameText: Phaser.GameObjects.Text
+
+    audio?: { step: SpatialSound, hit: SpatialSound }
 
     pBody: p.Body
     attackDir: p.Vec2
@@ -64,12 +67,22 @@ export class Player extends Phaser.GameObjects.Container{
     update(){
         const vel = this.pBody.getLinearVelocity()
 
+        if(!this.audio && this.scene.player){
+            this.audio = {
+                step: this.scene.spatialAudio.addSound('audio-step'),
+                hit: this.scene.spatialAudio.addSound('audio-hit')
+            }
+        }
+
         if(vel.x != 0 || vel.y != 0){
             if(vel.y > -0.1) this.sprite.play('run-down', true)
             else this.sprite.play('run-up', true)
         
             if(vel.x > 0) this.sprite.flipX = false
             else if(vel.x < 0) this.sprite.flipX = true
+
+            const { x, y } = this.pBody.getPosition()
+            this.audio?.step.playSound(x, y)
         }
         else this.sprite.play('idle', true)
 
@@ -107,7 +120,11 @@ export class Player extends Phaser.GameObjects.Container{
             yoyo: true,
             ease: 'Cubic.easeOut',
             alpha: 0.4
+        }).once('complete', () => {
+            this.sprite.setAlpha(1)
         })
+        const { x, y } = this.pBody.getPosition()
+        this.audio?.hit.playSound(x, y, true, false)
     }
 
     destroy() {
