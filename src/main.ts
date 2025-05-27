@@ -13,9 +13,11 @@ const config: Types.Core.GameConfig = {
     width: Math.max(Math.min(1080*width, 2400), 1440),
     height: 1080,
     parent: 'game-container',
+    fullscreenTarget: 'game-container',
     backgroundColor: '#454449',
     pixelArt: true,
     roundPixels: true,
+    disableContextMenu: true,
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH

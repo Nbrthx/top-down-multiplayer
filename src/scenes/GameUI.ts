@@ -5,16 +5,25 @@ import { Game } from './Game'
 import { socket } from './MainMenu'
 import { Player } from '../prefabs/Player'
 import { Joystick } from '../prefabs/Joystick'
+import { Chat } from '../components/Chat'
 
 export default class GameUI extends Phaser.Scene {
 
     socket: Socket
     pingText: Phaser.GameObjects.Text
+    gameScene: Game
     inventoryUI: InventoryUI
     hotbarUI: HotbarUI
+    keyboardInput: {
+        up?: boolean
+        down?: boolean
+        left?: boolean
+        right?: boolean
+    }
     joystick: Joystick
     uiScale: number
     inventoryButton: Phaser.GameObjects.Text
+    chatbox: Chat
 
     constructor(){
         super('GameUI')
@@ -40,7 +49,9 @@ export default class GameUI extends Phaser.Scene {
             })
         }, 1000)
 
-        const GameScene = this.scene.get('Game') as Game
+        this.chatbox = new Chat(this, this.socket)
+
+        this.gameScene = this.scene.get('Game') as Game
 
         this.inventoryButton = this.add.text(this.scale.width/2, 1000, 'INVENTORY', {
             fontSize: '32px', fontStyle: 'bold',
@@ -52,13 +63,15 @@ export default class GameUI extends Phaser.Scene {
             this.inventoryButton.setVisible(false)
         })
 
-        GameScene.events.on('start', () => {
+        this.gameScene.events.on('start', () => {
             this.scene.setVisible(true)
+            this.chatbox = new Chat(this, this.socket)
         })
-        GameScene.events.on('shutdown', () => {
+        this.gameScene.events.on('shutdown', () => {
             this.scene.setVisible(false)
             this.hotbarUI.destroy()
             this.inventoryUI.destroy()
+            this.chatbox.destroy()
         })
 
         const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
@@ -66,8 +79,8 @@ export default class GameUI extends Phaser.Scene {
         }).setOrigin(1, 0)
         debugToggle.setInteractive()
         debugToggle.on('pointerup', () => {
-            GameScene.isDebug = !GameScene.isDebug
-            GameScene.debugGraphics.clear()
+            this.gameScene.isDebug = !this.gameScene.isDebug
+            this.gameScene.debugGraphics.clear()
         })
 
         const fullscreenToggle = this.add.text(this.scale.width - 250, 50, 'Fullscreen?', {
@@ -95,6 +108,15 @@ export default class GameUI extends Phaser.Scene {
             fixedToCamera: true, // Agar tetap di UI layer
         })
         this.joystick.setVisible(true)
+    }
+
+    update(){
+        this.keyboardInput = {
+            up: this.input.keyboard?.addKey('W', false)?.isDown,
+            down: this.input.keyboard?.addKey('S', false)?.isDown,
+            left: this.input.keyboard?.addKey('A', false)?.isDown,
+            right: this.input.keyboard?.addKey('D', false)?.isDown
+        }
     }
 
     setupInventory(player: Player){

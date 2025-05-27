@@ -52,6 +52,7 @@ export class NetworkHandler{
         scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string, localStorage.getItem('username') || 'null')
         scene.camera.startFollow(scene.player, true, 0.1, 0.1)
         scene.spatialAudio.addListenerBody(scene.player.pBody)
+        scene.player.nameText.setColor('#66ffcc')
 
         scene.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
             let x = _pointer.worldX-scene.player.x
@@ -85,6 +86,8 @@ export class NetworkHandler{
         this.socket.on('otherUpdateHotbar', this.otherUpdateHotbar.bind(this))
 
         this.socket.on('changeWorld', this.changeWorld.bind(this))
+
+        this.socket.on('chat', this.chat.bind(this))
     }
 
     joinGame(account: Account, others: {
@@ -279,6 +282,13 @@ export class NetworkHandler{
         console.log('change position by client')
 
         callback()
+    }
+
+    chat(data: { id: string, username: string, msg: string}){
+        const scene = this.scene
+
+        const other = scene.others.find(v => v.id == data.id)
+        if(other) other.textbox.writeText(data.msg)
     }
 
     destroy(){

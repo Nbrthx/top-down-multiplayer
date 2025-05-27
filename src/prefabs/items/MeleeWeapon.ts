@@ -65,7 +65,7 @@ export class MeleeWeapon extends BaseItem{
         this.setRotation(rad)
 
         const audioPos = this.parentBody.getPosition()
-        this.useSound.playSound(audioPos.x, audioPos.y, true, false)
+        this.useSound.playSound(audioPos.x+x, audioPos.y+y, true, false)
 
         setTimeout(() => {
             this.hitbox.setPosition(

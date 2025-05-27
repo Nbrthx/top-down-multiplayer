@@ -57,6 +57,18 @@ export class SocketManager {
             socket.broadcast.to(player.scene.id).emit('otherUpdateHotbar', socket.id, index)
         })
 
+        socket.on('chat', msg => {
+            if(typeof msg !== 'string') return
+            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
+            if(!player) return
+
+            this.io.to(player.scene.id).emit('chat', {
+                id: socket.id,
+                username: player.account.username,
+                msg: msg
+            })
+        })
+
         socket.on('ping', (callback) => {
             callback()
         })

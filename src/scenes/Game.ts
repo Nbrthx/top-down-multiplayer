@@ -97,24 +97,17 @@ export class Game extends Scene{
 
     handleInput(){
         const vel = new p.Vec2()
-
-        const input = {
-            up: this.input.keyboard?.addKey('W')?.isDown,
-            down: this.input.keyboard?.addKey('S')?.isDown,
-            left: this.input.keyboard?.addKey('A')?.isDown,
-            right: this.input.keyboard?.addKey('D')?.isDown
-        }
     
-        if(input.up){
+        if(this.UI.keyboardInput.up){
             vel.y = -1;
         }
-        if(input.down){
+        if(this.UI.keyboardInput.down){
             vel.y = 1;
         }
-        if(input.left){
+        if(this.UI.keyboardInput.left){
             vel.x = -1;
         }
-        if(input.right){
+        if(this.UI.keyboardInput.right){
             vel.x = 1;
         }
 

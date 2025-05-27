@@ -1,7 +1,7 @@
 import p from 'planck'
 
 export interface SpatialSound{
-    audioBuffer: AudioBuffer
+    sound: Phaser.Sound.WebAudioSound
     isPlay: boolean
     playSound: (x?: number, y?: number, isLoud?: boolean, isWait?: boolean) => void
 }
@@ -16,6 +16,8 @@ export class SpatialAudio{
         this.scene = scene
         this.pBody = listenerBody
 
+        this.scene.sound.pauseOnBlur = false
+
         this.context = (scene.sound as Phaser.Sound.WebAudioSoundManager).context
     }
 
@@ -24,8 +26,9 @@ export class SpatialAudio{
     }
 
     addSound(soundName: string){
+        const sound = this.scene.sound.add(soundName) as Phaser.Sound.WebAudioSound
         const audio: SpatialSound = {
-            audioBuffer: (this.scene.sound.add(soundName) as Phaser.Sound.WebAudioSound).audioBuffer,
+            sound: sound,
             isPlay: false,
             playSound: (x?: number, y?: number, isLoud?: boolean, isWait = true) => {
                 if(audio.isPlay) return
@@ -35,14 +38,14 @@ export class SpatialAudio{
                 
                 const panner = new PannerNode(this.context, {
                     panningModel: 'HRTF',
-                    positionX: (x || 0) - (listener?.x || x || 0),
-                    positionY: (y || 0) - (listener?.y || y || 0),
-                    positionZ: !isLoud && (listener?.x == x && listener?.y == y) ? 5 : 0
+                    positionX: (x || 0)/2 - (listener?.x || x || 0)/2,
+                    positionY: (y || 0)/2 - (listener?.y || y || 0)/2,
+                    positionZ: !isLoud && (listener?.x == x && listener?.y == y) ? 3 : 0
                 });
                 const source = this.context.createBufferSource();
-                source.buffer = audio.audioBuffer;
+                source.buffer = audio.sound.audioBuffer;
                 source.connect(panner).connect(this.context.destination);
-                source.start();
+                source.start();                
 
                 source.onended = () => {
                     audio.isPlay = false

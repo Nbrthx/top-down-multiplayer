@@ -21,6 +21,7 @@ export class Preloader extends Scene{
         this.load.image('bg', 'bg.png')
 
         // HTML
+        this.load.html('chatbox', 'html/chatbox.html')
         this.load.html('loginform', 'html/loginform.html')
         this.load.html('registerform', 'html/registerform.html')
 

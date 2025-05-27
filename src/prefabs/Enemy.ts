@@ -73,6 +73,7 @@ export class Enemy extends Phaser.GameObjects.Container{
                 step: this.scene.spatialAudio.addSound('audio-step'),
                 hit: this.scene.spatialAudio.addSound('audio-hit')
             }
+            this.audio.step.sound.setRate(1.2)
         }
 
         if(vel.x != 0 || vel.y != 0){

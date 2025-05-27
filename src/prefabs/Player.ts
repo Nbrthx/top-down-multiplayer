@@ -4,6 +4,7 @@ import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Inventory } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
+import { TextBox } from './TextBox'
 
 export class Player extends Phaser.GameObjects.Container{
 
@@ -23,6 +24,7 @@ export class Player extends Phaser.GameObjects.Container{
 
     pBody: p.Body
     attackDir: p.Vec2
+    textbox: TextBox
 
     constructor(scene: Game, x: number, y: number, id: string, username: string){
         super(scene, x, y)
@@ -45,6 +47,8 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.inventory = new Inventory(this)
 
+        this.textbox = new TextBox(this.scene, 0, -190)
+
         this.maxHealth = 100
         this.health = this.maxHealth
 
@@ -56,12 +60,12 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
 
-        this.nameText = scene.add.text(0, -38*scene.gameScale, username, {
-            fontFamily: 'PixelFont', fontSize: 32, letterSpacing: 2,
-            stroke: '#000000', strokeThickness: 8
-        }).setOrigin(0.5)
+        this.nameText = scene.add.text(0, -36*scene.gameScale, username, {
+            fontFamily: 'PixelFont', fontSize: 28, letterSpacing: 2,
+            stroke: '#000000', strokeThickness: 4
+        }).setOrigin(0.5).setResolution(5)
 
-        this.add([this.itemInstance, this.sprite, bar, this.healthBar, this.nameText])
+        this.add([this.itemInstance, this.sprite, bar, this.healthBar, this.nameText, this.textbox])
     }
 
     update(){
@@ -72,6 +76,7 @@ export class Player extends Phaser.GameObjects.Container{
                 step: this.scene.spatialAudio.addSound('audio-step'),
                 hit: this.scene.spatialAudio.addSound('audio-hit')
             }
+            this.audio.step.sound.setRate(1.2)
         }
 
         if(vel.x != 0 || vel.y != 0){
