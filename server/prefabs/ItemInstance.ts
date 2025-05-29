@@ -40,7 +40,7 @@ export class ItemInstance{
                 config: {
                     texture: 'sword',
                     offsetMultipler: 0.5,
-                    hitboxSize: { width: 0.6, height: 0.6 },
+                    hitboxSize: { width: 0.6, height: 0.7 },
                     hitboxOffsetMultipler: 1.2,
                     cooldown: 1000,
                     attackDelay: 200,
@@ -56,9 +56,9 @@ export class ItemInstance{
                     projectileTexture: 'arrow',
                     offsetMultipler: 0.8,
                     hitboxSize: { width: 0.4, height: 0.1 },
-                    speed: 10,
-                    range: 7,
-                    cooldown: 1300,
+                    speed: 8,
+                    range: 8,
+                    cooldown: 1400,
                     attackDelay: 200,
                     damage: 5,
                     knockback: 6

@@ -24,6 +24,7 @@ export default class GameUI extends Phaser.Scene {
     uiScale: number
     inventoryButton: Phaser.GameObjects.Text
     chatbox: Chat
+    cooldownText: Phaser.GameObjects.Text
 
     constructor(){
         super('GameUI')
@@ -75,6 +76,14 @@ export default class GameUI extends Phaser.Scene {
             this.chatbox.destroy()
         })
 
+        this.cooldownText = this.add.text(this.scale.width - 40, 880, 'Cooldown: 0.00s', {
+            fontSize: 38,
+            stroke: '#556677', strokeThickness: 4,
+            fontFamily: 'PixelFont', letterSpacing: 2,
+            color: '#fff'
+        }).setOrigin(1, 0.5)
+
+
         const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
             fontSize: 24, color: '#000000', fontStyle: 'bold'
         }).setOrigin(1, 0)
@@ -118,6 +127,16 @@ export default class GameUI extends Phaser.Scene {
             left: this.input.keyboard?.addKey('A', false)?.isDown,
             right: this.input.keyboard?.addKey('D', false)?.isDown
         }
+
+        let cooldown = this.gameScene.player.itemInstance.timestamp+this.gameScene.player.itemInstance.cooldown-Date.now()
+        if(cooldown <= 0){
+            this.cooldownText.setColor('#33ff44')
+            cooldown = 0
+        }
+        else{
+            this.cooldownText.setColor('#ffffff')
+        }
+        this.cooldownText.setText('Cooldown: '+(cooldown/1000).toFixed(2)+'s')
     }
 
     setupInventory(player: Player){
