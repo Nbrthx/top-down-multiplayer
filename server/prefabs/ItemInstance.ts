@@ -1,8 +1,8 @@
-import { Game } from "../GameWorld";
-import { MeleeWeapon } from "./items/MeleeWeapon";
 import * as p from 'planck'
-
-
+import { Game } from "../GameWorld";
+import { BaseItem } from "./BaseItem";
+import { MeleeWeapon } from "./items/MeleeWeapon";
+import { RangeWeapon } from "./items/RangeWeapon";
 
 export class ItemInstance{
 
@@ -13,7 +13,7 @@ export class ItemInstance{
         type: string
         config: any
     }[];
-    itemInstance: MeleeWeapon
+    itemInstance: BaseItem
 
     constructor(scene: Game, parentBody: p.Body, weaponId?: string){
         this.scene = scene;
@@ -47,6 +47,22 @@ export class ItemInstance{
                     damage: 5,
                     knockback: 6
                 }
+            },
+            {
+                id: 'bow',
+                type: 'range',
+                config: {
+                    texture: 'bow',
+                    projectileTexture: 'arrow',
+                    offsetMultipler: 0.8,
+                    hitboxSize: { width: 0.4, height: 0.1 },
+                    speed: 10,
+                    range: 7,
+                    cooldown: 1300,
+                    attackDelay: 200,
+                    damage: 5,
+                    knockback: 6
+                }
             }
         ]
 
@@ -56,6 +72,9 @@ export class ItemInstance{
         if(weapon){
             if(weapon.type === 'melee'){
                 this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, weapon.config);
+            }
+            else if(weapon.type === 'range'){
+                this.itemInstance = new RangeWeapon(this.scene, this.parentBody, weapon.config);
             }
             else{
                 this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);

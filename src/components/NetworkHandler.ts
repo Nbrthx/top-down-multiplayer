@@ -5,6 +5,7 @@ import { Player } from "../prefabs/Player";
 import { Enemy } from '../prefabs/Enemy';
 import { DroppedItem } from '../prefabs/DroppedItem';
 import { MapSetup } from './MapSetup';
+import { Projectile, ProjectileConfig } from '../prefabs/items/RangeWeapon';
 
 
 interface OutputData{
@@ -24,6 +25,12 @@ interface GameState{
         name: string
         worldId: string
         pos: { x: number, y: number }
+    }[]
+    projectiles: {
+        uid: string
+        pos: { x: number, y: number }
+        dir: { x: number, y: number }
+        config: ProjectileConfig
     }[]
 }
 
@@ -61,7 +68,7 @@ export class NetworkHandler{
             const dir = new p.Vec2(x, y)
             dir.normalize()
 
-            scene.player.attackDir = dir
+            scene.attackDir = dir
         })
 
         setTimeout(() => {
@@ -88,6 +95,13 @@ export class NetworkHandler{
         this.socket.on('changeWorld', this.changeWorld.bind(this))
 
         this.socket.on('chat', this.chat.bind(this))
+
+        this.socket.on('disconnect', () => {
+            this.socket.connect()
+            setTimeout(() => {
+                location.reload()
+            }, 10000)
+        })
     }
 
     joinGame(account: Account, others: {
@@ -103,6 +117,7 @@ export class NetworkHandler{
         if(account && account.inventory) this.isAuthed = true
 
         scene.player.inventory.updateInventory(account.inventory)
+        scene.player.inventory.setActiveIndex(0)
 
         scene.UI.setupInventory(scene.player)
 
@@ -156,6 +171,7 @@ export class NetworkHandler{
                 const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
                 const currentPosition = scene.player.pBody.getPosition()
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
+                scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
 
                 if(scene.player.health != playerData.health){
                     if(scene.player.health > playerData.health){
@@ -242,8 +258,38 @@ export class NetworkHandler{
 
         scene.droppedItems.forEach(item => {
             const itemData = data.droppedItems.find(v => v.uid == item.uid)
-            if(!itemData) item.destroy()
+            if(!itemData){
+                item.destroy()
+                scene.droppedItems.splice(scene.droppedItems.indexOf(item))
+            }
         })
+
+        data.projectiles.forEach(projectileData => {
+            const existProjectile = scene.projectiles.find(v => v.uid == projectileData.uid)
+
+            const pos = new p.Vec2(projectileData.pos.x, projectileData.pos.y)
+            const dir = new p.Vec2(projectileData.dir.x, projectileData.dir.y)
+
+            if(!existProjectile){
+                console.log('spawn projectile', projectileData)
+                const projectile = new Projectile(this.scene, pos, dir, projectileData.config, projectileData.uid)
+                this.scene.projectiles.push(projectile)
+            }
+            else{
+                existProjectile.pBody.setPosition(pos)
+                existProjectile.update()
+            }
+        })
+
+        scene.projectiles.forEach(projectile => {
+            const projectileData = data.projectiles.find(v => v.uid == projectile.uid)
+            if(!projectileData){
+                projectile.destroy()
+                scene.projectiles.splice(scene.projectiles.indexOf(projectile))
+            }
+        })
+
+        
     }
 
     updateInventory(items: Item[]){

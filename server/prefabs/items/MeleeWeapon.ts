@@ -4,27 +4,30 @@ import { BaseItem } from "../BaseItem";
 import { Player } from "../Player";
 import { Enemy } from "../Enemy";
 
+interface Melee{
+    texture: string
+    offsetMultipler: number
+    hitboxSize: {
+        width: number
+        height: number
+    }
+    hitboxOffsetMultipler: number
+    cooldown: number
+    attackDelay: number
+    damage: number
+    knockback: number
+}
+
 export class MeleeWeapon extends BaseItem{
 
+    config: Melee
     hitbox: p.Body;
     attackState: boolean;
 
     attackDelay: number
     attackDir: p.Vec2
 
-    constructor(scene: Game, parentBody: p.Body, config: {
-        texture: string
-        offsetMultipler: number
-        hitboxSize: {
-            width: number
-            height: number
-        }
-        hitboxOffsetMultipler: number
-        cooldown: number
-        attackDelay: number
-        damage: number
-        knockback: number
-    }){
+    constructor(scene: Game, parentBody: p.Body, config: Melee){
         super(scene, parentBody);
         
         this.config = config
@@ -91,7 +94,6 @@ export class MeleeWeapon extends BaseItem{
             
             setTimeout(() => {
                 this.hitbox.setActive(false)
-                this.attackDir = new p.Vec2(0, 0)
             }, 100)
         }, this.config.attackDelay)
     }

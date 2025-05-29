@@ -124,6 +124,7 @@ export class Enemy{
     visionEvent(){
         this.scene.contactEvents.addEvent(this.scene.entityBodys, this.visionArea, (bodyA) => {
             if(bodyA == this.pBody) return
+            if(!(bodyA.getUserData() instanceof Player)) return
 
             this.target = bodyA.getUserData() as Player
             this.scene.world.queueUpdate(() => this.visionArea.setActive(false))

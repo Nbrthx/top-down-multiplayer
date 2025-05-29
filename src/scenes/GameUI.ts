@@ -10,7 +10,7 @@ import { Chat } from '../components/Chat'
 export default class GameUI extends Phaser.Scene {
 
     socket: Socket
-    pingText: Phaser.GameObjects.Text
+    debugText: Phaser.GameObjects.Text
     gameScene: Game
     inventoryUI: InventoryUI
     hotbarUI: HotbarUI
@@ -36,7 +36,7 @@ export default class GameUI extends Phaser.Scene {
 
         this.input.addPointer(2)
 
-        this.pingText = this.add.text(100, 50, 'Ping: 0ms', {
+        this.debugText = this.add.text(100, 50, 'Ping: 0ms\nFPS: 0', {
             fontSize: 24, fontStyle: 'bold',
             color: '#fff'
         })
@@ -44,8 +44,9 @@ export default class GameUI extends Phaser.Scene {
         setInterval(() => {
             const then = Date.now()
             this.socket.emit('ping', () => {
+                const fps = Math.floor(this.game.loop.actualFps*100)/100
                 const now = Date.now()
-                this.pingText.setText('Ping: '+ (now-then)+'ms')
+                this.debugText.setText('Ping: '+ (now-then)+'ms\nFPS: '+fps)
             })
         }, 1000)
 

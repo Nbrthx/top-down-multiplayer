@@ -3,26 +3,29 @@ import { Game } from "../../scenes/Game";
 import { BaseItem } from "../BaseItem";
 import { SpatialSound } from "../../components/SpatialAudio";
 
+interface Melee{
+    texture: string
+    offsetMultipler: number
+    hitboxSize: {
+        width: number
+        height: number
+    }
+    hitboxOffsetMultipler: number
+    cooldown: number
+    attackDelay: number
+}
+
 export class MeleeWeapon extends BaseItem{
 
     sprite: Phaser.GameObjects.Sprite;
+    config: Melee
     useSound: SpatialSound
     hitbox: p.Body;
     attackState: boolean;
 
     attackDelay: number
 
-    constructor(scene: Game, parentBody: p.Body, config: {
-        texture: string
-        offsetMultipler: number
-        hitboxSize: {
-            width: number
-            height: number
-        }
-        hitboxOffsetMultipler: number
-        cooldown: number
-        attackDelay: number
-    }){
+    constructor(scene: Game, parentBody: p.Body, config: Melee){
         super(scene, parentBody);
         
         scene.add.existing(this);

@@ -11,7 +11,7 @@ export interface Account{
     pubKey: string,
     akey: string,
     xp: number,
-    inventory: { id: string; name: string }[]
+    inventory: ({ id: string; name: string } | undefined | null)[]
 }
 
 const app = express()

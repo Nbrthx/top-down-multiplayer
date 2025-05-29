@@ -1,23 +1,30 @@
 import p from 'planck'
 import { Game } from '../scenes/Game';
 
-export class DroppedItem extends Phaser.GameObjects.Text{
+export class DroppedItem extends Phaser.GameObjects.Image{
 
     scene: Game
     uid: string
     id: string
     name: string
     pBody: p.Body
-
+    
+    tween: Phaser.Tweens.Tween;
     timeout: NodeJS.Timeout
 
 
     constructor(scene: Game, x: number, y: number, id: string, name: string, uid: string){
-        super(scene, x*scene.gameScale*32, y*scene.gameScale*32, name, {
-            color: 'white',
-            backgroundColor: 'black',
-            align: 'center'
-        });
+        super(scene, x*scene.gameScale*32, y*scene.gameScale*32, 'icon-'+id);
+        this.setScale(scene.gameScale)
+        this.setAlpha(1).setTint(0xdddddd)
+
+        this.tween = scene.tweens.add({
+            targets: this,
+            yoyo: true,
+            alpha: 0.4,
+            duration: 500,
+            loop: -1
+        })
         
         this.scene = scene;
         this.uid = uid
@@ -45,6 +52,7 @@ export class DroppedItem extends Phaser.GameObjects.Text{
     }
 
     destroy() {
+        this.tween.destroy()
         this.pBody.getWorld().queueUpdate(world => world.destroyBody(this.pBody))
         clearTimeout(this.timeout);
         super.destroy(true);

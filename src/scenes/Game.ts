@@ -10,6 +10,7 @@ import { Enemy } from '../prefabs/Enemy';
 import { NetworkHandler } from '../components/NetworkHandler';
 import { DroppedItem } from '../prefabs/DroppedItem';
 import { SpatialAudio } from '../components/SpatialAudio';
+import { Projectile } from '../prefabs/items/RangeWeapon';
 
 export class Game extends Scene{
 
@@ -29,7 +30,10 @@ export class Game extends Scene{
     player: Player;
     others: Player[];
     enemies: Enemy[]
+    projectiles: Projectile[]
     droppedItems: DroppedItem[];
+
+    attackDir: p.Vec2
 
     debugGraphics: Phaser.GameObjects.Graphics
     accumulator: number;
@@ -46,8 +50,6 @@ export class Game extends Scene{
         this.contactEvents = new ContactEvents(this.world)
         
         this.spatialAudio = new SpatialAudio(this)
-        this.spatialAudio.addSound('audio-step')
-        this.spatialAudio.addSound('audio-hit')
 
         this.debugGraphics = this.add.graphics().setDepth(100000000000000)
 
@@ -57,7 +59,10 @@ export class Game extends Scene{
         this.UI = (this.scene.get('GameUI') || this.scene.add('GameUI', new GameUI(), true)) as GameUI
         this.socket = this.UI.socket
 
+        this.attackDir = new p.Vec2()
+
         this.enemies = []
+        this.projectiles = []
         this.droppedItems = []
 
         this.mapSetup = new MapSetup(this, 'test')
@@ -88,7 +93,7 @@ export class Game extends Scene{
             }
 
             this.enemies.forEach(v => {
-                v.update()
+                v && v.update()
             })
 
             if(this.isDebug) createDebugGraphics(this, this.debugGraphics)
@@ -121,11 +126,12 @@ export class Game extends Scene{
         vel.mul(this.player.speed);
         this.player.pBody.setLinearVelocity(vel)
 
-        if(vel.length() > 0 || this.player.attackDir.length() > 0){
+        if(vel.length() > 0 || this.attackDir.length() > 0){
             this.socket.emit('playerInput', {
                 dir: { x: vel.x, y: vel.y },
-                attackDir: { x: this.player.attackDir.x, y: this.player.attackDir.y }
+                attackDir: { x: this.attackDir.x, y: this.attackDir.y }
             })
+            this.attackDir = new p.Vec2()
         }
 
         this.player.update()

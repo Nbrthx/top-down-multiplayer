@@ -56,7 +56,7 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
 
-        this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
+        this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
         this.sprite.setTint(0xff9999)
 
         this.triggerArea = this.createArea(2)
@@ -73,7 +73,7 @@ export class Enemy extends Phaser.GameObjects.Container{
                 step: this.scene.spatialAudio.addSound('audio-step'),
                 hit: this.scene.spatialAudio.addSound('audio-hit')
             }
-            this.audio.step.sound.setRate(1.2)
+            this.audio.step.sound?.setRate(1.2)
         }
 
         if(vel.x != 0 || vel.y != 0){

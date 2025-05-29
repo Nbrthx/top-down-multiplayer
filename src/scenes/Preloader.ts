@@ -31,9 +31,12 @@ export class Preloader extends Scene{
         // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
+        this.load.spritesheet('bow', 'effect/bow.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('arrow', 'effect/arrow.png', { frameWidth: 48, frameHeight: 48 })
 
         // Icon
         this.load.image('icon-sword', 'icon/sword.png')
+        this.load.image('icon-bow', 'icon/bow.png')
 
         // Environtment
         this.load.image('tilemaps', 'environment/tilemaps.png')
@@ -82,6 +85,11 @@ export class Preloader extends Scene{
         this.anims.create({
             key: 'sword-attack',
             frames: this.anims.generateFrameNumbers('sword', { frames: [0, 1, 2, 3, 4, 5, 5, 5, 5] }),
+            frameRate: 20
+        })
+        this.anims.create({
+            key: 'bow-attack',
+            frames: this.anims.generateFrameNumbers('bow', { frames: [1, 2, 3, 4, 5, 5, 5, 0] }),
             frameRate: 20
         })
 

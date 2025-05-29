@@ -1,7 +1,7 @@
 import p from 'planck'
 
 export interface SpatialSound{
-    sound: Phaser.Sound.WebAudioSound
+    sound: Phaser.Sound.WebAudioSound | null
     isPlay: boolean
     playSound: (x?: number, y?: number, isLoud?: boolean, isWait?: boolean) => void
 }
@@ -26,11 +26,13 @@ export class SpatialAudio{
     }
 
     addSound(soundName: string){
-        const sound = this.scene.sound.add(soundName) as Phaser.Sound.WebAudioSound
+        const hasAudio = this.scene.cache.audio.has(soundName)
+        const sound = hasAudio ? this.scene.sound.add(soundName) as Phaser.Sound.WebAudioSound : null
         const audio: SpatialSound = {
             sound: sound,
             isPlay: false,
             playSound: (x?: number, y?: number, isLoud?: boolean, isWait = true) => {
+                if(!audio.sound) return
                 if(audio.isPlay) return
                 if(isWait) audio.isPlay = true
 

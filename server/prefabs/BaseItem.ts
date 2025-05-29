@@ -21,7 +21,5 @@ export abstract class BaseItem {
         return this.timestamp+this.cooldown < Date.now();
     }
 
-    destroy(): void {
-        this.scene.contactEvents.destroyEventByBody(this.parentBody);
-    }
+    destroy(): void {}
 }

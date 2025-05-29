@@ -58,7 +58,7 @@ export class Player extends Phaser.GameObjects.Container{
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
-        this.sprite = scene.add.sprite(0, -16, 'char').setScale(scene.gameScale)
+        this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
 
         this.nameText = scene.add.text(0, -36*scene.gameScale, username, {
             fontFamily: 'PixelFont', fontSize: 28, letterSpacing: 2,
@@ -76,7 +76,7 @@ export class Player extends Phaser.GameObjects.Container{
                 step: this.scene.spatialAudio.addSound('audio-step'),
                 hit: this.scene.spatialAudio.addSound('audio-hit')
             }
-            this.audio.step.sound.setRate(1.2)
+            this.audio.step.sound?.setRate(1.2)
         }
 
         if(vel.x != 0 || vel.y != 0){

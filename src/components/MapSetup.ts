@@ -143,6 +143,10 @@ export class MapSetup{
             v.destroy()
         })
         this.layers = []
+        this.scene.droppedItems.forEach(v => {
+            v.destroy()
+        })
+        this.scene.droppedItems = []
         this.entrances.forEach(v => {
             this.scene.world.destroyBody(v)
         })

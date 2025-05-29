@@ -6,6 +6,7 @@ import { Account } from './server'
 import { Player } from './prefabs/Player'
 import { Enemy } from './prefabs/Enemy'
 import { DroppedItem } from './prefabs/DroppedItem'
+import { Projectile } from './prefabs/items/RangeWeapon'
 
 export class Game{
 
@@ -20,7 +21,9 @@ export class Game{
     players: Player[]
     enemies: Enemy[]
     droppedItems: DroppedItem[]
-
+    projectiles: Projectile[]
+    
+    projectileBodys: p.Body[]
     entityBodys: p.Body[]
 
     inputData: Map<string, InputData[]>
@@ -40,10 +43,40 @@ export class Game{
         this.players = []; // { socketId: Player }
         this.enemies = [];
         this.droppedItems = [];
-        
+        this.projectiles = []
+
+        this.projectileBodys = []
         this.entityBodys = [];
 
         this.mapSetup = new MapSetup(this, id)
+
+        this.contactEvents.addEvent(this.projectileBodys, this.entityBodys, (bodyA, bodyB) => {
+            const projectile = bodyA.getUserData() as Projectile 
+            const parent = projectile.parentBody.getUserData()
+            const target = bodyB.getUserData()
+
+            const isPlayer = (obj: any) => obj instanceof Player
+            const isEnemy = (obj: any) => obj instanceof Enemy
+
+            const hit = () => {
+                if(!isEnemy(target) && !isPlayer(target)) return;
+                if (projectile.dir.length() > 0) {
+                    target.health -= projectile.config.damage;
+                    target.knockback = projectile.config.knockback;
+                    target.knockbackDir = new p.Vec2(projectile.dir.x, projectile.dir.y);
+                }
+            }
+            
+            if(isPlayer(parent) && isPlayer(target)){
+                if(target.id == parent.id) return
+                if(!this.isPvpAllowed) return
+
+                hit()
+            }
+            else if((isPlayer(parent) && isEnemy(target)) || (isEnemy(parent) && isPlayer(target))){
+                hit()
+            }
+        })
     }
 
     update(deltaTime: number) {
@@ -54,21 +87,20 @@ export class Game{
         this.players.forEach(player => {
             const inputData = this.inputData.get(player.id)?.splice(0)
 
-            const dir = new p.Vec2()
+            if(!inputData) return;
+            if(inputData.length > 4) {
+                this.gameManager.io.sockets.sockets.get(player.id)?.disconnect(true)
+            }
+
+            const v = inputData[0]
+
+            const dir = new p.Vec2(v?.dir.x || 0, v?.dir.y || 0)
             const attackDir = new p.Vec2()
 
-            inputData?.forEach(v => {
-                const idir = new p.Vec2(v.dir.x, v.dir.y)
-                idir.normalize()
-
-                if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
-                    attackDir.x = v.attackDir.x
-                    attackDir.y = v.attackDir.y
-                }
-
-                dir.x += idir.x
-                dir.y += idir.y
-            })
+            if(v && (v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
+                attackDir.x = v.attackDir.x
+                attackDir.y = v.attackDir.y
+            }
 
             dir.mul(player.speed)
 
@@ -94,8 +126,11 @@ export class Game{
                 this.entityBodys.splice(this.entityBodys.indexOf(enemy.pBody), 1)
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
+
+                const items = [{ id: 'sword', name: 'Sword' }, { id: 'bow', name: 'Bow' }]
+                const randomItem = items[Math.floor(Math.random()*2)]
                 
-                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, 'sword', 'Sword')
+                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem.id, randomItem.name)
                 this.droppedItems.push(droppedItem)
                 droppedItem.onDestroy = () => this.droppedItems.splice(this.droppedItems.indexOf(droppedItem), 1)
 
@@ -106,6 +141,10 @@ export class Game{
                 }, 5000)
             }
             else enemy.update()
+        })
+
+        this.projectiles.forEach(v => {
+            v.update()
         })
     }
 
@@ -136,6 +175,14 @@ export class Game{
                     name: v.name,
                     worldId: this.id,
                     pos: v.pBody.getPosition(),
+                }
+            }),
+            projectiles: this.projectiles.map(v => {
+                return {
+                    uid: v.uid,
+                    pos: v.pBody.getPosition(),
+                    dir: v.dir,
+                    config: v.config
                 }
             })
         }

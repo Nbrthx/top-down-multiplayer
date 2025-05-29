@@ -40,9 +40,9 @@ export class Inventory {
         this.parent.equipItem(this.items[this.activeIndex]?.id || '')
     }
 
-    updateInventory(inventory: { id: string; name: string }[]){
+    updateInventory(inventory: ({ id: string; name: string } | undefined | null)[]){
         inventory.forEach((v, i) => {
-            this.items[i] = v
+            if(v) this.items[i] = v
         })
 
         this.parent.equipItem(this.items[this.activeIndex]?.id || '')
