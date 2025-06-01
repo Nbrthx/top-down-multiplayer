@@ -53,7 +53,7 @@ export class ItemInstance{
                     offsetMultipler: 0.8,
                     hitboxSize: { width: 0.4, height: 0.1 },
                     speed: 8,
-                    range: 8,
+                    range: 7,
                     cooldown: 1400,
                     attackDelay: 200
                 }

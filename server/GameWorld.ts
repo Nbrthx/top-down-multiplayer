@@ -85,23 +85,29 @@ export class Game{
         
         // Update entitas
         this.players.forEach(player => {
-            const inputData = this.inputData.get(player.id)?.splice(0)
+            const inputData = this.inputData.get(player.id)?.splice(0, this.inputData.get(player.id)?.length!-1 || 2)
 
             if(!inputData) return;
-            if(inputData.length > 4) {
-                this.gameManager.io.sockets.sockets.get(player.id)?.disconnect(true)
-            }
+            // if(inputData.length > 20) {
+            //     this.gameManager.io.sockets.sockets.get(player.id)?.disconnect(true)
+            // }
 
-            const v = inputData[0]
-
-            const dir = new p.Vec2(v?.dir.x || 0, v?.dir.y || 0)
+            const dir = new p.Vec2()
             const attackDir = new p.Vec2()
 
-            if(v && (v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
-                attackDir.x = v.attackDir.x
-                attackDir.y = v.attackDir.y
-            }
+            inputData?.forEach(v => {
+                const idir = new p.Vec2(v.dir.x, v.dir.y)
 
+                if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
+                    attackDir.x = v.attackDir.x
+                    attackDir.y = v.attackDir.y
+                }
+
+                dir.x += idir.x
+                dir.y += idir.y
+            })
+
+            dir.normalize()
             dir.mul(player.speed)
 
             if(dir) player.pBody.setLinearVelocity(dir)
@@ -156,7 +162,8 @@ export class Game{
                     worldId: this.id,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
-                    health: v.health
+                    health: v.health,
+                    timestamp: Date.now()
                 }
             }),
             enemies: this.enemies.map(v => {
@@ -165,7 +172,8 @@ export class Game{
                     worldId: this.id,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
-                    health: v.health
+                    health: v.health,
+                    timestamp: Date.now()
                 }
             }),
             droppedItems: this.droppedItems.map(v => {
@@ -173,7 +181,6 @@ export class Game{
                     uid: v.uid,
                     id: v.id,
                     name: v.name,
-                    worldId: this.id,
                     pos: v.pBody.getPosition(),
                 }
             }),

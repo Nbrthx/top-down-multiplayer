@@ -57,6 +57,7 @@ export class MapSetup{
 
             const body = scene.world.createBody(new p.Vec2((o.x+16/32)/32, (o.y+24/32)/32))
             body.createFixture(new p.Box(16/2/32, 10/2/32))
+            body.setUserData(tree)
             this.collision.push(body)
             i++
         })
@@ -128,6 +129,9 @@ export class MapSetup{
 
     destroy(){
         this.collision.forEach(v => {
+            const object = v.getUserData() as Phaser.GameObjects.GameObject
+            if(object) object.destroy()
+
             this.scene.world.destroyBody(v)
         })
         this.collision = []

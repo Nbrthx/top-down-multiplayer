@@ -69,7 +69,7 @@ export class Player{
             if(this.itemInstance) this.itemInstance.destroy()
 
             const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
-            newItemInstance.timestamp = Date.now()+1000
+            newItemInstance.timestamp = Date.now()
 
             this.itemInstance = newItemInstance
         })

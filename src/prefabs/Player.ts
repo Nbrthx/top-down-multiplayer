@@ -110,7 +110,7 @@ export class Player extends Phaser.GameObjects.Container{
             if(this.itemInstance) this.itemInstance.destroy()
 
             const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
-            newItemInstance.timestamp = Date.now()+1000
+            newItemInstance.timestamp = Date.now()
 
             this.itemInstance = newItemInstance
             this.addAt(this.itemInstance, 0)

@@ -14,6 +14,7 @@ interface OutputData{
     pos: { x: number, y: number },
     attackDir: { x: number, y: number },
     health: number
+    timestamp: number
 }
 
 interface GameState{
@@ -23,7 +24,6 @@ interface GameState{
         uid: string
         id: string
         name: string
-        worldId: string
         pos: { x: number, y: number }
     }[]
     projectiles: {
@@ -306,7 +306,7 @@ export class NetworkHandler{
     }
 
     otherUpdateHotbar(id: string, index: number){
-        const other = this.scene.others.find(v => v.id = id)
+        const other = this.scene.others.find(v => v.id == id)
         if(!other) return
 
         console.log('other updated hotbar', index)

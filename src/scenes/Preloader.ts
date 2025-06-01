@@ -40,6 +40,7 @@ export class Preloader extends Scene{
 
         // Environtment
         this.load.image('tilemaps', 'environment/tilemaps.png')
+        this.load.image('tree1', 'environment/tree1.png')
 
         this.load.tilemapTiledJSON('test', 'environment/test.json')
         this.load.tilemapTiledJSON('test2', 'environment/test2.json')
@@ -89,7 +90,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'bow-attack',
-            frames: this.anims.generateFrameNumbers('bow', { frames: [1, 2, 3, 4, 5, 5, 5, 0] }),
+            frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 4, 4, 4, 0] }),
             frameRate: 20
         })
 
