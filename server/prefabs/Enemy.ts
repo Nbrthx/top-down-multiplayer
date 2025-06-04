@@ -3,13 +3,14 @@ import * as p from 'planck'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Player } from './Player'
+import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Enemy{
 
     id: string
     maxHealth: number
     health: number
-    speed = 1
+    speed = 3
 
     scene: Game
     itemInstance: BaseItem
@@ -21,6 +22,7 @@ export class Enemy{
     triggerArea: p.Body
     visionArea: p.Body
     target: Player | null
+    attacker: Player[]
     
     knockback: number
     knockbackDir: p.Vec2
@@ -47,6 +49,11 @@ export class Enemy{
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
+        if(this.itemInstance instanceof MeleeWeapon){
+            this.scene.addHitbox(this.itemInstance.hitbox, this.scene.entityBodys)
+        }
+
+        this.attacker = []
 
         this.triggerArea = this.createArea(2)
         this.visionArea = this.createArea(6)
@@ -64,6 +71,7 @@ export class Enemy{
             
             if(dir.length() > 1.4){
                 dir.normalize()
+                dir.mul(this.speed)
                 this.pBody.setLinearVelocity(dir)
             }
             else this.pBody.setLinearVelocity(new p.Vec2(0, 0))
@@ -73,6 +81,7 @@ export class Enemy{
             
             if(dir.length() > 0.1){
                 dir.normalize()
+                dir.mul(this.speed)
                 this.pBody.setLinearVelocity(dir)
             }
             else this.pBody.setLinearVelocity(new p.Vec2(0, 0))
@@ -85,7 +94,7 @@ export class Enemy{
         
         if(this.knockback > 0){
             this.pBody.applyLinearImpulse(new p.Vec2(this.knockbackDir.x*this.knockback, this.knockbackDir.y*this.knockback), this.pBody.getWorldCenter())
-            this.knockback -= 0.5
+            this.knockback -= 2
         }
 
         this.triggerArea.setPosition(this.pBody.getPosition())

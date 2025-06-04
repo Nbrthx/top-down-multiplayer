@@ -34,7 +34,11 @@ export class DroppedItem{
 
             if(!(player instanceof Player)) return;
 
-            if(player.inventory.addItem({ id: this.id, name: this.name })) this.destroy();
+            if(player.inventory.addItem({
+                id: this.id,
+                name: this.name,
+                timestamp: Date.now()
+            })) this.destroy();
         })
 
         this.timeout = setTimeout(() => {

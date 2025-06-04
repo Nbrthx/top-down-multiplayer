@@ -49,7 +49,7 @@ export class GameManager{
 
     update() {
         this.worlds.forEach((world) => {
-            world.update(1/20);
+            world.update(1/60);
         });
     }
     

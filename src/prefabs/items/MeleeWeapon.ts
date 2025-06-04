@@ -23,8 +23,6 @@ export class MeleeWeapon extends BaseItem{
     hitbox: p.Body;
     attackState: boolean;
 
-    attackDelay: number
-
     constructor(scene: Game, parentBody: p.Body, config: Melee){
         super(scene, parentBody);
         

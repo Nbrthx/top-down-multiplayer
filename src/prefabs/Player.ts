@@ -5,20 +5,24 @@ import { ItemInstance } from './ItemInstance'
 import { Inventory } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
 import { TextBox } from './TextBox'
+import { Stats } from '../components/Stats'
 
 export class Player extends Phaser.GameObjects.Container{
 
     id: string
     maxHealth: number
     health: number
-    speed = 1.4
+    speed = 4.2
 
     scene: Game
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
     healthBar: Phaser.GameObjects.Rectangle
-    inventory: Inventory
     nameText: Phaser.GameObjects.Text
+    
+    username: string
+    inventory: Inventory
+    stats: Stats
 
     audio?: { step: SpatialSound, hit: SpatialSound }
 
@@ -45,7 +49,9 @@ export class Player extends Phaser.GameObjects.Container{
         })
         this.pBody.setUserData(this)
 
+        this.username = username
         this.inventory = new Inventory(this)
+        this.stats = new Stats()
 
         this.textbox = new TextBox(this.scene, 0, -190)
 
@@ -60,10 +66,10 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
 
-        this.nameText = scene.add.text(0, -36*scene.gameScale, username, {
-            fontFamily: 'PixelFont', fontSize: 28, letterSpacing: 2,
+        this.nameText = scene.add.text(0, -36*scene.gameScale, username+' Lv.'+this.stats.getLevel(), {
+            fontFamily: 'PixelFont', fontSize: 24, letterSpacing: 2,
             stroke: '#000000', strokeThickness: 4
-        }).setOrigin(0.5).setResolution(5)
+        }).setOrigin(0.5).setResolution(4)
 
         this.add([this.itemInstance, this.sprite, bar, this.healthBar, this.nameText, this.textbox])
     }
@@ -77,6 +83,10 @@ export class Player extends Phaser.GameObjects.Container{
                 hit: this.scene.spatialAudio.addSound('audio-hit')
             }
             this.audio.step.sound?.setRate(1.2)
+        }
+
+        if(this.nameText.text.split('.')[1] != this.stats.getLevel()+''){
+            this.nameText.setText(this.username+' Lv.'+this.stats.getLevel())
         }
 
         if(vel.x != 0 || vel.y != 0){
@@ -105,12 +115,18 @@ export class Player extends Phaser.GameObjects.Container{
         this.healthBar.setX(-80-80*this.health/-this.maxHealth)
     }
 
-    equipItem(item: string){
+    equipItem(index: number){
         this.pBody.getWorld().queueUpdate(() => {
-            if(this.itemInstance) this.itemInstance.destroy()
+            const item = this.inventory.items[index]
 
-            const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
-            newItemInstance.timestamp = Date.now()
+            if(this.itemInstance){
+                const timestamp = this.itemInstance.timestamp
+                this.inventory.setItemTimestamp(this.inventory.activeIndex, timestamp)
+                this.itemInstance.destroy()
+            }
+
+            const newItemInstance = new ItemInstance(this.scene, this.pBody, item.id).itemInstance
+            newItemInstance.timestamp = item.timestamp
 
             this.itemInstance = newItemInstance
             this.addAt(this.itemInstance, 0)
@@ -118,16 +134,17 @@ export class Player extends Phaser.GameObjects.Container{
     }
 
     hitEffect(){
-        this.scene.tweens.add({
-            targets: this.sprite,
-            duration: 50,
-            repeat: 2,
-            yoyo: true,
-            ease: 'Cubic.easeOut',
-            alpha: 0.4
-        }).once('complete', () => {
-            this.sprite.setAlpha(1)
-        })
+        let itr = 0
+        const splash = () => {
+            if(itr >= 4) return
+
+            if(this.sprite.isTinted) this.sprite.clearTint()
+            else this.sprite.setTintFill(0xffffff)
+            itr++
+
+            setTimeout(() => splash(), 50)
+        }
+        splash()
         const { x, y } = this.pBody.getPosition()
         this.audio?.hit.playSound(x, y, true, false)
     }

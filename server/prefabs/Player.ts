@@ -4,6 +4,7 @@ import { Account } from '../server'
 import { Inventory } from './Inventory'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
+import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Player{
 
@@ -12,7 +13,7 @@ export class Player{
     id: string
     health: number
     maxHealth: number
-    speed = 1.4
+    speed = 4.2
 
     scene: Game
     pBody: p.Body
@@ -57,19 +58,30 @@ export class Player{
             this.attackDir = new p.Vec2(0, 0)
         }
 
+        this.account.health = this.health
+
         if(this.knockback > 0){
             this.pBody.applyLinearImpulse(new p.Vec2(this.knockbackDir.x*this.knockback, this.knockbackDir.y*this.knockback), this.pBody.getWorldCenter())
-            this.knockback -= 0.5
+            this.knockback -= 2
         }
 
     }
 
-    equipItem(item: string){
+    equipItem(index: number){
         this.scene.world.queueUpdate(() => {
-            if(this.itemInstance) this.itemInstance.destroy()
+            const item = this.inventory.items[index]
 
-            const newItemInstance = new ItemInstance(this.scene, this.pBody, item).itemInstance
-            newItemInstance.timestamp = Date.now()
+            if(this.itemInstance){
+                const timestamp = this.itemInstance.timestamp
+                this.inventory.setItemTimestamp(this.inventory.activeIndex, timestamp)
+                this.itemInstance.destroy()
+            }
+
+            const newItemInstance = new ItemInstance(this.scene, this.pBody, item.id).itemInstance
+            newItemInstance.timestamp = item.timestamp
+            if(newItemInstance instanceof MeleeWeapon){
+                this.scene.addHitbox(newItemInstance.hitbox, this.scene.entityBodys)
+            }
 
             this.itemInstance = newItemInstance
         })

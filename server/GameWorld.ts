@@ -7,6 +7,7 @@ import { Player } from './prefabs/Player'
 import { Enemy } from './prefabs/Enemy'
 import { DroppedItem } from './prefabs/DroppedItem'
 import { Projectile } from './prefabs/items/RangeWeapon'
+import { BaseItem } from './prefabs/BaseItem'
 
 export class Game{
 
@@ -50,20 +51,26 @@ export class Game{
 
         this.mapSetup = new MapSetup(this, id)
 
-        this.contactEvents.addEvent(this.projectileBodys, this.entityBodys, (bodyA, bodyB) => {
-            const projectile = bodyA.getUserData() as Projectile 
-            const parent = projectile.parentBody.getUserData()
+        
+        this.addHitbox(this.projectileBodys, this.entityBodys)
+    }
+
+    addHitbox(sourceBody: p.Body | p.Body[], targetBody: p.Body | p.Body[]){
+        this.contactEvents.addEvent(sourceBody, targetBody, (bodyA, bodyB) => {
+            const weapon = bodyA.getUserData() as BaseItem | Projectile
+            const parent = weapon.parentBody.getUserData() 
             const target = bodyB.getUserData()
+            const config = weapon.config
 
             const isPlayer = (obj: any) => obj instanceof Player
             const isEnemy = (obj: any) => obj instanceof Enemy
 
             const hit = () => {
                 if(!isEnemy(target) && !isPlayer(target)) return;
-                if (projectile.dir.length() > 0) {
-                    target.health -= projectile.config.damage;
-                    target.knockback = projectile.config.knockback;
-                    target.knockbackDir = new p.Vec2(projectile.dir.x, projectile.dir.y);
+                if (weapon.attackDir.length() > 0) {
+                    target.health -= config.damage;
+                    target.knockback = config.knockback;
+                    target.knockbackDir = new p.Vec2(weapon.attackDir.x, weapon.attackDir.y);
                 }
             }
             
@@ -75,6 +82,11 @@ export class Game{
             }
             else if((isPlayer(parent) && isEnemy(target)) || (isEnemy(parent) && isPlayer(target))){
                 hit()
+                if(isEnemy(target) && isPlayer(parent)){
+                    if(!target.attacker.includes(parent)){
+                        target.attacker.push(parent)
+                    }
+                }
             }
         })
     }
@@ -118,6 +130,7 @@ export class Game{
 
         this.players.forEach(player => {
             if(player.health <= 0){
+                player.account.health = 100
                 this.removePlayer(player.id)
             }
             else player.update()
@@ -139,6 +152,10 @@ export class Game{
                 const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem.id, randomItem.name)
                 this.droppedItems.push(droppedItem)
                 droppedItem.onDestroy = () => this.droppedItems.splice(this.droppedItems.indexOf(droppedItem), 1)
+
+                enemy.attacker.forEach(player => {
+                    player.account.xp += 1
+                })
 
                 setTimeout(() => {
                     const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32, id)
@@ -163,7 +180,8 @@ export class Game{
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
                     health: v.health,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    xp: v.account.xp
                 }
             }),
             enemies: this.enemies.map(v => {
@@ -188,7 +206,7 @@ export class Game{
                 return {
                     uid: v.uid,
                     pos: v.pBody.getPosition(),
-                    dir: v.dir,
+                    dir: v.attackDir,
                     config: v.config
                 }
             })
@@ -203,6 +221,8 @@ export class Game{
         player.inventory.updateInventory(account.inventory)
         
         player.account.inventory = player.inventory.items
+        player.health = account.health
+        player.maxHealth = 100 + account.xp
 
         this.entityBodys.push(player.pBody)
         this.players.push(player)
@@ -210,7 +230,7 @@ export class Game{
         const socket = this.gameManager.io.sockets.sockets.get(id)
 
         this.gameManager.playerMap.set(id, this.id);
-        socket?.join(this.id)
+        socket?.join(this.id);
 
         socket?.emit('joinGame', account, this.players.map(v => {
             return {

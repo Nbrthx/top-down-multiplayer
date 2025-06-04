@@ -66,7 +66,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 const item = this.inventory.items[i*5 + j + startIndex];
 
-                if(!item) continue
+                if(!item || item.id == '') continue
 
                 const itemIcon = this.scene.add.image(x + 48, y + 48, 'icon-'+item.id);
                 itemIcon.setScale(4).setDepth(100);
@@ -81,8 +81,8 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 itemIcon.on('dragend', () => {
                     // Snap back to slot if not dropped on a valid slot
-                    itemIcon.x = x + 5;
-                    itemIcon.y = y + 5;
+                    itemIcon.x = x + 48;
+                    itemIcon.y = y + 48;
                 });
 
                 itemIcon.on('drop', (_pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {

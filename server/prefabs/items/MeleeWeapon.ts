@@ -1,8 +1,6 @@
 import * as p from "planck";
 import { Game } from "../../GameWorld";
 import { BaseItem } from "../BaseItem";
-import { Player } from "../Player";
-import { Enemy } from "../Enemy";
 
 interface Melee{
     texture: string
@@ -24,9 +22,6 @@ export class MeleeWeapon extends BaseItem{
     hitbox: p.Body;
     attackState: boolean;
 
-    attackDelay: number
-    attackDir: p.Vec2
-
     constructor(scene: Game, parentBody: p.Body, config: Melee){
         super(scene, parentBody);
         
@@ -40,36 +35,10 @@ export class MeleeWeapon extends BaseItem{
             isSensor: true
         })
         this.hitbox.setActive(false); // Nonaktifkan awal
+        this.hitbox.setUserData(this)
 
         this.timestamp = 0
         this.cooldown = config.cooldown
-
-        this.scene.contactEvents.addEvent(this.hitbox, this.scene.entityBodys, (_bodyA, bodyB) => {
-            const parent = parentBody.getUserData() 
-            const target = bodyB.getUserData()
-
-            const isPlayer = (obj: any) => obj instanceof Player
-            const isEnemy = (obj: any) => obj instanceof Enemy
-
-            const hit = () => {
-                if(!isEnemy(target) && !isPlayer(target)) return;
-                if (this.attackDir.length() > 0) {
-                    target.health -= config.damage;
-                    target.knockback = config.knockback;
-                    target.knockbackDir = new p.Vec2(this.attackDir.x, this.attackDir.y);
-                }
-            }
-            
-            if(isPlayer(parent) && isPlayer(target)){
-                if(target.id == parent.id) return
-                if(!this.scene.isPvpAllowed) return
-
-                hit()
-            }
-            else if((isPlayer(parent) && isEnemy(target)) || (isEnemy(parent) && isPlayer(target))){
-                hit()
-            }
-        })
     }
 
     use(x: number, y: number){

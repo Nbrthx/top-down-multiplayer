@@ -31,7 +31,7 @@ export class ItemInstance{
                     cooldown: 500,
                     attackDelay: 100,
                     damage: 2,
-                    knockback: 5
+                    knockback: 15
                 }
             },
             {
@@ -45,7 +45,7 @@ export class ItemInstance{
                     cooldown: 1000,
                     attackDelay: 200,
                     damage: 5,
-                    knockback: 6
+                    knockback: 19
                 }
             },
             {
@@ -56,12 +56,12 @@ export class ItemInstance{
                     projectileTexture: 'arrow',
                     offsetMultipler: 0.8,
                     hitboxSize: { width: 0.4, height: 0.1 },
-                    speed: 8,
-                    range: 7,
+                    speed: 20,
+                    range: 5,
                     cooldown: 1400,
                     attackDelay: 200,
                     damage: 5,
-                    knockback: 6
+                    knockback: 18
                 }
             }
         ]

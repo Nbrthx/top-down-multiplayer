@@ -24,8 +24,6 @@ export class RangeWeapon extends BaseItem{
     useSound: SpatialSound
     attackState: boolean;
 
-    attackDelay: number
-
     constructor(scene: Game, parentBody: p.Body, config: Range){
         super(scene, parentBody);
         
@@ -133,11 +131,6 @@ export class Projectile extends Phaser.GameObjects.Image {
         this.setScale(scene.gameScale)
         
         scene.add.existing(this)
-
-        setTimeout(() => {
-            this.destroy()
-            scene.projectiles.splice(scene.projectiles.indexOf(this), 1)
-        }, (this.config.range*5) / (this.config.speed/60))
     }
     
 

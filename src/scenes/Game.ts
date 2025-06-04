@@ -83,10 +83,10 @@ export class Game extends Scene{
 
         const frameTime = (currentTime - this.previousTime) / 1000; // in seconds
         this.previousTime = currentTime;
-        this.accumulator += frameTime * 3;
-        while (this.accumulator >= 1/20) {
-            this.world.step(1/20);
-            this.accumulator -= 1/20;
+        this.accumulator += frameTime;
+        while (this.accumulator >= 1/60) {
+            this.world.step(1/60);
+            this.accumulator -= 1/60;
 
             if(this.player){
                 this.handleInput()
@@ -133,6 +133,10 @@ export class Game extends Scene{
             })
             this.attackDir = new p.Vec2()
         }
+
+        this.networkHandler.pendingOutput.splice(0).forEach(data => {
+            this.networkHandler.update(data)
+        })
 
         this.player.update()
 

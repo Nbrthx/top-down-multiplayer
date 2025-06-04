@@ -27,6 +27,7 @@ export class Preloader extends Scene{
 
         // Character
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('frogger', 'character/frogger.png', { frameWidth: 384, frameHeight: 128 })
 
         // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
@@ -74,6 +75,19 @@ export class Preloader extends Scene{
         this.anims.create({
             key: 'run-up',
             frames: this.anims.generateFrameNumbers('char', { frames: [24, 25, 26, 27, 28, 29, 30, 31] }),
+            frameRate: 12,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'frogger-idle',
+            frames: this.anims.generateFrameNumbers('frogger', { frames: [17, 18, 19, 20] }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'frogger-run',
+            frames: this.anims.generateFrameNumbers('frogger', { frames: [51, 52, 53, 54, 55, 56, 57, 58] }),
             frameRate: 12,
             repeat: -1
         })

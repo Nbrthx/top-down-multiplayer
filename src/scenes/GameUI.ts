@@ -25,6 +25,7 @@ export default class GameUI extends Phaser.Scene {
     inventoryButton: Phaser.GameObjects.Text
     chatbox: Chat
     cooldownText: Phaser.GameObjects.Text
+    statsText: Phaser.GameObjects.Text
 
     constructor(){
         super('GameUI')
@@ -50,6 +51,11 @@ export default class GameUI extends Phaser.Scene {
                 this.debugText.setText('Ping: '+ (now-then)+'ms\nFPS: '+fps)
             })
         }, 1000)
+
+        this.statsText = this.add.text(100, 200, 'Level: 0\nXP: 0/0', {
+            fontSize: 24, fontStyle: 'bold',
+            color: '#fff'
+        })
 
         this.chatbox = new Chat(this, this.socket)
 
@@ -137,6 +143,10 @@ export default class GameUI extends Phaser.Scene {
             this.cooldownText.setColor('#ffffff')
         }
         this.cooldownText.setText('Cooldown: '+(cooldown/1000).toFixed(2)+'s')
+
+        this.statsText.setText('Level: '+this.gameScene.player.stats.getLevel()+'\n'+
+        'XP: '+this.gameScene.player.stats.getXp()+
+        '/'+this.gameScene.player.stats.getNextXp())
     }
 
     setupInventory(player: Player){

@@ -23,9 +23,6 @@ export class RangeWeapon extends BaseItem{
     config: Range
     attackState: boolean;
 
-    attackDelay: number
-    attackDir: p.Vec2
-
     constructor(scene: Game, parentBody: p.Body, config: Range){
         super(scene, parentBody);
         
@@ -88,14 +85,16 @@ export class Projectile{
     parentBody: p.Body;
     uid: string;
     pBody: p.Body;
-    dir: p.Vec2;
+    basePos: p.Vec2
+    attackDir: p.Vec2;
     config: ProjectileConfig
 
     constructor(scene: Game, parentBody: p.Body, pos: p.Vec2, dir: p.Vec2, config: ProjectileConfig) {
         this.scene = scene
         this.parentBody = parentBody
         this.uid = crypto.randomUUID()
-        this.dir = new p.Vec2(dir.x, dir.y)
+        this.basePos = pos.clone()
+        this.attackDir = new p.Vec2(dir.x, dir.y)
         this.config = config
 
         this.pBody = scene.world.createDynamicBody({
@@ -108,17 +107,17 @@ export class Projectile{
         })
         this.pBody.setUserData(this)
         this.pBody.setAngle(Math.atan2(dir.y, dir.x))
-
-        setTimeout(() => {
-            this.destroy()
-        }, (this.config.range*5) / (this.config.speed/60))
     }
 
     update() {
-        if(this.dir.x != 0 || this.dir.y != 0){
-            this.pBody.setLinearVelocity(this.dir)
-            this.pBody.getLinearVelocity().normalize()
-            this.pBody.getLinearVelocity().mul(this.config.speed)
+        if(this.attackDir.x != 0 || this.attackDir.y != 0){
+            const dir = this.attackDir.clone()
+            dir.normalize()
+            dir.mul(this.config.speed)
+            this.pBody.setLinearVelocity(dir)
+        }
+        if(this.basePos.clone().sub(this.pBody.getPosition()).length() > this.config.range){
+            this.destroy()
         }
     }
 

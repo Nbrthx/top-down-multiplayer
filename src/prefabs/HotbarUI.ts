@@ -66,7 +66,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
 
             const item = this.inventory.items[i];
 
-            if(item){
+            if(item && item.id != ''){
                 const itemIcon = this.scene.add.image(x + 48, y + 48, 'icon-'+item.id);
                 itemIcon.setScale(4).setDepth(100);
                 container.add(itemIcon)

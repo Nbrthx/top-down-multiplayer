@@ -6,6 +6,7 @@ import { Enemy } from '../prefabs/Enemy';
 import { DroppedItem } from '../prefabs/DroppedItem';
 import { MapSetup } from './MapSetup';
 import { Projectile, ProjectileConfig } from '../prefabs/items/RangeWeapon';
+import { Item } from '../prefabs/Inventory';
 
 
 interface OutputData{
@@ -18,7 +19,7 @@ interface OutputData{
 }
 
 interface GameState{
-    players: OutputData[]
+    players: (OutputData & { xp: number })[]
     enemies: OutputData[]
     droppedItems: {
         uid: string
@@ -37,12 +38,8 @@ interface GameState{
 interface Account{
     username: string,
     xp: number,
-    inventory: { id: string; name: string }[]
-}
-
-interface Item{
-    id: string,
-    name: string
+    health: number,
+    inventory: Item[]
 }
 
 export class NetworkHandler{
@@ -50,10 +47,13 @@ export class NetworkHandler{
     scene: Game
     socket: Socket
     isAuthed: boolean = false
+    pendingOutput: GameState[]
 
     constructor(scene: Game){
         this.scene = scene
         this.socket = scene.socket
+
+        this.pendingOutput = []
 
         const enterPos = scene.mapSetup.enterpoint.get('spawn') || { x: 100, y: 100 }
         scene.player = new Player(scene, enterPos.x, enterPos.y, this.socket.id as string, localStorage.getItem('username') || 'null')
@@ -118,6 +118,7 @@ export class NetworkHandler{
 
         scene.player.inventory.updateInventory(account.inventory)
         scene.player.inventory.setActiveIndex(0)
+        scene.player.health = account.health
 
         scene.UI.setupInventory(scene.player)
 
@@ -160,6 +161,10 @@ export class NetworkHandler{
     }
 
     output(data: GameState){
+        this.pendingOutput.push(data)
+    }
+
+    update(data: GameState){
         const scene = this.scene
 
         const players = data.players
@@ -172,6 +177,7 @@ export class NetworkHandler{
                 const currentPosition = scene.player.pBody.getPosition()
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
+                scene.player.stats.setTotalXp(playerData.xp)
 
                 if(scene.player.health != playerData.health){
                     if(scene.player.health > playerData.health){
@@ -198,6 +204,7 @@ export class NetworkHandler{
 
                 other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 other.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
+                other.stats.setTotalXp(playerData.xp)
                 
                 if(other.health != playerData.health){
                     if(other.health > playerData.health){

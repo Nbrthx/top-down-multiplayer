@@ -10,7 +10,7 @@ export class Enemy extends Phaser.GameObjects.Container{
     id: string
     maxHealth: number
     health: number
-    speed = 1
+    speed = 3
 
     scene: Game
     itemInstance: BaseItem
@@ -116,14 +116,17 @@ export class Enemy extends Phaser.GameObjects.Container{
     }
 
     hitEffect(){
-        this.scene.tweens.add({
-            targets: this.sprite,
-            duration: 50,
-            repeat: 2,
-            yoyo: true,
-            ease: 'Cubic.easeOut',
-            alpha: 0.4
-        })
+        let itr = 0
+        const splash = () => {
+            if(itr >= 4) return
+
+            if(this.sprite.tintFill) this.sprite.setTint(0xff5544)
+            else this.sprite.setTintFill(0xffffff)
+            itr++
+
+            setTimeout(() => splash(), 50)
+        }
+        splash()
         const { x, y } = this.pBody.getPosition()
         this.audio?.hit.playSound(x, y, true, false)
     }
