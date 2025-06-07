@@ -57,7 +57,7 @@ export class MapSetup{
             const o = _o as { x: number, y: number }
 
             const body = scene.world.createBody(new p.Vec2((o.x+16/32)/32, (o.y+24/32)/32))
-            body.createFixture(new p.Box(16/2/32, 10/2/32))
+            body.createFixture(new p.Box(24/2/32, 16/2/32))
             this.collision.push(body)
         })
 

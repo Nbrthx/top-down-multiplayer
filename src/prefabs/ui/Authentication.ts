@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io-client';
-import { generateSecurity, verifyAccount } from '../components/SyasymAuth';
-import { HOST_ADDRESS } from '../scenes/MainMenu';
+import { generateSecurity, verifyAccount } from '../../components/SyasymAuth';
+import { HOST_ADDRESS } from '../../scenes/MainMenu';
 
 function xhrApi(method: string, url: string, json: {}, callback: (data: any) => void){
     const xhr = new XMLHttpRequest();
@@ -24,35 +24,38 @@ function xhrApi(method: string, url: string, json: {}, callback: (data: any) => 
     }
 }
 
-export class Authentication{
+export class Authentication extends Phaser.GameObjects.DOMElement {
 
     socket: Socket
-    element: Phaser.GameObjects.DOMElement
     changeAction: Element | null
     submit: Element | null
     isLoading: boolean = false
 
     constructor(scene: Phaser.Scene, socket: Socket){
+        super(scene, scene.scale.width/2, scene.scale.height/2)
+
+        scene.add.existing(this)
+
         this.socket = socket
 
-        this.element = scene.add.dom(scene.scale.width/2, scene.scale.height/2).createFromCache('loginform').setName('loginform')
-        this.element.setScale(2)
-        this.element.setVisible(false)
+        this.createFromCache('loginform').setName('loginform')
+        this.setScale(2)
+        this.setVisible(false)
 
-        let submit = this.element.getChildByID('submit')
-        let changeAction = this.element.getChildByID('change-action')
+        let submit = this.getChildByID('submit')
+        let changeAction = this.getChildByID('change-action')
 
         if(changeAction) changeAction.addEventListener('pointerdown', () => this.onChange())
         if(submit) submit.addEventListener('pointerdown', () => this.onSubmit(true))
     }
 
     onChange(){
-        const name = this.element.name == 'loginform' ? 'registerform' : 'loginform'
-        this.element.createFromCache(name)
-        this.element.setName(name)
+        const name = this.name == 'loginform' ? 'registerform' : 'loginform'
+        this.createFromCache(name)
+        this.setName(name)
 
-        this.changeAction = this.element.getChildByID('change-action')
-        this.submit = this.element.getChildByID('submit')
+        this.changeAction = this.getChildByID('change-action')
+        this.submit = this.getChildByID('submit')
 
         if(this.changeAction) this.changeAction.addEventListener('pointerdown', () => this.onChange())
         if(this.submit) this.submit.addEventListener('pointerdown', () => this.onSubmit(name == 'loginform'))
@@ -63,9 +66,9 @@ export class Authentication{
         this.isLoading = true
 
         if(isLogin){
-            const username = (this.element.getChildByID('username') as HTMLInputElement).value
-            const password = (this.element.getChildByID('password') as HTMLInputElement).value
-            const isTrust = (this.element.getChildByID('trust') as HTMLInputElement).checked
+            const username = (this.getChildByID('username') as HTMLInputElement).value
+            const password = (this.getChildByID('password') as HTMLInputElement).value
+            const isTrust = (this.getChildByID('trust') as HTMLInputElement).checked
             
             if(username.length < 1) return alert('username cannot be empty')
             if(password.length < 9) return alert('password must be at least 9 characters')
@@ -73,9 +76,9 @@ export class Authentication{
             this.login(username, password, isTrust)
         }
         else{
-            const username = (this.element.getChildByID('username') as HTMLInputElement).value
-            const password = (this.element.getChildByID('password') as HTMLInputElement).value
-            const confirmPassword = (this.element.getChildByID('confirm-password') as HTMLInputElement).value
+            const username = (this.getChildByID('username') as HTMLInputElement).value
+            const password = (this.getChildByID('password') as HTMLInputElement).value
+            const confirmPassword = (this.getChildByID('confirm-password') as HTMLInputElement).value
 
             if(username.length < 1) return alert('username cannot be empty')
             if(password.length < 9) return alert('password must be at least 9 characters')
@@ -96,18 +99,21 @@ export class Authentication{
                 xhrApi('POST', HOST_ADDRESS+'/login', decrypted, (data: { message: string }) => {
                     if(data.message == 'User logged in successfully!'){
                         localStorage.setItem('username', username)
-                        this.element.setVisible(false)
+                        this.setVisible(false)
                     }
                     else{
                         alert(data.message)
+                        localStorage.removeItem('username')
+                        localStorage.removeItem('salt')
                         this.isLoading = false
                     }
                 })
             }
             else{
                 alert(data.message)
-                this.element.setVisible(true)
+                this.setVisible(true)
                 localStorage.removeItem('username')
+                localStorage.removeItem('salt')
                 this.isLoading = false
             }
         })

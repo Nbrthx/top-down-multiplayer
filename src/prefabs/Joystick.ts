@@ -174,14 +174,6 @@ export class Joystick {
     private handlePointerDown(pointer: Phaser.Input.Pointer): void {
         if (this.isActive) return; // Hanya satu pointer aktif per joystick
 
-        // Jika ada activationZone, pastikan pointerdown terjadi di atasnya
-        if (this.options.activationZone) {
-            // Cek apakah pointer mengenai activationZone
-            // Ini sedikit rumit karena eventSource bisa jadi scene.input
-            // Cara yang lebih sederhana adalah jika activationZone adalah satu-satunya yang memicu ini.
-            // Untuk sekarang, kita asumsikan jika activationZone ada, event ini hanya dipicu olehnya.
-        }
-
         this.isActive = true;
         this.activePointerId = pointer.id;
         const pos = this.getPointerCoordinates(pointer);
@@ -190,6 +182,8 @@ export class Joystick {
             this.positionJoystickElements(pos.x, pos.y);
             this.container.setVisible(true);
         }
+
+        this.onPointerdown()
 
         this.processMovement(pos.x, pos.y); // Proses gerakan awal
         this.options.onStart?.(this.getValues());
@@ -287,6 +281,8 @@ export class Joystick {
             // this.container.setVisible(false);
         }
 
+        this.onPointerup()
+
         // const lastValues = this.getValues(); // Simpan nilai sebelum direset
         this.x = 0;
         this.y = 0;
@@ -342,56 +338,17 @@ export class Joystick {
         }
         return this;
     }
+
+    public setAlpha(alpha: number): this {
+        if (this.base) {
+            this.base.setAlpha(alpha);
+        }
+        if (this.knob) {
+            this.knob.setAlpha(alpha);
+        }
+        return this;
+    }
+
+    public onPointerdown(){}
+    public onPointerup(){}
 }
-
-// Contoh penggunaan di dalam Scene Phaser:
-/*
-class MyScene extends Phaser.Scene {
-    private joystick: Joystick | null = null;
-    private player: Phaser.GameObjects.Sprite | null = null;
-
-    constructor() {
-        super({ key: 'MyScene' });
-    }
-
-    preload() {
-        // this.load.image('player', 'path/to/player.png');
-        // this.load.image('joystick_base', 'path/to/joystick_base.png');
-        // this.load.image('joystick_knob', 'path/to/joystick_knob.png');
-    }
-
-    create() {
-        // this.player = this.add.sprite(400, 300, 'player');
-
-        this.joystick = new Joystick({
-            scene: this,
-            x: 150, // Posisi untuk joystick statis
-            y: this.cameras.main.height - 150,
-            // baseTextureKey: 'joystick_base', // Opsional
-            // knobTextureKey: 'joystick_knob', // Opsional
-            size: 100,
-            knobSize: 40,
-            dynamic: false, // Coba true untuk joystick dinamis
-            fixedToCamera: true, // Agar tetap di UI layer
-            onMove: (data) => {
-                console.log(`Move: X=${data.x.toFixed(2)}, Y=${data.y.toFixed(2)}`);
-                // if (this.player) {
-                //     this.player.x += data.x * 5;
-                //     this.player.y += data.y * 5; // Ingat sumbu Y Phaser
-                // }
-            },
-            onEnd: () => {
-                console.log('Joystick released');
-            }
-        });
-    }
-
-    update(time: number, delta: number) {
-        // if (this.joystick && this.player) {
-        //    const values = this.joystick.getValues();
-        //    this.player.x += values.x * 5 * (delta / 1000); // Gerakan berbasis delta time
-        //    this.player.y += values.y * 5 * (delta / 1000);
-        // }
-    }
-}
-*/

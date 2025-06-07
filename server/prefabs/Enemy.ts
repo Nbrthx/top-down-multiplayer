@@ -24,6 +24,8 @@ export class Enemy{
     target: Player | null
     attacker: Player[]
     
+    force: number
+    forceDir: p.Vec2
     knockback: number
     knockbackDir: p.Vec2
 
@@ -36,7 +38,7 @@ export class Enemy{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
+            shape: new p.Box(0.24, 0.3, new p.Vec2(0, 0.2)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -89,12 +91,28 @@ export class Enemy{
 
         if(this.attackDir.length() > 0){
             if(this.itemInstance) this.itemInstance.use(this.attackDir.x, this.attackDir.y)
+
+            this.forceDir = this.attackDir.clone()
+            this.force = this.itemInstance.config.force
+
             this.attackDir = new p.Vec2(0, 0)
         }
         
-        if(this.knockback > 0){
-            this.pBody.applyLinearImpulse(new p.Vec2(this.knockbackDir.x*this.knockback, this.knockbackDir.y*this.knockback), this.pBody.getWorldCenter())
-            this.knockback -= 2
+        if(this.knockback > 1 || this.knockback < -1){
+            const dir = this.knockbackDir.clone()
+            dir.normalize()
+            dir.mul(this.knockback)
+            this.pBody.applyLinearImpulse(dir, this.pBody.getWorldCenter())
+            if(this.knockback > 0) this.knockback -= 2
+            else this.knockback += 2
+        }
+        else if(this.force > 1 || this.force < -1){
+            const dir = this.forceDir.clone()
+            dir.normalize()
+            dir.mul(this.force)
+            this.pBody.applyLinearImpulse(dir, this.pBody.getWorldCenter())
+            if(this.force > 0) this.force -= 2
+            else this.force += 2
         }
 
         this.triggerArea.setPosition(this.pBody.getPosition())

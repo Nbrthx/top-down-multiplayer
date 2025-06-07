@@ -1,19 +1,27 @@
 import { Socket } from 'socket.io-client'
-import { InventoryUI } from '../prefabs/InventoryUI'
-import { HotbarUI } from '../prefabs/HotbarUI'
+import { InventoryUI } from '../prefabs/ui/InventoryUI'
+import { HotbarUI } from '../prefabs/ui/HotbarUI'
 import { Game } from './Game'
 import { socket } from './MainMenu'
 import { Player } from '../prefabs/Player'
 import { Joystick } from '../prefabs/Joystick'
-import { Chat } from '../components/Chat'
+import { Chat } from '../prefabs/ui/Chat'
+import { StatsUI } from '../prefabs/ui/StatsUI'
 
-export default class GameUI extends Phaser.Scene {
+export const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
+export class GameUI extends Phaser.Scene {
 
     socket: Socket
     debugText: Phaser.GameObjects.Text
     gameScene: Game
+
     inventoryUI: InventoryUI
     hotbarUI: HotbarUI
+    statsUI: StatsUI
+
     keyboardInput: {
         up?: boolean
         down?: boolean
@@ -21,11 +29,9 @@ export default class GameUI extends Phaser.Scene {
         right?: boolean
     }
     joystick: Joystick
-    uiScale: number
-    inventoryButton: Phaser.GameObjects.Text
+    inventoryButton: Phaser.GameObjects.Image
     chatbox: Chat
-    cooldownText: Phaser.GameObjects.Text
-    statsText: Phaser.GameObjects.Text
+    joystick2: Joystick
 
     constructor(){
         super('GameUI')
@@ -34,11 +40,9 @@ export default class GameUI extends Phaser.Scene {
     }
 
     create(){
-        this.uiScale = this.scale.width / 1920
-
         this.input.addPointer(2)
 
-        this.debugText = this.add.text(100, 50, 'Ping: 0ms\nFPS: 0', {
+        this.debugText = this.add.text(100, 100, 'Ping: 0ms\nFPS: 0', {
             fontSize: 24, fontStyle: 'bold',
             color: '#fff'
         })
@@ -52,23 +56,17 @@ export default class GameUI extends Phaser.Scene {
             })
         }, 1000)
 
-        this.statsText = this.add.text(100, 200, 'Level: 0\nXP: 0/0', {
-            fontSize: 24, fontStyle: 'bold',
-            color: '#fff'
-        })
-
         this.chatbox = new Chat(this, this.socket)
 
         this.gameScene = this.scene.get('Game') as Game
 
-        this.inventoryButton = this.add.text(this.scale.width/2, 1000, 'INVENTORY', {
-            fontSize: '32px', fontStyle: 'bold',
-            color: '#fff'
-        }).setOrigin(0.5).setInteractive()
+        const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.6)
+        bottomBox.setOrigin(0.5, 1)
+
+        this.inventoryButton = this.add.image(this.scale.width/2, this.scale.height - 80, 'icon-inventory')
+        this.inventoryButton.setScale(6).setInteractive()
         this.inventoryButton.on('pointerdown', () => {
             this.inventoryUI.setVisible(!this.inventoryUI.visible)
-            this.hotbarUI.setVisible(!this.hotbarUI.visible)
-            this.inventoryButton.setVisible(false)
         })
 
         this.gameScene.events.on('start', () => {
@@ -81,13 +79,6 @@ export default class GameUI extends Phaser.Scene {
             this.inventoryUI.destroy()
             this.chatbox.destroy()
         })
-
-        this.cooldownText = this.add.text(this.scale.width - 40, 880, 'Cooldown: 0.00s', {
-            fontSize: 38,
-            stroke: '#556677', strokeThickness: 4,
-            fontFamily: 'PixelFont', letterSpacing: 2,
-            color: '#fff'
-        }).setOrigin(1, 0.5)
 
 
         const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
@@ -112,18 +103,39 @@ export default class GameUI extends Phaser.Scene {
             }
         })
 
-        this.joystick = new Joystick({
-            scene: this,
-            x: 400, // Posisi untuk joystick statis
-            y: this.cameras.main.height - 250,
-            // baseTextureKey: 'joystick_base', // Opsional
-            // knobTextureKey: 'joystick_knob', // Opsional
-            size: 200,
-            knobSize: 80,
-            dynamic: true, // Coba true untuk joystick dinamis
-            fixedToCamera: true, // Agar tetap di UI layer
-        })
-        this.joystick.setVisible(true)
+        if(isMobile()){
+            this.joystick = new Joystick({
+                scene: this,
+                x: 400,
+                y: this.scale.height - 300,
+                size: 320,
+                knobSize: 120,
+                baseTint: 0xeeccff,
+                knobTint: 0x443355,
+                dynamic: true,
+            })
+
+            this.joystick2 = new Joystick({
+                scene: this,
+                x: this.scale.width - 320,
+                y: this.scale.height - 360,
+                size: 260,
+                knobSize: 80,
+                baseTint: 0xffccee,
+                knobTint: 0x553344,
+            })
+
+            this.joystick2.onPointerdown = () => {
+                this.gameScene.player?.aimAssist.setVisible(true)
+            }
+
+            this.joystick2.onPointerup = () => {
+                this.gameScene.player?.aimAssist.setVisible(false)
+                this.gameScene.attackDir.x = this.joystick2.x
+                this.gameScene.attackDir.y = this.joystick2.y
+                this.gameScene.camera.setFollowOffset(0, 0)
+            }
+        }
     }
 
     update(){
@@ -134,32 +146,36 @@ export default class GameUI extends Phaser.Scene {
             right: this.input.keyboard?.addKey('D', false)?.isDown
         }
 
-        let cooldown = this.gameScene.player.itemInstance.timestamp+this.gameScene.player.itemInstance.cooldown-Date.now()
-        if(cooldown <= 0){
-            this.cooldownText.setColor('#33ff44')
-            cooldown = 0
-        }
-        else{
-            this.cooldownText.setColor('#ffffff')
-        }
-        this.cooldownText.setText('Cooldown: '+(cooldown/1000).toFixed(2)+'s')
+        if(this.hotbarUI && this.hotbarUI instanceof HotbarUI) this.hotbarUI.update()
 
-        this.statsText.setText('Level: '+this.gameScene.player.stats.getLevel()+'\n'+
-        'XP: '+this.gameScene.player.stats.getXp()+
-        '/'+this.gameScene.player.stats.getNextXp())
+        if(this.statsUI && this.statsUI instanceof StatsUI && this.gameScene.player){
+            this.statsUI.update(this.gameScene.player.stats)
+        }
+
+        if(isMobile() && this.joystick2){
+            if(this.hotbarUI && this.hotbarUI instanceof HotbarUI && this.hotbarUI.isActiveIndexCooldown()) this.joystick2.setAlpha(1)
+            else this.joystick2.setAlpha(0.2)
+
+            if(this.joystick2.x != 0 || this.joystick2.y != 0){
+                const x = this.joystick2.x
+                const y = this.joystick2.y
+
+                const rad = Math.atan2(y, x)
+                this.gameScene.player.aimAssist.setRotation(rad)
+                this.gameScene.camera.setFollowOffset(-x*32, -y*32)
+            }
+        }
     }
 
-    setupInventory(player: Player){
-        this.inventoryUI = new InventoryUI(this, player.inventory).setScale(this.uiScale)
+    setupUI(player: Player){
+        this.hotbarUI = new HotbarUI(this, player.inventory)
+
+        this.inventoryUI = new InventoryUI(this, player.inventory)
         this.inventoryUI.setVisible(false)
 
         this.inventoryUI.background.on('pointerdown', () => {
             this.inventoryUI.setVisible(!this.inventoryUI.visible)
-            this.hotbarUI.setVisible(!this.hotbarUI.visible)
-            this.inventoryButton.setVisible(true)
         })
-
-        this.hotbarUI = new HotbarUI(this, player.inventory).setScale(this.uiScale)
 
         player.inventory.onInventoryUpdate = () => {
             this.inventoryUI.updateItems()
@@ -178,5 +194,7 @@ export default class GameUI extends Phaser.Scene {
         player.inventory.onSetActiveIndex = () => {
             this.socket.emit('updateHotbar', player.inventory.activeIndex)
         }
+
+        this.statsUI = new StatsUI(this)
     }
 }

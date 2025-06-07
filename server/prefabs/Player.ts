@@ -3,7 +3,7 @@ import * as p from 'planck'
 import { Account } from '../server'
 import { Inventory } from './Inventory'
 import { BaseItem } from './BaseItem'
-import { ItemInstance } from './ItemInstance'
+import { ItemInstance, itemList } from './ItemInstance'
 import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Player{
@@ -20,6 +20,8 @@ export class Player{
     itemInstance: BaseItem
     
     attackDir: p.Vec2
+    force: number
+    forceDir: p.Vec2
     knockback: number
     knockbackDir: p.Vec2
     inventory: Inventory
@@ -34,7 +36,7 @@ export class Player{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
+            shape: new p.Box(0.24, 0.3, new p.Vec2(0, 0.2)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -48,6 +50,9 @@ export class Player{
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
         this.attackDir = new p.Vec2(0, 0)
 
+        this.force = 0
+        this.forceDir = new p.Vec2(0, 0)
+
         this.knockback = 0
         this.knockbackDir = new p.Vec2(0, 0)
     }
@@ -55,14 +60,38 @@ export class Player{
     update(){
         if(this.attackDir.length() > 0){
             this.itemInstance.use(this.attackDir.x, this.attackDir.y)
+
+            this.forceDir = this.attackDir.clone()
+            this.force = this.itemInstance.config.force
+
+            for(let i = 0; i < 5; i++){
+                const item = this.inventory.items[i]
+                const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
+                const cooldown = instanceData.config.cooldown
+                if(i == this.inventory.activeIndex) item.timestamp = Date.now()
+                else if(Date.now()-item.timestamp > cooldown) item.timestamp = Date.now()-cooldown+500
+            }
+
             this.attackDir = new p.Vec2(0, 0)
         }
 
         this.account.health = this.health
 
-        if(this.knockback > 0){
-            this.pBody.applyLinearImpulse(new p.Vec2(this.knockbackDir.x*this.knockback, this.knockbackDir.y*this.knockback), this.pBody.getWorldCenter())
-            this.knockback -= 2
+        if(this.knockback > 1 || this.knockback < -1){
+            const dir = this.knockbackDir.clone()
+            dir.normalize()
+            dir.mul(this.knockback)
+            this.pBody.applyLinearImpulse(dir, this.pBody.getWorldCenter())
+            if(this.knockback > 0) this.knockback -= 2
+            else this.knockback += 2
+        }
+        else if(this.force > 1 || this.force < -1){
+            const dir = this.forceDir.clone()
+            dir.normalize()
+            dir.mul(this.force)
+            this.pBody.applyLinearImpulse(dir, this.pBody.getWorldCenter())
+            if(this.force > 0) this.force -= 2
+            else this.force += 2
         }
 
     }
@@ -72,7 +101,7 @@ export class Player{
             const item = this.inventory.items[index]
 
             if(this.itemInstance){
-                const timestamp = this.itemInstance.timestamp
+                const timestamp = item.timestamp
                 this.inventory.setItemTimestamp(this.inventory.activeIndex, timestamp)
                 this.itemInstance.destroy()
             }

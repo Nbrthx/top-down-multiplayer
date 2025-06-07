@@ -1,7 +1,7 @@
 import { Game } from '../scenes/Game'
 import p from 'planck'
 import { BaseItem } from './BaseItem'
-import { ItemInstance } from './ItemInstance'
+import { ItemInstance, itemList } from './ItemInstance'
 import { Inventory } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
 import { TextBox } from './TextBox'
@@ -17,6 +17,7 @@ export class Player extends Phaser.GameObjects.Container{
     scene: Game
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
+    emptyBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
     nameText: Phaser.GameObjects.Text
     
@@ -29,6 +30,7 @@ export class Player extends Phaser.GameObjects.Container{
     pBody: p.Body
     attackDir: p.Vec2
     textbox: TextBox
+    aimAssist: Phaser.GameObjects.Rectangle
 
     constructor(scene: Game, x: number, y: number, id: string, username: string){
         super(scene, x, y)
@@ -43,7 +45,7 @@ export class Player extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
+            shape: new p.Box(0.24, 0.3, new p.Vec2(0, 0.2)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -58,20 +60,24 @@ export class Player extends Phaser.GameObjects.Container{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        const bar = scene.add.rectangle(0, -120, 162, 14, 0x696669)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x44ff55)
+        this.emptyBar = scene.add.rectangle(0, -120, 162, 14, 0x494449).setRounded(4)
+        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x33ff77).setRounded(4)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
-        this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
+        this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
+
+        this.aimAssist = scene.add.rectangle(0,12, 96, 16, 0xffffff, 0.5).setOrigin(-1.5, 0.5).setVisible(false)
+        
+        const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
         this.nameText = scene.add.text(0, -36*scene.gameScale, username+' Lv.'+this.stats.getLevel(), {
             fontFamily: 'PixelFont', fontSize: 24, letterSpacing: 2,
             stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setResolution(4)
 
-        this.add([this.itemInstance, this.sprite, bar, this.healthBar, this.nameText, this.textbox])
+        this.add([shadow, this.aimAssist, this.itemInstance, this.sprite, this.emptyBar, this.healthBar, this.nameText, this.textbox])
     }
 
     update(){
@@ -103,16 +109,31 @@ export class Player extends Phaser.GameObjects.Container{
 
         if(this.attackDir.length() > 0){
             if(this.itemInstance) this.itemInstance.use(this.attackDir.x, this.attackDir.y)
+
+            for(let i = 0; i < 5; i++){
+                const item = this.inventory.items[i]
+                const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
+                const cooldown = instanceData.config.cooldown
+                if(i == this.inventory.activeIndex) item.timestamp = Date.now()
+                else if(Date.now()-item.timestamp > cooldown) item.timestamp = Date.now()-cooldown+500
+            }
+
             this.attackDir = new p.Vec2(0, 0)
         }
 
         this.setDepth(this.y/this.scene.gameScale)
 
+        const isReady = this.itemInstance.timestamp+this.itemInstance.config.cooldown < Date.now()
+        if(this.aimAssist.visible && isReady) this.aimAssist.setFillStyle(0xffffff, 0.5)
+        else if(this.aimAssist.visible) this.aimAssist.setFillStyle(0xcc3333, 0.4)
+
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
         
-        this.healthBar.setSize(160*this.health/this.maxHealth, 12)
-        this.healthBar.setX(-80-80*this.health/-this.maxHealth)
+        if(this.healthBar.visible){
+            this.healthBar.setSize(160*this.health/this.maxHealth, 12)
+            this.healthBar.setX(-80-80*this.health/-this.maxHealth)
+        }
     }
 
     equipItem(index: number){
@@ -120,7 +141,7 @@ export class Player extends Phaser.GameObjects.Container{
             const item = this.inventory.items[index]
 
             if(this.itemInstance){
-                const timestamp = this.itemInstance.timestamp
+                const timestamp = item.timestamp
                 this.inventory.setItemTimestamp(this.inventory.activeIndex, timestamp)
                 this.itemInstance.destroy()
             }

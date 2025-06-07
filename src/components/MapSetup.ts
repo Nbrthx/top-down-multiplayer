@@ -52,11 +52,11 @@ export class MapSetup{
         map.getObjectLayer('tree1')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number }
             const tree = scene.add.image(o.x*scene.gameScale, o.y*scene.gameScale, 'tree1')
-            tree.setScale(scene.gameScale).setOrigin(0.5, 0.9).setDepth(o.y)
+            tree.setScale(scene.gameScale).setOrigin(0.5, 0.85).setDepth(o.y-16)
             tree.setTint(i%2 == 0 ? 0xeeffee : 0xffffcc)
 
             const body = scene.world.createBody(new p.Vec2((o.x+16/32)/32, (o.y+24/32)/32))
-            body.createFixture(new p.Box(16/2/32, 10/2/32))
+            body.createFixture(new p.Box(24/2/32, 16/2/32))
             body.setUserData(tree)
             this.collision.push(body)
             i++
@@ -135,22 +135,27 @@ export class MapSetup{
             this.scene.world.destroyBody(v)
         })
         this.collision = []
+
         this.scene.others.forEach(v => {
             v.destroy()
         })
         this.scene.others = []
+
         this.scene.enemies.forEach(v => {
             v.destroy()
         })
         this.scene.enemies = []
+
         this.layers.forEach(v => {
             v.destroy()
         })
         this.layers = []
+
         this.scene.droppedItems.forEach(v => {
             v.destroy()
         })
         this.scene.droppedItems = []
+        
         this.entrances.forEach(v => {
             this.scene.world.destroyBody(v)
         })

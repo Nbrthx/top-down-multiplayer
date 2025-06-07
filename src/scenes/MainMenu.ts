@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { io } from 'socket.io-client';
-import { Authentication } from '../components/Authentication';
+import { Authentication } from '../prefabs/ui/Authentication';
 
 export const HOST_ADDRESS = 'http://localhost:3000'
 export const socket = io(HOST_ADDRESS, { transports: ['websocket'] })
@@ -18,7 +18,7 @@ export class MainMenu extends Scene{
             authentication.login(localStorage.getItem('username') as string, '', true)
         }
         else{
-            authentication.element.setVisible(true)
+            authentication.setVisible(true)
         }
 
         const bg = this.add.image(this.scale.width/2, this.scale.height/2, 'bg')
@@ -34,14 +34,14 @@ export class MainMenu extends Scene{
             align: 'center'
         }).setOrigin(0.5);
 
-        const play = this.add.text(this.scale.width/2, 480, 'Play', {
+        const play = this.add.text(this.scale.width/2, this.scale.height/2, 'Play', {
             fontFamily: 'PixelFont', fontSize: 56, color: '#ffffff',
             stroke: '#000000', strokeThickness: 12,
             align: 'center'
         }).setOrigin(0.5);
         play.setInteractive()
 
-        const logout = this.add.text(this.scale.width/2, 580, 'Logout', {
+        const logout = this.add.text(this.scale.width/2, this.scale.height/2+100, 'Logout', {
             fontFamily: 'PixelFont', fontSize: 56, color: '#ffffff',
             stroke: '#000000', strokeThickness: 12,
             align: 'center'
@@ -55,7 +55,7 @@ export class MainMenu extends Scene{
         }).setOrigin(1);
 
         play.once('pointerup', () => {
-            if(authentication.element.visible) return
+            if(authentication.visible) return
 
             this.scale.startFullscreen();
 
@@ -66,7 +66,7 @@ export class MainMenu extends Scene{
             localStorage.removeItem('username')
             localStorage.removeItem('salt')
 
-            authentication.element.setVisible(true)
+            authentication.setVisible(true)
 
             socket.disconnect()
             socket.connect()

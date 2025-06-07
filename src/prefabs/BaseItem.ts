@@ -20,7 +20,7 @@ export abstract class BaseItem extends Phaser.GameObjects.Container {
     abstract use(x: number, y: number): void;
 
     canUse(): boolean {
-        return this.timestamp+this.cooldown < Date.now()-50;
+        return true;
     }
 
     destroy(fromScene?: boolean): void {

@@ -6,12 +6,18 @@ import { Preloader } from './scenes/Preloader';
 
 import { Game, Types } from "phaser";
 
-const width = screen.width>screen.height?screen.width/screen.height:screen.height/screen.width
+const ratio = screen.width>screen.height?screen.width/screen.height:screen.height/screen.width
+let height = 1200
+
+if(ratio > 16/10) height = 1080 
+if(ratio > 16/9) height = 960 
+
+let width = Math.max(Math.min(height*ratio, 2400), 1920)
 
 const config: Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    width: Math.max(Math.min(1080*width, 2400), 1440),
-    height: 1080,
+    type: Phaser.WEBGL,
+    width: width,
+    height: height,
     parent: 'game-container',
     fullscreenTarget: 'game-container',
     backgroundColor: '#454449',
@@ -20,7 +26,8 @@ const config: Types.Core.GameConfig = {
     disableContextMenu: true,
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        autoRound: true
     },
     input: {
         activePointers: 2, // Untuk multi-touch
@@ -46,3 +53,8 @@ const config: Types.Core.GameConfig = {
 export default new Game(config);
 
 document.addEventListener('contextmenu', event => event.preventDefault())
+document.addEventListener("keydown", function(event) {
+  if (event.key === "F11") {
+    event.preventDefault();
+  }
+})

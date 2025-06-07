@@ -30,6 +30,8 @@ export class Game{
     inputData: Map<string, InputData[]>
     mapSetup: MapSetup
 
+    odd: boolean = false
+
     constructor(gameManager: GameManager, id: string, isPvpAllowed: boolean){
         this.gameManager = gameManager
         this.id = id
@@ -117,13 +119,13 @@ export class Game{
 
                 dir.x += idir.x
                 dir.y += idir.y
-            })
+            }) 
 
             dir.normalize()
             dir.mul(player.speed)
 
             if(dir) player.pBody.setLinearVelocity(dir)
-            if(attackDir) player.attackDir = attackDir
+            if(attackDir && player.itemInstance.canUse()) player.attackDir = attackDir
         });
 
         this.broadcastOutput()
@@ -176,7 +178,6 @@ export class Game{
             players: this.players.map(v => {
                 return {
                     id: v.id,
-                    worldId: this.id,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
                     health: v.health,
@@ -187,11 +188,9 @@ export class Game{
             enemies: this.enemies.map(v => {
                 return {
                     id: v.id,
-                    worldId: this.id,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
-                    health: v.health,
-                    timestamp: Date.now()
+                    health: v.health
                 }
             }),
             droppedItems: this.droppedItems.map(v => {

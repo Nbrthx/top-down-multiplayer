@@ -1,15 +1,16 @@
-import { Inventory } from "./Inventory";
+import { GameUI } from "../../scenes/GameUI";
+import { Inventory } from "../Inventory";
 
 export class InventoryUI extends Phaser.GameObjects.Container {
 
-    scene: Phaser.Scene;
+    scene: GameUI;
     image: Phaser.GameObjects.Image;
     inventory: Inventory;
     inventoryContainer: Phaser.GameObjects.Container;
     hotbarContainer: Phaser.GameObjects.Container;
     background: Phaser.GameObjects.Rectangle;
 
-    constructor(scene: Phaser.Scene, inventory: Inventory) {
+    constructor(scene: GameUI, inventory: Inventory) {
         super(scene, scene.scale.width / 2, scene.scale.height / 2);
 
         this.scene = scene;
@@ -24,7 +25,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
         this.inventoryContainer = this.scene.add.container(-320 + 16, -328).setName('inventory');
         this.hotbarContainer = this.scene.add.container(-320 + 16, 232).setName('hotbar');
 
-        this.background = scene.add.rectangle(0, 0, 1920, 1080)
+        this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
         this.background.setInteractive()
 
         this.add([this.background, this.image, this.inventoryContainer, this.hotbarContainer])

@@ -15,6 +15,7 @@ export class Enemy extends Phaser.GameObjects.Container{
     scene: Game
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
+    emptyBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
 
     pBody: p.Body
@@ -39,7 +40,7 @@ export class Enemy extends Phaser.GameObjects.Container{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.4, new p.Vec2(0, 0.3)),
+            shape: new p.Box(0.24, 0.3, new p.Vec2(0, 0.2)),
             filterCategoryBits: 2,
             filterMaskBits: 1,
         })
@@ -50,19 +51,21 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        const bar = scene.add.rectangle(0, -120, 162, 14, 0x696669)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xff5544)
+        this.emptyBar = scene.add.rectangle(0, -120, 162, 14, 0x494449).setRounded(4)
+        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xee5544).setRounded(4)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
 
-        this.sprite = scene.add.sprite(0, 0, 'char').setScale(scene.gameScale)
+        this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
         this.sprite.setTint(0xff9999)
+        
+        const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
         this.triggerArea = this.createArea(2)
         this.visionArea = this.createArea(6)
 
-        this.add([this.itemInstance, this.sprite, bar, this.healthBar])
+        this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.healthBar])
     }
 
     update(){

@@ -16,6 +16,7 @@ interface Range{
     attackDelay: number
     damage: number
     knockback: number
+    force: number
 }
 
 export class RangeWeapon extends BaseItem{

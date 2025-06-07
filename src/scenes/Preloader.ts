@@ -26,6 +26,7 @@ export class Preloader extends Scene{
         this.load.html('registerform', 'html/registerform.html')
 
         // Character
+        this.load.image('shadow', 'character/shadow.png')
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('frogger', 'character/frogger.png', { frameWidth: 384, frameHeight: 128 })
 
@@ -38,9 +39,10 @@ export class Preloader extends Scene{
         // Icon
         this.load.image('icon-sword', 'icon/sword.png')
         this.load.image('icon-bow', 'icon/bow.png')
+        this.load.image('icon-inventory', 'icon/inventory.png')
 
         // Environtment
-        this.load.image('tilemaps', 'environment/tilemaps.png')
+        this.load.image('tilemaps', 'environment/tilemaps2.png')
         this.load.image('tree1', 'environment/tree1.png')
 
         this.load.tilemapTiledJSON('test', 'environment/test.json')
@@ -49,6 +51,8 @@ export class Preloader extends Scene{
         // UI
         this.load.image('inventory', 'ui/inventory.png')
         this.load.image('hotbar', 'ui/hotbar.png')
+        this.load.image('stats', 'ui/stats.png')
+        this.load.spritesheet('cooldown-anim', 'ui/cooldown-anim.png', { frameWidth: 24, frameHeight: 24 })
 
         this.load.image('logo', 'logo.png');
 
@@ -56,6 +60,7 @@ export class Preloader extends Scene{
         this.load.audio('audio-hit', 'audio/hit.ogg')
         this.load.audio('audio-punch', 'audio/punch.wav')
         this.load.audio('audio-sword', 'audio/sword.mp3')
+        this.load.audio('audio-bow', 'audio/bow.wav')
         this.load.audio('audio-step', 'audio/step.wav')
     }
 
@@ -99,7 +104,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'sword-attack',
-            frames: this.anims.generateFrameNumbers('sword', { frames: [0, 1, 2, 3, 4, 5, 5, 5, 5] }),
+            frames: this.anims.generateFrameNumbers('sword', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5] }),
             frameRate: 20
         })
         this.anims.create({

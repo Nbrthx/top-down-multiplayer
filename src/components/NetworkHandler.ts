@@ -7,18 +7,18 @@ import { DroppedItem } from '../prefabs/DroppedItem';
 import { MapSetup } from './MapSetup';
 import { Projectile, ProjectileConfig } from '../prefabs/items/RangeWeapon';
 import { Item } from '../prefabs/Inventory';
+import { isMobile } from '../scenes/GameUI';
 
 
-interface OutputData{
+export interface OutputData{
     id: string,
-    worldId: string,
     pos: { x: number, y: number },
     attackDir: { x: number, y: number },
     health: number
     timestamp: number
 }
 
-interface GameState{
+export interface GameState{
     players: (OutputData & { xp: number })[]
     enemies: OutputData[]
     droppedItems: {
@@ -61,15 +61,7 @@ export class NetworkHandler{
         scene.spatialAudio.addListenerBody(scene.player.pBody)
         scene.player.nameText.setColor('#66ffcc')
 
-        scene.input.on('pointerdown', (_pointer: Phaser.Input.Pointer) => {
-            let x = _pointer.worldX-scene.player.x
-            let y = _pointer.worldY-scene.player.y
-
-            const dir = new p.Vec2(x, y)
-            dir.normalize()
-
-            scene.attackDir = dir
-        })
+        if(!isMobile()) scene.player.aimAssist.setVisible(true)
 
         setTimeout(() => {
             if(this.isAuthed) return;
@@ -120,7 +112,7 @@ export class NetworkHandler{
         scene.player.inventory.setActiveIndex(0)
         scene.player.health = account.health
 
-        scene.UI.setupInventory(scene.player)
+        scene.UI.setupUI(scene.player)
 
         others.forEach(v => {
             if(v.id == this.socket.id) return
@@ -181,7 +173,7 @@ export class NetworkHandler{
 
                 if(scene.player.health != playerData.health){
                     if(scene.player.health > playerData.health){
-                        scene.camera.shake(100, 0.005)
+                        scene.camera.shake(100, 0.008)
                         scene.player.hitEffect()
                     }
                     scene.player.health = playerData.health
@@ -334,7 +326,7 @@ export class NetworkHandler{
 
         console.log('change position by client')
 
-        callback()
+        scene.world.queueUpdate(() => callback())
     }
 
     chat(data: { id: string, username: string, msg: string}){

@@ -1,27 +1,29 @@
 import { Socket } from 'socket.io-client';
-import GameUI from '../scenes/GameUI';
+import { GameUI } from '../../scenes/GameUI';
 
-export class Chat{
+export class Chat extends Phaser.GameObjects.DOMElement {
 
     scene: GameUI
     socket: Socket
-    element: Phaser.GameObjects.DOMElement
     submit: HTMLButtonElement | null
     chat: HTMLInputElement | null
 
     constructor(scene: GameUI, socket: Socket){
+        super(scene, scene.scale.width/2, 10)
+
+        scene.add.existing(this)
+
         this.scene = scene
         this.socket = socket
 
-        this.element = scene.add.dom(scene.scale.width/2, 40).createFromCache('chatbox').setName('chatbox')
-        this.element.setScale(1.5)
+        this.createFromCache('chatbox').setName('chatbox')
+        this.setScale(1.4).setOrigin(0.5, 0)
 
-        this.submit = this.element.getChildByID('submit') as HTMLButtonElement
-        this.chat = this.element.getChildByID('chat') as HTMLInputElement
+        this.submit = this.getChildByID('submit') as HTMLButtonElement
+        this.chat = this.getChildByID('chat') as HTMLInputElement
 
         this.submit.addEventListener('pointerup', () => this.onSubmit())
 
-        
         this.chat.onfocus = () => {
             if(scene.input.keyboard){
                 scene.input.keyboard.enabled = false
@@ -44,6 +46,6 @@ export class Chat{
     }
 
     destroy(){
-        this.element.destroy()
+        super.destroy()
     }
 }

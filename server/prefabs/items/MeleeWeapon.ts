@@ -14,6 +14,7 @@ interface Melee{
     attackDelay: number
     damage: number
     knockback: number
+    force: number
 }
 
 export class MeleeWeapon extends BaseItem{

@@ -1,13 +1,13 @@
 import { Scene } from 'phaser';
 import p from 'planck';
 import { Player } from '../prefabs/Player';
-import GameUI from './GameUI';
+import { GameUI, isMobile } from './GameUI';
 import { Socket } from 'socket.io-client'
 import { ContactEvents } from '../components/ContactEvents';
 import { createDebugGraphics } from '../components/PhysicsDebug';
 import { MapSetup } from '../components/MapSetup';
-import { Enemy } from '../prefabs/Enemy';
-import { NetworkHandler } from '../components/NetworkHandler';
+import { Enemy } from '../prefabs/Enemy'; 
+import { NetworkHandler, GameState, OutputData } from '../components/NetworkHandler'; // Diperbarui
 import { DroppedItem } from '../prefabs/DroppedItem';
 import { SpatialAudio } from '../components/SpatialAudio';
 import { Projectile } from '../prefabs/items/RangeWeapon';
@@ -76,6 +76,33 @@ export class Game extends Scene{
         else this.socket.on('connect', () => {
             this.networkHandler = new NetworkHandler(this)
         })
+
+        this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if(!this.player) return;
+            if(isMobile()) return
+
+            let x = pointer.worldX-this.player.x
+            let y = pointer.worldY-this.player.y-12
+
+            const rad = Math.atan2(y, x)
+
+            this.player.aimAssist.setRotation(rad)
+
+            this.camera.setFollowOffset(-x/this.gameScale/4, -y/this.gameScale/4)
+        })
+
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if(!this.player) return;
+            if(isMobile()) return
+
+            let x = pointer.worldX-this.player.x
+            let y = pointer.worldY-this.player.y-12
+
+            const dir = new p.Vec2(x, y)
+            dir.normalize()
+
+            this.attackDir = dir
+        })
     }
 
     update(currentTime: number) {
@@ -116,7 +143,7 @@ export class Game extends Scene{
             vel.x = 1;
         }
 
-        if(vel.length() == 0){
+        if(vel.length() == 0 && this.UI.joystick){
             vel.x = this.UI.joystick.x;
             vel.y = this.UI.joystick.y;
         }
@@ -134,9 +161,59 @@ export class Game extends Scene{
             this.attackDir = new p.Vec2()
         }
 
-        this.networkHandler.pendingOutput.splice(0).forEach(data => {
-            this.networkHandler.update(data)
-        })
+        const pendingUpdates = this.networkHandler.pendingOutput.splice(0); // Ambil semua data dan kosongkan antrian
+
+        if (pendingUpdates.length > 0) {
+            const latestPlayers = new Map<string, OutputData & { xp: number }>();
+            const latestEnemies = new Map<string, OutputData>();
+            
+            let finalDroppedItems: GameState['droppedItems'] = [];
+            let finalProjectiles: GameState['projectiles'] = [];
+
+            pendingUpdates.forEach(gameState => {
+                gameState.players.forEach(playerData => {
+                    const existingPlayer = latestPlayers.get(playerData.id);
+                    if (existingPlayer) {
+                        if(playerData.attackDir.x != 0 || playerData.attackDir.y != 0){
+                            existingPlayer.attackDir = playerData.attackDir;
+                        }
+                        existingPlayer.timestamp = playerData.timestamp
+                        existingPlayer.pos = playerData.pos;
+                        existingPlayer.health = playerData.health;
+                        existingPlayer.xp = playerData.xp;
+                    } else {
+                        latestPlayers.set(playerData.id, playerData);
+                    }
+                });
+
+                gameState.enemies.forEach(enemyData => {
+                    const existingEnemy = latestEnemies.get(enemyData.id);
+                    if (existingEnemy) {
+                        if(enemyData.attackDir.x != 0 || enemyData.attackDir.y != 0){
+                            existingEnemy.attackDir = enemyData.attackDir;
+                        }
+                        existingEnemy.timestamp = enemyData.timestamp
+                        existingEnemy.pos = enemyData.pos;
+                        existingEnemy.health = enemyData.health;
+                    } else {
+                        latestEnemies.set(enemyData.id, enemyData);
+                    }
+                });
+
+                // Ambil daftar droppedItems dan projectiles dari GameState saat ini (yang terakhir akan digunakan)
+                finalDroppedItems = gameState.droppedItems;
+                finalProjectiles = gameState.projectiles;
+            });
+
+            const mergedGameState: GameState = {
+                players: Array.from(latestPlayers.values()),
+                enemies: Array.from(latestEnemies.values()),
+                droppedItems: finalDroppedItems,
+                projectiles: finalProjectiles,
+            };
+
+            this.networkHandler.update(mergedGameState); // Panggil update sekali dengan data yang sudah digabung
+        }
 
         this.player.update()
 

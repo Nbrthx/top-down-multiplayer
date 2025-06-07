@@ -104,7 +104,8 @@ export class Projectile extends Phaser.GameObjects.Image {
     scene: Game;
     uid: string;
     pBody: p.Body;
-    dir: p.Vec2;
+    basePos: p.Vec2
+    attackDir: p.Vec2;
     config: ProjectileConfig
 
     constructor(scene: Game, pos: p.Vec2, dir: p.Vec2, config: ProjectileConfig, uid: string) {
@@ -114,7 +115,8 @@ export class Projectile extends Phaser.GameObjects.Image {
 
         this.scene = scene
         this.uid = uid
-        this.dir = new p.Vec2(dir.x, dir.y)
+        this.basePos = pos
+        this.attackDir = new p.Vec2(dir.x, dir.y)
         this.config = config
 
         this.pBody = scene.world.createDynamicBody({
@@ -135,11 +137,14 @@ export class Projectile extends Phaser.GameObjects.Image {
     
 
     update() {
-        if(this.dir.x != 0 || this.dir.y != 0){
+        if(this.attackDir.x != 0 || this.attackDir.y != 0){
             this.setDepth(this.y/this.scene.gameScale)
 
             this.x = this.pBody.getPosition().x * this.scene.gameScale * 32
             this.y = this.pBody.getPosition().y * this.scene.gameScale * 32
+        }
+        if(this.basePos.clone().sub(this.pBody.getPosition()).length() > this.config.range){
+            this.destroy()
         }
     }
 
