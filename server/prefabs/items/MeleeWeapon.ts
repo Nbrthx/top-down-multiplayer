@@ -2,7 +2,7 @@ import * as p from "planck";
 import { Game } from "../../GameWorld";
 import { BaseItem } from "../BaseItem";
 
-interface Melee{
+export interface Melee{
     texture: string
     offsetMultipler: number
     hitboxSize: {

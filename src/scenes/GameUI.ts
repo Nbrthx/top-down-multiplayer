@@ -66,7 +66,8 @@ export class GameUI extends Phaser.Scene {
         this.inventoryButton = this.add.image(this.scale.width/2, this.scale.height - 80, 'icon-inventory')
         this.inventoryButton.setScale(6).setInteractive()
         this.inventoryButton.on('pointerdown', () => {
-            this.inventoryUI.setVisible(!this.inventoryUI.visible)
+            this.inventoryUI.setVisible(true)
+            this.chatbox.setVisible(false)
         })
 
         this.gameScene.events.on('start', () => {
@@ -162,19 +163,22 @@ export class GameUI extends Phaser.Scene {
 
                 const rad = Math.atan2(y, x)
                 this.gameScene.player.aimAssist.setRotation(rad)
-                this.gameScene.camera.setFollowOffset(-x*32, -y*32)
+                this.gameScene.camera.setFollowOffset(-x*40, -y*40)
             }
         }
     }
 
     setupUI(player: Player){
+        this.statsUI = new StatsUI(this)
+
         this.hotbarUI = new HotbarUI(this, player.inventory)
 
         this.inventoryUI = new InventoryUI(this, player.inventory)
         this.inventoryUI.setVisible(false)
 
         this.inventoryUI.background.on('pointerdown', () => {
-            this.inventoryUI.setVisible(!this.inventoryUI.visible)
+            this.inventoryUI.setVisible(false)
+            this.chatbox.setVisible(true)
         })
 
         player.inventory.onInventoryUpdate = () => {
@@ -188,13 +192,15 @@ export class GameUI extends Phaser.Scene {
             const swap = { index, index2 }
             console.log(swap)
 
-            this.socket.emit('updateInventory', swap)
+            this.socket.emit('swapInventory', swap)
         }
 
         player.inventory.onSetActiveIndex = () => {
-            this.socket.emit('updateHotbar', player.inventory.activeIndex)
+            this.socket.emit('setHotbarIndex', player.inventory.activeIndex)
         }
 
-        this.statsUI = new StatsUI(this)
+        player.inventory.onDropItem = (index, dir) => {
+            this.socket.emit('dropItem', index, dir)
+        }
     }
 }

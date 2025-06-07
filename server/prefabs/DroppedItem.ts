@@ -7,17 +7,15 @@ export class DroppedItem{
     scene: Game
     uid: string;
     id: string
-    name: string
     pBody: p.Body
 
     timeout: NodeJS.Timeout
 
 
-    constructor(scene: Game, x: number, y: number, id: string, name: string){
+    constructor(scene: Game, x: number, y: number, id: string){
         this.scene = scene;
         this.uid = crypto.randomUUID();
         this.id = id;
-        this.name = name;
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x, y),
@@ -34,11 +32,10 @@ export class DroppedItem{
 
             if(!(player instanceof Player)) return;
 
-            if(player.inventory.addItem({
-                id: this.id,
-                name: this.name,
-                timestamp: Date.now()
-            })) this.destroy();
+            if(player.inventory.addItem(this.id)){
+                this.destroy();
+                scene.droppedItems.splice(scene.droppedItems.indexOf(this), 1)
+            }
         })
 
         this.timeout = setTimeout(() => {
@@ -50,8 +47,5 @@ export class DroppedItem{
         this.scene.contactEvents.destroyEventByBody(this.pBody);
         this.pBody.getWorld().queueUpdate(world => world.destroyBody(this.pBody))
         clearTimeout(this.timeout);
-        this.onDestroy()
     }
-
-    onDestroy(){}
 }

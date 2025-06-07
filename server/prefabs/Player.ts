@@ -3,7 +3,7 @@ import * as p from 'planck'
 import { Account } from '../server'
 import { Inventory } from './Inventory'
 import { BaseItem } from './BaseItem'
-import { ItemInstance, itemList } from './ItemInstance'
+import { ItemInstance } from './ItemInstance'
 import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Player{
@@ -64,13 +64,7 @@ export class Player{
             this.forceDir = this.attackDir.clone()
             this.force = this.itemInstance.config.force
 
-            for(let i = 0; i < 5; i++){
-                const item = this.inventory.items[i]
-                const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
-                const cooldown = instanceData.config.cooldown
-                if(i == this.inventory.activeIndex) item.timestamp = Date.now()
-                else if(Date.now()-item.timestamp > cooldown) item.timestamp = Date.now()-cooldown+500
-            }
+            this.inventory.refreshTimestamp()
 
             this.attackDir = new p.Vec2(0, 0)
         }

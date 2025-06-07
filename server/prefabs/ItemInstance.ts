@@ -1,14 +1,26 @@
 import * as p from 'planck'
 import { Game } from "../GameWorld";
 import { BaseItem } from "./BaseItem";
-import { MeleeWeapon } from "./items/MeleeWeapon";
-import { RangeWeapon } from "./items/RangeWeapon";
+import { MeleeWeapon, Melee } from "./items/MeleeWeapon";
+import { RangeWeapon, Range } from "./items/RangeWeapon";
 
-export const itemList: {
+interface MeleeIteme {
     id: string
-    type: string
-    config: any
-}[] = [
+    type: 'melee'
+    config: Melee
+}
+
+interface RangeItem {
+    id: string
+    type: 'range'
+    config: Range
+}
+
+type Item = MeleeIteme | RangeItem
+
+export type BaseItemConfig = Melee | Range
+
+export const itemList: Item[] = [
     {
         id: 'punch',
         type: 'melee',
@@ -68,7 +80,7 @@ export class ItemInstance{
         this.scene = scene;
         this.parentBody = parentBody;
 
-        const defaultWeapon = itemList[0];
+        const defaultConfig = itemList[0].config as Melee;
         const weapon = itemList.find(weapon => weapon.id === weaponId || '');
 
         if(weapon){
@@ -79,11 +91,11 @@ export class ItemInstance{
                 this.itemInstance = new RangeWeapon(this.scene, this.parentBody, weapon.config);
             }
             else{
-                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
+                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultConfig);
             }
         }
         else{
-            this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultWeapon.config);
+            this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultConfig);
         }
     }
 }

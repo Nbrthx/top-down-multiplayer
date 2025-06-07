@@ -30,13 +30,19 @@ export class SocketManager {
         })
 
         socket.on('playerInput', (input: InputData) => {
+            if(!input) return
+            if(typeof input.dir.x !== 'number' && typeof input.dir.y !== 'number') return
+            if(typeof input.attackDir.x !== 'number' && typeof input.attackDir.y !== 'number') return
+
             this.gameManager.handleInput(socket.id, input);
         });
 
-        socket.on('updateInventory', (swap: {
+        socket.on('swapInventory', (swap: {
             index: number,
             index2: number
         }) => {
+            if(!Number.isInteger(swap.index) && !Number.isInteger(swap.index2)) return
+
             const world = this.gameManager.getPlayerWorld(socket.id)
             if(!world) return
 
@@ -49,7 +55,9 @@ export class SocketManager {
             socket.broadcast.to(world.id).emit('otherUpdateInventory', socket.id, player.inventory.items)
         })
 
-        socket.on('updateHotbar', (index: number) => {
+        socket.on('setHotbarIndex', (index: number) => {
+            if(!Number.isInteger(index)) return
+
             const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
             if(!player) return
 
@@ -57,8 +65,18 @@ export class SocketManager {
             socket.broadcast.to(player.scene.id).emit('otherUpdateHotbar', socket.id, index)
         })
 
+        socket.on('dropItem', (index: number, dir: { x: number, y: number }) => {
+            if(!Number.isInteger(index) && typeof dir.x !== 'number' && typeof dir.y !== 'number') return
+
+            const world = this.gameManager.getPlayerWorld(socket.id)
+            if(!world) return
+
+            world.playerDropItem(socket.id, index, dir)
+        })
+
         socket.on('chat', msg => {
-            if(typeof msg !== 'string') return
+            if(typeof msg !== 'string' && msg.length > 64) return
+
             const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
             if(!player) return
 

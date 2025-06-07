@@ -2,7 +2,7 @@ import * as p from "planck";
 import { Game } from "../../GameWorld";
 import { BaseItem } from "../BaseItem";
 
-interface Range{
+export interface Range{
     texture: string
     projectileTexture: string
     offsetMultipler: number

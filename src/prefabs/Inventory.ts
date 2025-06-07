@@ -1,8 +1,8 @@
+import { itemList } from "./ItemInstance";
 import { Player } from "./Player";
 
 export interface Item{
     id: string;
-    name: string;
     timestamp: number;
 }
 
@@ -20,23 +20,9 @@ export class Inventory {
         for(let i = 0; i < 25; i++){
             this.items.push({
                 id: '',
-                name: '',
                 timestamp: 0
             })
         }
-    }
-
-    addItem(item: Item) {
-        for(let i = 0; i < 25; i++){
-            if(this.items[i] === undefined || this.items[i].id == ''){
-                this.items[i] = item
-
-                if(i == this.activeIndex) this.parent.equipItem(this.activeIndex)
-                this.onInventoryUpdate()
-                return true
-            }
-        }
-        return false
     }
 
     swapItem(index: number, index2: number) {
@@ -49,6 +35,9 @@ export class Inventory {
 
         this.onInventorySwap(index, index2)
         this.parent.equipItem(this.activeIndex)
+
+        this.refreshTimestamp(false)
+
         return true
     }
 
@@ -75,9 +64,23 @@ export class Inventory {
         this.items[index].timestamp = timestamp
     }
 
+    refreshTimestamp(isUse: boolean = true){
+        for(let i = 0; i < 5; i++){
+            const item = this.items[i]
+            if(!item) continue
+            
+            const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
+            const cooldown = instanceData.config.cooldown
+            if(i == this.activeIndex && isUse) item.timestamp = Date.now()
+            else if(Date.now()-item.timestamp > cooldown) item.timestamp = Date.now()-cooldown+500
+        }
+    }
+
     onInventoryUpdate() {}
 
     onInventorySwap(index: number, index2: number) { index; index2; }
 
     onSetActiveIndex() {}
+
+    onDropItem(index: number, dir: { x: number, y: number }) { index; dir; }
 }

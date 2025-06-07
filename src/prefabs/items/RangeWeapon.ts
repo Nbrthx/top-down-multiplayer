@@ -3,7 +3,7 @@ import { Game } from "../../scenes/Game";
 import { BaseItem } from "../BaseItem";
 import { SpatialSound } from "../../components/SpatialAudio";
 
-interface Range{
+export interface Range{
     texture: string
     projectileTexture: string
     offsetMultipler: number

@@ -24,7 +24,6 @@ export interface GameState{
     droppedItems: {
         uid: string
         id: string
-        name: string
         pos: { x: number, y: number }
     }[]
     projectiles: {
@@ -250,7 +249,7 @@ export class NetworkHandler{
             const item = scene.droppedItems.find(v => v.uid == itemData.uid)
             if(!item){
                 console.log('spawn item', itemData)
-                const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.name, itemData.uid)
+                const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.uid)
                 this.scene.droppedItems.push(newItem)
             }
         })

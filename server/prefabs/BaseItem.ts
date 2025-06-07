@@ -1,5 +1,6 @@
 import { Game } from "../GameWorld";
 import * as p from 'planck'
+import { BaseItemConfig } from "./ItemInstance";
 
 export abstract class BaseItem {
 
@@ -9,7 +10,7 @@ export abstract class BaseItem {
     attackDir: p.Vec2
     timestamp: number
     cooldown: number
-    config: any
+    config: BaseItemConfig
 
     constructor(scene: Game, parentBody: p.Body) {
         this.scene = scene;

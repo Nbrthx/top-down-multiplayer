@@ -148,12 +148,11 @@ export class Game{
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
 
-                const items = [{ id: 'sword', name: 'Sword' }, { id: 'bow', name: 'Bow' }]
+                const items = [{ id: 'sword' }, { id: 'bow' }]
                 const randomItem = items[Math.floor(Math.random()*2)]
                 
-                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem.id, randomItem.name)
+                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem.id)
                 this.droppedItems.push(droppedItem)
-                droppedItem.onDestroy = () => this.droppedItems.splice(this.droppedItems.indexOf(droppedItem), 1)
 
                 enemy.attacker.forEach(player => {
                     player.account.xp += 1
@@ -197,7 +196,6 @@ export class Game{
                 return {
                     uid: v.uid,
                     id: v.id,
-                    name: v.name,
                     pos: v.pBody.getPosition(),
                 }
             }),
@@ -221,7 +219,6 @@ export class Game{
         
         player.account.inventory = player.inventory.items
         player.health = account.health
-        player.maxHealth = 100 + account.xp
 
         this.entityBodys.push(player.pBody)
         this.players.push(player)
@@ -237,14 +234,16 @@ export class Game{
                 username: v.account.username,
                 items: v.inventory.items,
                 activeIndex: v.inventory.activeIndex,
-                pos: v.pBody.getPosition()
+                pos: v.pBody.getPosition(),
+                health: account.health
             }
         }))
         socket?.broadcast.to(this.id).emit('playerJoined', {
             id: socket.id,
             username: account.username,
             items: account.inventory,
-            from: from || 'spawn'
+            from: from || 'spawn',
+            health: account.health
         });
 
         console.log('Player '+id+' has added to '+this.id)
@@ -268,5 +267,21 @@ export class Game{
         socket?.leave(this.id)
         
         console.log('Player '+id+' has removed from '+this.id)
+    }
+
+    playerDropItem(id: string, index: number, dir: { x: number, y: number }){
+        const player = this.players.find(v => v.id == id)
+        if(!player) return
+
+        const item = player.inventory.items[index]
+        if(player.inventory.removeItem(index)){
+            const pos = player.pBody.getPosition().clone()
+            const newDir = new p.Vec2(dir.x, dir.y)
+            newDir.normalize()
+            pos.add(newDir)
+
+            const droppedItem = new DroppedItem(this, pos.x, pos.y, item.id)
+            this.droppedItems.push(droppedItem)
+        }
     }
 }

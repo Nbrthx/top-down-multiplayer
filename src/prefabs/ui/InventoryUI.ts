@@ -20,13 +20,13 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
         this.image = this.scene.add.image(0, 0, 'inventory');
         this.image.setScale(4)
-        this.image.setInteractive()
+        this.image.setInteractive({ dropZone: true })
 
         this.inventoryContainer = this.scene.add.container(-320 + 16, -328).setName('inventory');
         this.hotbarContainer = this.scene.add.container(-320 + 16, 232).setName('hotbar');
 
         this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
-        this.background.setInteractive()
+        this.background.setInteractive({ dropZone: true }).setName('background')
 
         this.add([this.background, this.image, this.inventoryContainer, this.hotbarContainer])
 
@@ -86,12 +86,26 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                     itemIcon.y = y + 48;
                 });
 
-                itemIcon.on('drop', (_pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {
-                    const index = parseInt(target.name.split('-')[1])
+                itemIcon.on('drop', (pointer: Phaser.Input.Pointer, target: Phaser.GameObjects.GameObject) => {
+                    if(target.name == 'background'){
+                        const x = pointer.x - this.scene.scale.width/2
+                        const y = pointer.y - this.scene.scale.height/2
 
-                    this.inventory.swapItem(i*5 + j + startIndex, index)
-    
-                    this.updateItems()
+                        this.inventory.onDropItem(i*5 + j + startIndex, { x: x, y: y })
+                    }
+                    else if(!target.name || target.name == ''){
+                        itemIcon.x = x + 48;
+                        itemIcon.y = y + 48;
+                    }
+                    else{
+                        const index = parseInt(target.name.split('-')[1])
+
+                        if(index == i*5 + j + startIndex) return
+
+                        this.inventory.swapItem(i*5 + j + startIndex, index)
+        
+                        this.updateItems()
+                    }
                 })
 
                 container.add(itemIcon);

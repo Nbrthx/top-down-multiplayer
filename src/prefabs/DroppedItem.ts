@@ -6,14 +6,13 @@ export class DroppedItem extends Phaser.GameObjects.Image{
     scene: Game
     uid: string
     id: string
-    name: string
     pBody: p.Body
     
     tween: Phaser.Tweens.Tween;
     timeout: NodeJS.Timeout
 
 
-    constructor(scene: Game, x: number, y: number, id: string, name: string, uid: string){
+    constructor(scene: Game, x: number, y: number, id: string, uid: string){
         super(scene, x*scene.gameScale*32, y*scene.gameScale*32, 'icon-'+id);
         this.setScale(scene.gameScale)
         this.setAlpha(1).setTint(0xdddddd)
@@ -29,7 +28,6 @@ export class DroppedItem extends Phaser.GameObjects.Image{
         this.scene = scene;
         this.uid = uid
         this.id = id;
-        this.name = name;
         
         scene.add.existing(this);
 

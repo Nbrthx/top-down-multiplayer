@@ -1,7 +1,7 @@
 import { Game } from '../scenes/Game'
 import p from 'planck'
 import { BaseItem } from './BaseItem'
-import { ItemInstance, itemList } from './ItemInstance'
+import { ItemInstance } from './ItemInstance'
 import { Inventory } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
 import { TextBox } from './TextBox'
@@ -110,13 +110,7 @@ export class Player extends Phaser.GameObjects.Container{
         if(this.attackDir.length() > 0){
             if(this.itemInstance) this.itemInstance.use(this.attackDir.x, this.attackDir.y)
 
-            for(let i = 0; i < 5; i++){
-                const item = this.inventory.items[i]
-                const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
-                const cooldown = instanceData.config.cooldown
-                if(i == this.inventory.activeIndex) item.timestamp = Date.now()
-                else if(Date.now()-item.timestamp > cooldown) item.timestamp = Date.now()-cooldown+500
-            }
+            this.inventory.refreshTimestamp()
 
             this.attackDir = new p.Vec2(0, 0)
         }

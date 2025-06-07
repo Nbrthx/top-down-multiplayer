@@ -3,7 +3,7 @@ import { Game } from "../../scenes/Game";
 import { BaseItem } from "../BaseItem";
 import { SpatialSound } from "../../components/SpatialAudio";
 
-interface Melee{
+export interface Melee{
     texture: string
     offsetMultipler: number
     hitboxSize: {

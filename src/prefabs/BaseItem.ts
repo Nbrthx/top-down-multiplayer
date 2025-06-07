@@ -1,5 +1,6 @@
 import { Game } from "../scenes/Game";
 import p from 'planck'
+import { BaseItemConfig } from "./ItemInstance";
 
 export abstract class BaseItem extends Phaser.GameObjects.Container {
 
@@ -8,7 +9,7 @@ export abstract class BaseItem extends Phaser.GameObjects.Container {
     
     timestamp: number
     cooldown: number
-    config: any
+    config: BaseItemConfig
 
     constructor(scene: Game, parentBody: p.Body) {
         super(scene, 0, 16);
