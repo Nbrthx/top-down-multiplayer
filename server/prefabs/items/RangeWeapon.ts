@@ -17,6 +17,8 @@ export interface Range{
     damage: number
     knockback: number
     force: number
+    forceDelay: number
+    canMove: boolean
 }
 
 export class RangeWeapon extends BaseItem{
@@ -37,11 +39,15 @@ export class RangeWeapon extends BaseItem{
 
     use(x: number, y: number){
         if(!this.canUse()) return
+        if(this.isAttacking) return
+        this.isAttacking = true
 
         this.timestamp = Date.now()
 
         this.attackState = !this.attackState
         this.attackDir = new p.Vec2(x, y)
+
+        setTimeout(() => this.parentForce(x, y), this.config.forceDelay)
 
         const rad = Math.atan2(y, x)
 
@@ -62,9 +68,21 @@ export class RangeWeapon extends BaseItem{
                 knockback: this.config.knockback
             })
 
+            this.isAttacking = false
+
             this.scene.projectiles.push(projectile)
             this.scene.projectileBodys.push(projectile.pBody)
         }, this.config.attackDelay)
+    }
+
+    parentForce(x: number, y: number){
+        const dir = new p.Vec2(x, y)
+        dir.normalize()
+
+        const parent = this.parentBody.getUserData() as { force?: number, forceDir?: p.Vec2 }
+        parent.forceDir = dir
+        parent.force = this.config.force
+        this.parentBody.applyLinearImpulse(dir, this.parentBody.getWorldCenter())
     }
 }
 

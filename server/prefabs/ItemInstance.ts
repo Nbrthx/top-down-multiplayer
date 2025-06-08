@@ -33,7 +33,9 @@ export const itemList: Item[] = [
             attackDelay: 100,
             damage: 2,
             knockback: 15,
-            force: 6
+            force: 6,
+            forceDelay: 0,
+            canMove: true
         }
     },
     {
@@ -42,13 +44,15 @@ export const itemList: Item[] = [
         config: {
             texture: 'sword',
             offsetMultipler: 0.5,
-            hitboxSize: { width: 0.6, height: 0.7 },
-            hitboxOffsetMultipler: 1.2,
+            hitboxSize: { width: 0.8, height: 0.7 },
+            hitboxOffsetMultipler: 0.9,
             cooldown: 800,
             attackDelay: 200,
             damage: 5,
             knockback: 19,
-            force: 10
+            force: 10,
+            forceDelay: 0,
+            canMove: true
         }
     },
     {
@@ -65,9 +69,28 @@ export const itemList: Item[] = [
             attackDelay: 200,
             damage: 5,
             knockback: 18,
-            force: -8
+            force: -8,
+            forceDelay: 100,
+            canMove: true
         }
-    }
+    },
+    {
+        id: 'dagger',
+        type: 'melee',
+        config: {
+            texture: 'dagger',
+            offsetMultipler: 0.2,
+            hitboxSize: { width: 1.4, height: 0.3 },
+            hitboxOffsetMultipler: 0.4,
+            cooldown: 3000,
+            attackDelay: 300,
+            damage: 8,
+            knockback: 8,
+            force: 24,
+            forceDelay: 200,
+            canMove: false
+        }
+    },
 ]
 
 export class ItemInstance{

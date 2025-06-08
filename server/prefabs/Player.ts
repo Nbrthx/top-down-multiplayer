@@ -61,15 +61,16 @@ export class Player{
         if(this.attackDir.length() > 0){
             this.itemInstance.use(this.attackDir.x, this.attackDir.y)
 
-            this.forceDir = this.attackDir.clone()
-            this.force = this.itemInstance.config.force
-
             this.inventory.refreshTimestamp()
 
             this.attackDir = new p.Vec2(0, 0)
         }
 
         this.account.health = this.health
+
+        if(!this.itemInstance.config.canMove){
+           if(this.itemInstance.isAttacking) this.pBody.setLinearVelocity(new p.Vec2(0, 0))
+        }
 
         if(this.knockback > 1 || this.knockback < -1){
             const dir = this.knockbackDir.clone()
@@ -87,7 +88,6 @@ export class Player{
             if(this.force > 0) this.force -= 2
             else this.force += 2
         }
-
     }
 
     equipItem(index: number){

@@ -15,6 +15,8 @@ export interface Melee{
     damage: number
     knockback: number
     force: number
+    forceDelay: number
+    canMove: boolean
 }
 
 export class MeleeWeapon extends BaseItem{
@@ -44,11 +46,15 @@ export class MeleeWeapon extends BaseItem{
 
     use(x: number, y: number){
         if(!this.canUse()) return
+        if(this.isAttacking) return
+        this.isAttacking = true
 
         this.timestamp = Date.now()
 
         this.attackState = !this.attackState
         this.attackDir = new p.Vec2(x, y)
+
+        setTimeout(() => this.parentForce(x, y), this.config.forceDelay)
 
         const rad = Math.atan2(y, x)
 
@@ -63,9 +69,20 @@ export class MeleeWeapon extends BaseItem{
             this.hitbox.setActive(true)
             
             setTimeout(() => {
+                this.isAttacking = false
                 this.hitbox.setActive(false)
             }, 100)
         }, this.config.attackDelay)
+    }
+
+    parentForce(x: number, y: number){
+        const dir = new p.Vec2(x, y)
+        dir.normalize()
+
+        const parent = this.parentBody.getUserData() as { force?: number, forceDir?: p.Vec2 }
+        parent.forceDir = dir
+        parent.force = this.config.force
+        this.parentBody.applyLinearImpulse(dir, this.parentBody.getWorldCenter())
     }
 
     destroy(){

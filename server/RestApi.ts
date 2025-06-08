@@ -36,7 +36,7 @@ export class RestApi{
                 inventory: []
             });
 
-            console.log("User registered: "+username, akey)
+            console.log("User registered: "+username)
             res.json({ message: "User registered successfully!" });
         }
     }
@@ -47,7 +47,7 @@ export class RestApi{
         const user = this.accounts.find(u => u.username === username) || null;
 
         if(user){
-            console.log('User get akey: '+username, user.akey)
+            console.log('User get akey: '+username)
             res.json({ akey: user.akey });
         }
         else{
@@ -72,7 +72,7 @@ export class RestApi{
 
                 this.authedId.set(message, username)
 
-                console.log("User logged in: "+username, user.akey)
+                console.log("User logged in: "+username)
                 res.json({ message: "User logged in successfully!" });
             }
         }

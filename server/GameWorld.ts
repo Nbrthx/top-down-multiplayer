@@ -170,6 +170,16 @@ export class Game{
         this.projectiles.forEach(v => {
             v.update()
         })
+
+        this.droppedItems.sort((a) => a.isActive ? 1 : -1);
+        let i = this.droppedItems.length
+        for (const v of this.droppedItems) {
+            if(!v.isActive){
+                v.destroy()
+                if(this.droppedItems.indexOf(v) < i) i = this.droppedItems.indexOf(v)
+            }
+        }
+        this.droppedItems.splice(i)
     }
 
     broadcastOutput(){
@@ -235,7 +245,7 @@ export class Game{
                 items: v.inventory.items,
                 activeIndex: v.inventory.activeIndex,
                 pos: v.pBody.getPosition(),
-                health: account.health
+                health: v.health
             }
         }))
         socket?.broadcast.to(this.id).emit('playerJoined', {

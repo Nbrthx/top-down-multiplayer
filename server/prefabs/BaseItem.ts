@@ -11,6 +11,7 @@ export abstract class BaseItem {
     timestamp: number
     cooldown: number
     config: BaseItemConfig
+    isAttacking: boolean
 
     constructor(scene: Game, parentBody: p.Body) {
         this.scene = scene;

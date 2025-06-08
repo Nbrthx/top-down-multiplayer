@@ -60,6 +60,8 @@ export class HotbarUI extends Phaser.GameObjects.Container {
     }
 
     eventHandler(){
+        this.scene.input.off('wheel')
+        this.scene.input.keyboard?.off('keydown')
         this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
             if (deltaY > 0) {
                 this.inventory.activeIndex = (this.inventory.activeIndex + 1) % 5;
@@ -67,22 +69,20 @@ export class HotbarUI extends Phaser.GameObjects.Container {
                 this.inventory.activeIndex = (this.inventory.activeIndex - 1 + 5) % 5;
             }
 
-            this.setActiveIndex(this.inventory.activeIndex);            
+            this.setActiveIndex(this.inventory.activeIndex);
         })
         this.scene.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
             if (event.key === '1') {
-                this.inventory.activeIndex = 0
+                this.setActiveIndex(0)
             } else if (event.key === '2') {
-                this.inventory.activeIndex = 1
+                this.setActiveIndex(1)
             } else if (event.key === '3') {
-                this.inventory.activeIndex = 2
+                this.setActiveIndex(2)
             } else if (event.key === '4') {
-                this.inventory.activeIndex = 3
+                this.setActiveIndex(3)
             } else if (event.key === '5') {
-                this.inventory.activeIndex = 4
+                this.setActiveIndex(4)
             }
-
-            this.setActiveIndex(this.inventory.activeIndex);
         })
     }
 

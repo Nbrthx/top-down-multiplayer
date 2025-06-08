@@ -39,8 +39,8 @@ export const itemList: ItemEntry[] = [
         config: {
             texture: 'sword',
             offsetMultipler: 0.5,
-            hitboxSize: { width: 0.6, height: 0.7 },
-            hitboxOffsetMultipler: 1.2,
+            hitboxSize: { width: 0.8, height: 0.7 },
+            hitboxOffsetMultipler: 0.9,
             cooldown: 800,
             attackDelay: 200
         }
@@ -58,7 +58,19 @@ export const itemList: ItemEntry[] = [
             cooldown: 1200,
             attackDelay: 200
         }
-    }
+    },
+    {
+        id: 'dagger',
+        type: 'melee',
+        config: {
+            texture: 'dagger',
+            offsetMultipler: 0.2,
+            hitboxSize: { width: 1.4, height: 0.3 },
+            hitboxOffsetMultipler: 0.4,
+            cooldown: 3000,
+            attackDelay: 300
+        }
+    },
 ];
 
 export class ItemInstance{

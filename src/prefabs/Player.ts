@@ -18,6 +18,7 @@ export class Player extends Phaser.GameObjects.Container{
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
     emptyBar: Phaser.GameObjects.Rectangle
+    damageBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
     nameText: Phaser.GameObjects.Text
     
@@ -60,24 +61,25 @@ export class Player extends Phaser.GameObjects.Container{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        this.emptyBar = scene.add.rectangle(0, -120, 162, 14, 0x494449).setRounded(4)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0x33ff77).setRounded(4)
+        this.emptyBar = scene.add.rectangle(0, -130, 166, 18, 0x494449).setRounded(4)
+        this.damageBar = scene.add.rectangle(0, -130, 164, 16, 0xffccaa).setRounded(4)
+        this.healthBar = scene.add.rectangle(0, -130, 164, 16, 0x00aa77).setRounded(4)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
         this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
 
-        this.aimAssist = scene.add.rectangle(0,12, 96, 16, 0xffffff, 0.5).setOrigin(-1.5, 0.5).setVisible(false)
+        this.aimAssist = scene.add.rectangle(0,12, 96, 24, 0xffffff, 0.5).setOrigin(-1.5, 0.5).setVisible(false)
         
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
-        this.nameText = scene.add.text(0, -36*scene.gameScale, username+' Lv.'+this.stats.getLevel(), {
+        this.nameText = scene.add.text(0, -38*scene.gameScale, username+' Lv.'+this.stats.getLevel(), {
             fontFamily: 'PixelFont', fontSize: 24, letterSpacing: 2,
             stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setResolution(4)
 
-        this.add([shadow, this.aimAssist, this.itemInstance, this.sprite, this.emptyBar, this.healthBar, this.nameText, this.textbox])
+        this.add([shadow, this.aimAssist, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar, this.nameText, this.textbox])
     }
 
     update(){
@@ -124,9 +126,13 @@ export class Player extends Phaser.GameObjects.Container{
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
         
-        if(this.healthBar.visible){
-            this.healthBar.setSize(160*this.health/this.maxHealth, 12)
-            this.healthBar.setX(-80-80*this.health/-this.maxHealth)
+        this.barUpdate(this.healthBar)
+    }
+
+    barUpdate(bar: Phaser.GameObjects.Rectangle){
+        if(bar.visible){
+            bar.setSize(164*this.health/this.maxHealth, 16)
+            bar.setX(-82-82*this.health/-this.maxHealth)
         }
     }
 
@@ -151,7 +157,13 @@ export class Player extends Phaser.GameObjects.Container{
     hitEffect(){
         let itr = 0
         const splash = () => {
-            if(itr >= 4) return
+            if(itr >= 6){
+                if(this.damageBar.active){
+                    this.damageBar.setSize(164*this.health/this.maxHealth, 16)
+                    this.damageBar.setX(-82-82*this.health/-this.maxHealth)
+                }
+                return
+            }
 
             if(this.sprite.isTinted) this.sprite.clearTint()
             else this.sprite.setTintFill(0xffffff)

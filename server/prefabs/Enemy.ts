@@ -92,10 +92,11 @@ export class Enemy{
         if(this.attackDir.length() > 0){
             if(this.itemInstance) this.itemInstance.use(this.attackDir.x, this.attackDir.y)
 
-            this.forceDir = this.attackDir.clone()
-            this.force = this.itemInstance.config.force
-
             this.attackDir = new p.Vec2(0, 0)
+        }
+
+        if(!this.itemInstance.config.canMove){
+            if(this.itemInstance.isAttacking) this.pBody.setLinearVelocity(new p.Vec2(0, 0))
         }
         
         if(this.knockback > 1 || this.knockback < -1){

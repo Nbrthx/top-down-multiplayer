@@ -101,6 +101,7 @@ export class NetworkHandler{
         items: Item[]
         activeIndex: number
         pos: { x: number, y: number }
+        health: number
     }[]){
         const scene = this.scene
         
@@ -110,6 +111,7 @@ export class NetworkHandler{
         scene.player.inventory.updateInventory(account.inventory)
         scene.player.inventory.setActiveIndex(0)
         scene.player.health = account.health
+        scene.player.barUpdate(scene.player.damageBar)
 
         scene.UI.setupUI(scene.player)
 
@@ -120,6 +122,8 @@ export class NetworkHandler{
             const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.id, v.username)
             other.inventory.updateInventory(v.items)
             other.inventory.setActiveIndex(v.activeIndex)
+            other.health = v.health
+            other.barUpdate(other.damageBar)
             
             scene.others.push(other)
         })
@@ -130,6 +134,7 @@ export class NetworkHandler{
         username: string
         items: Item[]
         from: string
+        health: number
     }){
         const scene = this.scene
 
@@ -137,6 +142,8 @@ export class NetworkHandler{
 
         const other = new Player(scene, pos.x, pos.y, data.id, data.username)
         other.inventory.updateInventory(data.items)
+        other.health = data.health
+        other.barUpdate(other.damageBar)
 
         scene.others.push(other)
     }
@@ -215,6 +222,7 @@ export class NetworkHandler{
             if(!enemy){
                 console.log('spawn enemy')
                 const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.id)
+                newEnemy.health = enemyData.health
                 this.scene.enemies.push(newEnemy)
             }
 
@@ -254,13 +262,16 @@ export class NetworkHandler{
             }
         })
 
-        scene.droppedItems.forEach(item => {
+        scene.droppedItems.sort(a => a.active ? -1 : 1)
+        let dropItemIndex = scene.droppedItems.length
+        scene.droppedItems.forEach((item, i) => {
             const itemData = data.droppedItems.find(v => v.uid == item.uid)
             if(!itemData){
                 item.destroy()
-                scene.droppedItems.splice(scene.droppedItems.indexOf(item))
+                if(i < dropItemIndex) dropItemIndex = i
             }
         })
+        scene.droppedItems.splice(dropItemIndex)
 
         data.projectiles.forEach(projectileData => {
             const existProjectile = scene.projectiles.find(v => v.uid == projectileData.uid)
@@ -279,13 +290,16 @@ export class NetworkHandler{
             }
         })
 
-        scene.projectiles.forEach(projectile => {
+        scene.projectiles.sort(a => a.active ? -1 : 1)
+        let projectileIndex = scene.projectiles.length
+        scene.projectiles.forEach((projectile, i) => {
             const projectileData = data.projectiles.find(v => v.uid == projectile.uid)
             if(!projectileData){
                 projectile.destroy()
-                scene.projectiles.splice(scene.projectiles.indexOf(projectile))
+                if(i < projectileIndex) projectileIndex = i
             }
         })
+        scene.projectiles.splice(projectileIndex)
 
         
     }

@@ -34,11 +34,14 @@ export class Preloader extends Scene{
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
         this.load.spritesheet('bow', 'effect/bow.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('dagger', 'effect/dagger.png', { frameWidth: 96, frameHeight: 64 })
+
         this.load.spritesheet('arrow', 'effect/arrow.png', { frameWidth: 48, frameHeight: 48 })
 
         // Icon
         this.load.image('icon-sword', 'icon/sword.png')
         this.load.image('icon-bow', 'icon/bow.png')
+        this.load.image('icon-dagger', 'icon/dagger.png')
         this.load.image('icon-inventory', 'icon/inventory.png')
 
         // Environtment
@@ -57,11 +60,13 @@ export class Preloader extends Scene{
         this.load.image('logo', 'logo.png');
 
         // Audio
+        this.load.audio('audio-step', 'audio/step.wav')
         this.load.audio('audio-hit', 'audio/hit.ogg')
+
         this.load.audio('audio-punch', 'audio/punch.wav')
         this.load.audio('audio-sword', 'audio/sword.mp3')
         this.load.audio('audio-bow', 'audio/bow.wav')
-        this.load.audio('audio-step', 'audio/step.wav')
+        this.load.audio('audio-dagger', 'audio/dagger.wav')
     }
 
     create (){
@@ -112,7 +117,12 @@ export class Preloader extends Scene{
             frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 4, 4, 4, 0] }),
             frameRate: 20
         })
+        this.anims.create({
+            key: 'dagger-attack',
+            frames: this.anims.generateFrameNumbers('dagger', { frames: [0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8] }),
+            frameRate: 20
+        })
 
-        this.scene.start('MainMenu');
+        this.scene.start('MainMenu', { autoJoin: true });
     }
 }

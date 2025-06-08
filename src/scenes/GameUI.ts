@@ -2,7 +2,6 @@ import { Socket } from 'socket.io-client'
 import { InventoryUI } from '../prefabs/ui/InventoryUI'
 import { HotbarUI } from '../prefabs/ui/HotbarUI'
 import { Game } from './Game'
-import { socket } from './MainMenu'
 import { Player } from '../prefabs/Player'
 import { Joystick } from '../prefabs/Joystick'
 import { Chat } from '../prefabs/ui/Chat'
@@ -35,11 +34,12 @@ export class GameUI extends Phaser.Scene {
 
     constructor(){
         super('GameUI')
-
-        this.socket = socket
     }
 
     create(){
+        this.socket = this.registry.get('socket')
+        console.log(this.socket)
+
         this.input.addPointer(2)
 
         this.debugText = this.add.text(100, 100, 'Ping: 0ms\nFPS: 0', {
@@ -69,18 +69,6 @@ export class GameUI extends Phaser.Scene {
             this.inventoryUI.setVisible(true)
             this.chatbox.setVisible(false)
         })
-
-        this.gameScene.events.on('start', () => {
-            this.scene.setVisible(true)
-            this.chatbox = new Chat(this, this.socket)
-        })
-        this.gameScene.events.on('shutdown', () => {
-            this.scene.setVisible(false)
-            this.hotbarUI.destroy()
-            this.inventoryUI.destroy()
-            this.chatbox.destroy()
-        })
-
 
         const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
             fontSize: 24, color: '#000000', fontStyle: 'bold'
@@ -137,6 +125,8 @@ export class GameUI extends Phaser.Scene {
                 this.gameScene.camera.setFollowOffset(0, 0)
             }
         }
+
+        this.handleGameEvent()
     }
 
     update(){
@@ -168,7 +158,26 @@ export class GameUI extends Phaser.Scene {
         }
     }
 
+    handleGameEvent(){
+        this.gameScene.events.on('start', () => {
+            this.scene.setVisible(true)
+            this.chatbox = new Chat(this, this.socket)
+        })
+        this.gameScene.events.on('shutdown', () => {
+            console.log('shutdown')
+            this.scene.setVisible(false)
+            this.hotbarUI.destroy()
+            this.statsUI.destroy()
+            this.inventoryUI.destroy()
+            this.chatbox.destroy()
+        })
+    }
+
     setupUI(player: Player){
+        if(this.statsUI?.active) this.statsUI.destroy()
+        if(this.hotbarUI?.active) this.hotbarUI.destroy()
+        if(this.inventoryUI?.active) this.inventoryUI.destroy()
+
         this.statsUI = new StatsUI(this)
 
         this.hotbarUI = new HotbarUI(this, player.inventory)

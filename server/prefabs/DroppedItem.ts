@@ -8,6 +8,7 @@ export class DroppedItem{
     uid: string;
     id: string
     pBody: p.Body
+    isActive: boolean
 
     timeout: NodeJS.Timeout
 
@@ -16,6 +17,7 @@ export class DroppedItem{
         this.scene = scene;
         this.uid = crypto.randomUUID();
         this.id = id;
+        this.isActive = true
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x, y),
@@ -33,13 +35,12 @@ export class DroppedItem{
             if(!(player instanceof Player)) return;
 
             if(player.inventory.addItem(this.id)){
-                this.destroy();
-                scene.droppedItems.splice(scene.droppedItems.indexOf(this), 1)
+                this.isActive = false
             }
         })
 
         this.timeout = setTimeout(() => {
-            this.destroy();
+            this.isActive = false
         }, 30000);
     }
 

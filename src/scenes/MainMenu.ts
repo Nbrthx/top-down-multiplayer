@@ -1,9 +1,7 @@
 import { Scene } from 'phaser';
-import { io } from 'socket.io-client';
 import { Authentication } from '../prefabs/ui/Authentication';
 
 export const HOST_ADDRESS = 'http://localhost:3000'
-export const socket = io(HOST_ADDRESS, { transports: ['websocket'] })
 
 export class MainMenu extends Scene{
 
@@ -12,7 +10,7 @@ export class MainMenu extends Scene{
     }
 
     create (){
-        const authentication = new Authentication(this, socket)
+        const authentication = new Authentication(this)
 
         if(localStorage.getItem('username') && localStorage.getItem('salt')){
             authentication.login(localStorage.getItem('username') as string, '', true)
@@ -68,8 +66,7 @@ export class MainMenu extends Scene{
 
             authentication.setVisible(true)
 
-            socket.disconnect()
-            socket.connect()
+            authentication.socket.disconnect()
         })
     }
 }

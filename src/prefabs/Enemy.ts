@@ -16,6 +16,7 @@ export class Enemy extends Phaser.GameObjects.Container{
     itemInstance: BaseItem
     sprite: Phaser.GameObjects.Sprite
     emptyBar: Phaser.GameObjects.Rectangle
+    damageBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
 
     pBody: p.Body
@@ -51,8 +52,9 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.maxHealth = 100
         this.health = this.maxHealth
 
-        this.emptyBar = scene.add.rectangle(0, -120, 162, 14, 0x494449).setRounded(4)
-        this.healthBar = scene.add.rectangle(0, -120, 162, 14, 0xee5544).setRounded(4)
+        this.emptyBar = scene.add.rectangle(0, -130, 166, 18, 0x494449).setRounded(4)
+        this.damageBar = scene.add.rectangle(0, -130, 164, 16, 0xffccaa).setRounded(4)
+        this.healthBar = scene.add.rectangle(0, -130, 164, 16, 0xbb4433).setRounded(4)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
@@ -65,7 +67,7 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.triggerArea = this.createArea(2)
         this.visionArea = this.createArea(6)
 
-        this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.healthBar])
+        this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar])
     }
 
     update(){
@@ -103,8 +105,14 @@ export class Enemy extends Phaser.GameObjects.Container{
 
         this.triggerArea.setPosition(this.pBody.getPosition())
         
-        this.healthBar.setSize(160*this.health/this.maxHealth, 12)
-        this.healthBar.setX(-80-80*this.health/-this.maxHealth)
+        this.barUpdate(this.healthBar)
+    }
+
+    barUpdate(bar: Phaser.GameObjects.Rectangle){
+        if(bar.visible){
+            bar.setSize(164*this.health/this.maxHealth, 16)
+            bar.setX(-82-82*this.health/-this.maxHealth)
+        }
     }
 
     createArea(radius: number){
@@ -121,7 +129,13 @@ export class Enemy extends Phaser.GameObjects.Container{
     hitEffect(){
         let itr = 0
         const splash = () => {
-            if(itr >= 4) return
+            if(itr >= 6){
+                if(this.damageBar.active){
+                    this.damageBar.setSize(164*this.health/this.maxHealth, 16)
+                    this.damageBar.setX(-82-82*this.health/-this.maxHealth)
+                }
+                return
+            }
 
             if(this.sprite.tintFill) this.sprite.setTint(0xff5544)
             else this.sprite.setTintFill(0xffffff)

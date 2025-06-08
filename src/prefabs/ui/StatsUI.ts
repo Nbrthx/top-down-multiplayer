@@ -37,9 +37,15 @@ export class StatsUI extends Phaser.GameObjects.Container {
         this.add([this.image, this.levelText, this.xpBar, this.xpText, this.gcText])
     }
 
-    update(stats: Stats){
-        this.levelText.setText(stats.getLevel()+'')
-        this.xpBar.setSize(stats.getXp()/stats.getNextXp()*140, 8)
-        this.xpText.setText(stats.getXp()+'/'+stats.getNextXp())
+    update(stats?: Stats){
+        if(this.levelText.active && this.xpBar.active && this.xpText.active && stats){
+            this.levelText.setText(stats.getLevel()+'')
+            this.xpBar.setSize(stats.getXp()/stats.getNextXp()*140, 8)
+            this.xpText.setText(stats.getXp()+'/'+stats.getNextXp())
+        }
+    }
+
+    destroy(){
+        super.destroy(true);
     }
 }

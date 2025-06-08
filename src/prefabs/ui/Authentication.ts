@@ -1,4 +1,4 @@
-import { Socket } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { generateSecurity, verifyAccount } from '../../components/SyasymAuth';
 import { HOST_ADDRESS } from '../../scenes/MainMenu';
 
@@ -31,12 +31,10 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
     submit: Element | null
     isLoading: boolean = false
 
-    constructor(scene: Phaser.Scene, socket: Socket){
+    constructor(scene: Phaser.Scene){
         super(scene, scene.scale.width/2, scene.scale.height/2)
 
         scene.add.existing(this)
-
-        this.socket = socket
 
         this.createFromCache('loginform').setName('loginform')
         this.setScale(2)
@@ -90,32 +88,40 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
     }
 
     login(username: string, password: string, isTrust: boolean){
-        xhrApi('GET', HOST_ADDRESS+'/get-akey?username='+username, {}, (data: { akey?: string, message?: string }) => {
-            if(data.akey){
-                const decrypted = verifyAccount(data.akey, username, this.socket.id, password, isTrust)
+        this.socket = io(HOST_ADDRESS, {
+            transports: ['websocket']
+        })
+        this.socket.on('connect', () => {
+            xhrApi('GET', HOST_ADDRESS+'/get-akey?username='+username, {}, (data: { akey?: string, message?: string }) => {
+                if(data.akey){
+                    const decrypted = verifyAccount(data.akey, username, this.socket.id, password, isTrust)
 
-                if(!decrypted) return alert('invalid password')
-                    
-                xhrApi('POST', HOST_ADDRESS+'/login', decrypted, (data: { message: string }) => {
-                    if(data.message == 'User logged in successfully!'){
-                        localStorage.setItem('username', username)
-                        this.setVisible(false)
-                    }
-                    else{
-                        alert(data.message)
-                        localStorage.removeItem('username')
-                        localStorage.removeItem('salt')
-                        this.isLoading = false
-                    }
-                })
-            }
-            else{
-                alert(data.message)
-                this.setVisible(true)
-                localStorage.removeItem('username')
-                localStorage.removeItem('salt')
-                this.isLoading = false
-            }
+                    if(!decrypted) return alert('invalid password')
+                        
+                    xhrApi('POST', HOST_ADDRESS+'/login', decrypted, (data: { message: string }) => {
+                        if(data.message == 'User logged in successfully!'){
+                            localStorage.setItem('username', username)
+                            this.scene.registry.set('socket', this.socket)
+                            this.setVisible(false)
+                        }
+                        else{
+                            alert(data.message)
+                            localStorage.removeItem('username')
+                            localStorage.removeItem('salt')
+                            this.isLoading = false
+                            this.socket.disconnect
+                        }
+                    })
+                }
+                else{
+                    alert(data.message)
+                    this.setVisible(true)
+                    localStorage.removeItem('username')
+                    localStorage.removeItem('salt')
+                    this.isLoading = false
+                    this.socket.disconnect
+                }
+            })
         })
     }
 
