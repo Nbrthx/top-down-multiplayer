@@ -77,7 +77,7 @@ export class Game{
             }
             
             if(isPlayer(parent) && isPlayer(target)){
-                if(target.id == parent.id) return
+                if(target.uid == parent.uid) return
                 if(!this.isPvpAllowed) return
 
                 hit()
@@ -94,12 +94,11 @@ export class Game{
     }
 
     update(deltaTime: number) {
-        // Step physics world (fixed timestep untuk deterministik)
         this.world.step(deltaTime);
         
         // Update entitas
         this.players.forEach(player => {
-            const inputData = this.inputData.get(player.id)?.splice(0, this.inputData.get(player.id)?.length!-1 || 2)
+            const inputData = this.inputData.get(player.uid)?.splice(0, this.inputData.get(player.uid)?.length!-1 || 2)
 
             if(!inputData) return;
             // if(inputData.length > 20) {
@@ -133,7 +132,7 @@ export class Game{
         this.players.forEach(player => {
             if(player.health <= 0){
                 player.account.health = 100
-                this.removePlayer(player.id)
+                this.removePlayer(player.uid)
             }
             else player.update()
         })
@@ -142,7 +141,6 @@ export class Game{
             if(enemy.health <= 0){
                 const enemyPos = enemy.pBody.getPosition()
                 const { x, y } = enemy.defaultPos.clone()
-                const id = enemy.id
 
                 this.entityBodys.splice(this.entityBodys.indexOf(enemy.pBody), 1)
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
@@ -159,7 +157,7 @@ export class Game{
                 })
 
                 setTimeout(() => {
-                    const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32, id)
+                    const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32)
                     this.entityBodys.push(newEnemy.pBody)
                     this.enemies.push(newEnemy)
                 }, 5000)
@@ -172,21 +170,19 @@ export class Game{
         })
 
         this.droppedItems.sort((a) => a.isActive ? 1 : -1);
-        let i = this.droppedItems.length
-        for (const v of this.droppedItems) {
+        this.droppedItems.slice().reverse().forEach(v =>{
             if(!v.isActive){
                 v.destroy()
-                if(this.droppedItems.indexOf(v) < i) i = this.droppedItems.indexOf(v)
+                this.droppedItems.splice(this.droppedItems.indexOf(v), 1)
             }
-        }
-        this.droppedItems.splice(i)
+        })
     }
 
     broadcastOutput(){
         const gameState = {
             players: this.players.map(v => {
                 return {
-                    id: v.id,
+                    uid: v.uid,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
                     health: v.health,
@@ -196,7 +192,7 @@ export class Game{
             }),
             enemies: this.enemies.map(v => {
                 return {
-                    id: v.id,
+                    uid: v.uid,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
                     health: v.health
@@ -222,9 +218,9 @@ export class Game{
         this.gameManager.io.to(this.id).emit('output', gameState)
     }
 
-    addPlayer(id: string, account: Account, from?: string){
+    addPlayer(uid: string, account: Account, from?: string){
         const enterPos = this.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
-        const player = new Player(this, enterPos.x, enterPos.y, id, account)
+        const player = new Player(this, enterPos.x, enterPos.y, uid, account)
         player.inventory.updateInventory(account.inventory)
         
         player.account.inventory = player.inventory.items
@@ -233,14 +229,14 @@ export class Game{
         this.entityBodys.push(player.pBody)
         this.players.push(player)
 
-        const socket = this.gameManager.io.sockets.sockets.get(id)
+        const socket = this.gameManager.io.sockets.sockets.get(uid)
 
-        this.gameManager.playerMap.set(id, this.id);
+        this.gameManager.playerMap.set(uid, this.id);
         socket?.join(this.id);
 
         socket?.emit('joinGame', account, this.players.map(v => {
             return {
-                id: v.id,
+                uid: v.uid,
                 username: v.account.username,
                 items: v.inventory.items,
                 activeIndex: v.inventory.activeIndex,
@@ -256,31 +252,31 @@ export class Game{
             health: account.health
         });
 
-        console.log('Player '+id+' has added to '+this.id)
+        console.log('Player '+uid+' has added to '+this.id)
     }
 
-    removePlayer(id: string){
-        const existPlayer = this.players.find(player => player.id == id)
+    removePlayer(uid: string){
+        const existPlayer = this.players.find(player => player.uid == uid)
 
         if(!existPlayer) return
 
-        this.gameManager.playerMap.delete(id);
+        this.gameManager.playerMap.delete(uid);
 
         this.players.splice(this.players.indexOf(existPlayer), 1)
         this.entityBodys.splice(this.entityBodys.indexOf(existPlayer.pBody), 1)
 
         existPlayer.destroy()
 
-        this.gameManager.io.to(this.id).emit('playerLeft', id);
+        this.gameManager.io.to(this.id).emit('playerLeft', uid);
         
-        const socket = this.gameManager.io.sockets.sockets.get(id)
+        const socket = this.gameManager.io.sockets.sockets.get(uid)
         socket?.leave(this.id)
         
-        console.log('Player '+id+' has removed from '+this.id)
+        console.log('Player '+uid+' has removed from '+this.id)
     }
 
-    playerDropItem(id: string, index: number, dir: { x: number, y: number }){
-        const player = this.players.find(v => v.id == id)
+    playerDropItem(uid: string, index: number, dir: { x: number, y: number }){
+        const player = this.players.find(v => v.uid == uid)
         if(!player) return
 
         const item = player.inventory.items[index]

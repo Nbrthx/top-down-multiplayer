@@ -9,7 +9,7 @@ import { Stats } from '../components/Stats'
 
 export class Player extends Phaser.GameObjects.Container{
 
-    id: string
+    uid: string
     maxHealth: number
     health: number
     speed = 4.2
@@ -33,11 +33,11 @@ export class Player extends Phaser.GameObjects.Container{
     textbox: TextBox
     aimAssist: Phaser.GameObjects.Rectangle
 
-    constructor(scene: Game, x: number, y: number, id: string, username: string){
+    constructor(scene: Game, x: number, y: number, uid: string, username: string){
         super(scene, x, y)
 
         this.scene = scene
-        this.id = id
+        this.uid = uid
 
         scene.add.existing(this)
 

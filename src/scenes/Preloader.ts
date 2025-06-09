@@ -32,16 +32,22 @@ export class Preloader extends Scene{
 
         // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('throw', 'effect/throw.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('sword', 'effect/sword.png', { frameWidth: 96, frameHeight: 96 })
         this.load.spritesheet('bow', 'effect/bow.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('dagger', 'effect/dagger.png', { frameWidth: 96, frameHeight: 64 })
 
-        this.load.spritesheet('arrow', 'effect/arrow.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.spritesheet('arrow', 'effect/arrow.png', { frameWidth: 48, frameHeight: 16 })
+        this.load.spritesheet('blue-knife', 'effect/blue-knife.png', { frameWidth: 32, frameHeight: 16 })
+
+        // Particles
+        this.load.image('red-circle-particle', 'particles/red-circle.png')
 
         // Icon
         this.load.image('icon-sword', 'icon/sword.png')
         this.load.image('icon-bow', 'icon/bow.png')
         this.load.image('icon-dagger', 'icon/dagger.png')
+        this.load.image('icon-blue-knife', 'icon/blue-knife.png')
         this.load.image('icon-inventory', 'icon/inventory.png')
 
         // Environtment
@@ -64,6 +70,7 @@ export class Preloader extends Scene{
         this.load.audio('audio-hit', 'audio/hit.ogg')
 
         this.load.audio('audio-punch', 'audio/punch.wav')
+        this.load.audio('audio-throw', 'audio/punch.wav')
         this.load.audio('audio-sword', 'audio/sword.mp3')
         this.load.audio('audio-bow', 'audio/bow.wav')
         this.load.audio('audio-dagger', 'audio/dagger.wav')
@@ -108,13 +115,18 @@ export class Preloader extends Scene{
             frameRate: 20
         })
         this.anims.create({
+            key: 'throw-attack',
+            frames: this.anims.generateFrameNumbers('throw', { frames: [0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4] }),
+            frameRate: 20
+        })
+        this.anims.create({
             key: 'sword-attack',
             frames: this.anims.generateFrameNumbers('sword', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5] }),
             frameRate: 20
         })
         this.anims.create({
             key: 'bow-attack',
-            frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 4, 4, 4, 0] }),
+            frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 3, 4, 4, 4, 0] }),
             frameRate: 20
         })
         this.anims.create({

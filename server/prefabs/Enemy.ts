@@ -7,7 +7,7 @@ import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Enemy{
 
-    id: string
+    uid: string
     maxHealth: number
     health: number
     speed = 3
@@ -29,9 +29,9 @@ export class Enemy{
     knockback: number
     knockbackDir: p.Vec2
 
-    constructor(scene: Game, x: number, y: number, id: string){
+    constructor(scene: Game, x: number, y: number){
         this.scene = scene
-        this.id = id
+        this.uid = crypto.randomUUID()
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x/scene.gameScale/32, y/scene.gameScale/32),

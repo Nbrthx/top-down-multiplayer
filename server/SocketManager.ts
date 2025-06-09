@@ -46,7 +46,7 @@ export class SocketManager {
             const world = this.gameManager.getPlayerWorld(socket.id)
             if(!world) return
 
-            const player = world.players.find(v => v.id == socket.id)
+            const player = world.players.find(v => v.uid == socket.id)
             if(!player) return
 
             player.inventory.swapItem(swap.index, swap.index2)
@@ -58,7 +58,7 @@ export class SocketManager {
         socket.on('setHotbarIndex', (index: number) => {
             if(!Number.isInteger(index)) return
 
-            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
+            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.uid == socket.id)
             if(!player) return
 
             player.inventory.setActiveIndex(index)
@@ -77,7 +77,7 @@ export class SocketManager {
         socket.on('chat', msg => {
             if(typeof msg !== 'string' && msg.length > 64) return
 
-            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.id == socket.id)
+            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.uid == socket.id)
             if(!player) return
 
             this.io.to(player.scene.id).emit('chat', {

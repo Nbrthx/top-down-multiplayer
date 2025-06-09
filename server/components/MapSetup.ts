@@ -84,7 +84,7 @@ export class MapSetup{
         map.layers.find(v => v.name == 'enemys')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, name: string }
 
-            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale, o.name)
+            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale)
 
             scene.entityBodys.push(enemy.pBody)
             scene.enemies.push(enemy)
@@ -108,9 +108,9 @@ export class MapSetup{
                 const player = bodyA.getUserData()
 
                 if(player instanceof Player){
-                    scene.removePlayer(player.id)
-                    scene.gameManager.io.to(player.id).emit('changeWorld', scene.id, o.name, () => {
-                        scene.gameManager.getWorld(o.name)?.addPlayer(player.id, player.account, scene.id)
+                    scene.removePlayer(player.uid)
+                    scene.gameManager.io.to(player.uid).emit('changeWorld', scene.id, o.name, () => {
+                        scene.gameManager.getWorld(o.name)?.addPlayer(player.uid, player.account, scene.id)
                     })
                 }
             })

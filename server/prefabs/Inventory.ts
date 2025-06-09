@@ -29,8 +29,8 @@ export class Inventory {
                 if(i == this.activeIndex) this.parent.equipItem(this.activeIndex)
 
                 const io = this.parent.scene.gameManager.io
-                io.to(this.parent.id).emit('updateInventory', this.items)
-                io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.id, this.items)
+                io.to(this.parent.uid).emit('updateInventory', this.items)
+                io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.uid, this.items)
 
                 return true
             }
@@ -49,8 +49,8 @@ export class Inventory {
         if(index == this.activeIndex) this.parent.equipItem(this.activeIndex)
             
         const io = this.parent.scene.gameManager.io
-        io.to(this.parent.id).emit('updateInventory', this.items)
-        io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.id, this.items)
+        io.to(this.parent.uid).emit('updateInventory', this.items)
+        io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.uid, this.items)
 
         return true
     }
@@ -93,7 +93,7 @@ export class Inventory {
         for(let i = 0; i < 5; i++){
             const item = this.items[i]
             if(!item) continue
-            
+
             const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
             const cooldown = instanceData.config.cooldown
 

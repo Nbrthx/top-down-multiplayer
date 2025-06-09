@@ -11,7 +11,7 @@ import { isMobile } from '../scenes/GameUI';
 
 
 export interface OutputData{
-    id: string,
+    uid: string,
     pos: { x: number, y: number },
     attackDir: { x: number, y: number },
     health: number
@@ -96,7 +96,7 @@ export class NetworkHandler{
     }
 
     joinGame(account: Account, others: {
-        id: string
+        uid: string
         username: string
         items: Item[]
         activeIndex: number
@@ -116,10 +116,10 @@ export class NetworkHandler{
         scene.UI.setupUI(scene.player)
 
         others.forEach(v => {
-            if(v.id == this.socket.id) return
-            console.log(v.id)
+            if(v.uid == this.socket.id) return
+            console.log(v.uid)
 
-            const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.id, v.username)
+            const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.uid, v.username)
             other.inventory.updateInventory(v.items)
             other.inventory.setActiveIndex(v.activeIndex)
             other.health = v.health
@@ -130,7 +130,7 @@ export class NetworkHandler{
     }
 
     playerJoined(data: {
-        id: string
+        uid: string
         username: string
         items: Item[]
         from: string
@@ -140,7 +140,7 @@ export class NetworkHandler{
 
         const pos = scene.mapSetup.enterpoint.get(data.from) || { x: 100, y: 100 }
 
-        const other = new Player(scene, pos.x, pos.y, data.id, data.username)
+        const other = new Player(scene, pos.x, pos.y, data.uid, data.username)
         other.inventory.updateInventory(data.items)
         other.health = data.health
         other.barUpdate(other.damageBar)
@@ -148,9 +148,9 @@ export class NetworkHandler{
         scene.others.push(other)
     }
 
-    playerLeft(id: string){
+    playerLeft(uid: string){
         const scene = this.scene
-        const existPlayer = scene.others.find(other => other.id == id)
+        const existPlayer = scene.others.find(other => other.uid == uid)
 
         if(!existPlayer) return
 
@@ -168,14 +168,16 @@ export class NetworkHandler{
         const players = data.players
 
         players.forEach(playerData => {
-            const other = scene.others.find(v => v.id == playerData.id)
+            const other = scene.others.find(v => v.uid == playerData.uid)
 
-            if(playerData.id == scene.player.id){
+            if(playerData.uid == scene.player.uid){
                 const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
                 const currentPosition = scene.player.pBody.getPosition()
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 scene.player.stats.setTotalXp(playerData.xp)
+
+                scene.realBodyPos.set(scene.player.pBody, playerData.pos)
 
                 if(scene.player.health != playerData.health){
                     if(scene.player.health > playerData.health){
@@ -198,6 +200,8 @@ export class NetworkHandler{
                 if(normalized.length() > 0.08) other.pBody.setLinearVelocity(normalized)
                 else other.pBody.setLinearVelocity(new p.Vec2(0, 0))
             
+                scene.realBodyPos.set(other.pBody, playerData.pos)
+            
                 normalized.normalize()
 
                 other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
@@ -213,16 +217,25 @@ export class NetworkHandler{
                 if(other.health <= 0){
                     scene.others.splice(scene.others.indexOf(other), 1)
                     other.destroy()
+                    this.scene.add.particles(other.x, other.y, 'red-circle-particle', {
+                        color: [0xff9999],
+                        lifespan: 500,
+                        speed: { min: 200, max: 300 },
+                        scale: { start: 2, end: 0 },
+                        gravityY: 500,
+                        emitting: false
+                    }).explode(8)
                 }
             }
         })
 
         data.enemies.forEach(enemyData => {
-            const enemy = scene.enemies.find(v => v.id == enemyData.id)
+            const enemy = scene.enemies.find(v => v.uid == enemyData.uid)
             if(!enemy){
                 console.log('spawn enemy')
-                const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.id)
+                const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.uid)
                 newEnemy.health = enemyData.health
+                newEnemy.barUpdate(newEnemy.damageBar)
                 this.scene.enemies.push(newEnemy)
             }
 
@@ -234,6 +247,8 @@ export class NetworkHandler{
 
                 if(normalized.length() > 0.08) enemy.pBody.setLinearVelocity(normalized)
                 else enemy.pBody.setLinearVelocity(new p.Vec2(0, 0))
+            
+                scene.realBodyPos.set(enemy.pBody, enemyData.pos)
             
                 normalized.normalize()
 
@@ -249,6 +264,14 @@ export class NetworkHandler{
                 if(enemy.health <= 0){
                     scene.enemies.splice(scene.enemies.indexOf(enemy), 1)
                     enemy.destroy()
+                    this.scene.add.particles(enemy.x, enemy.y, 'red-circle-particle', {
+                        color: [0xff9999],
+                        lifespan: 500,
+                        speed: { min: 200, max: 300 },
+                        scale: { start: 2, end: 0 },
+                        gravityY: 500,
+                        emitting: false
+                    }).explode(8)
                 }
             }
         })
@@ -262,16 +285,14 @@ export class NetworkHandler{
             }
         })
 
-        scene.droppedItems.sort(a => a.active ? -1 : 1)
-        let dropItemIndex = scene.droppedItems.length
-        scene.droppedItems.forEach((item, i) => {
+        scene.droppedItems.sort(a => a.active ? 1 : -1)
+        scene.droppedItems.slice().reverse().forEach((item) => {
             const itemData = data.droppedItems.find(v => v.uid == item.uid)
             if(!itemData){
                 item.destroy()
-                if(i < dropItemIndex) dropItemIndex = i
+                scene.droppedItems.splice(scene.droppedItems.indexOf(item), 1)
             }
         })
-        scene.droppedItems.splice(dropItemIndex)
 
         data.projectiles.forEach(projectileData => {
             const existProjectile = scene.projectiles.find(v => v.uid == projectileData.uid)
@@ -290,17 +311,14 @@ export class NetworkHandler{
             }
         })
 
-        scene.projectiles.sort(a => a.active ? -1 : 1)
-        let projectileIndex = scene.projectiles.length
-        scene.projectiles.forEach((projectile, i) => {
+        scene.projectiles.sort(a => a.active ? 1 : -1)
+        scene.projectiles.slice().reverse().forEach((projectile) => {
             const projectileData = data.projectiles.find(v => v.uid == projectile.uid)
             if(!projectileData){
                 projectile.destroy()
-                if(i < projectileIndex) projectileIndex = i
+                scene.projectiles.splice(scene.projectiles.indexOf(projectile), 1)
             }
         })
-        scene.projectiles.splice(projectileIndex)
-
         
     }
 
@@ -309,7 +327,7 @@ export class NetworkHandler{
     }
 
     otherUpdateInventory(id: string, items: Item[]){
-        const other = this.scene.others.find(v => v.id == id)
+        const other = this.scene.others.find(v => v.uid == id)
         if(!other) return
 
         console.log('other updated', items)
@@ -318,7 +336,7 @@ export class NetworkHandler{
     }
 
     otherUpdateHotbar(id: string, index: number){
-        const other = this.scene.others.find(v => v.id == id)
+        const other = this.scene.others.find(v => v.uid == id)
         if(!other) return
 
         console.log('other updated hotbar', index)
@@ -345,7 +363,7 @@ export class NetworkHandler{
     chat(data: { id: string, username: string, msg: string}){
         const scene = this.scene
 
-        const other = scene.others.find(v => v.id == data.id)
+        const other = scene.others.find(v => v.uid == data.id)
         if(other) other.textbox.writeText(data.msg)
     }
 

@@ -16,6 +16,7 @@ export class StatsUI extends Phaser.GameObjects.Container {
 
         this.image = scene.add.image(40, -20, 'stats')
         this.image.setOrigin(0, 1).setScale(4);
+        this.image.setAlpha(0.8);
 
         this.levelText = scene.add.text(85, -52, '0', {
             fontFamily: 'PixelFont', fontSize: 32, color: '#ffffff'

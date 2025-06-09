@@ -52,8 +52,14 @@ export class MainMenu extends Scene{
             align: 'center'
         }).setOrigin(1);
 
-        play.once('pointerup', () => {
+        play.on('pointerup', () => {
             if(authentication.visible) return
+            if(authentication.socket && authentication.socket.disconnected){
+                alert('Not connected try to reload')
+                authentication.socket.disconnect()
+                this.scene.restart()
+                return
+            }
 
             this.scale.startFullscreen();
 

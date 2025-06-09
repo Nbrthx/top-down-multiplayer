@@ -15,6 +15,7 @@ export interface Range{
     }
     cooldown: number
     attackDelay: number
+    canMove: boolean
 }
 
 export class RangeWeapon extends BaseItem{
@@ -59,24 +60,9 @@ export class RangeWeapon extends BaseItem{
         const rad = Math.atan2(y, x)
         this.setRotation(rad)
 
-        const audioPos = this.parentBody.getPosition()
-        this.useSound.playSound(audioPos.x+x, audioPos.y+y, true, false)
-
         setTimeout(() => {
-            const pos = new p.Vec2()
-            pos.x = this.parentBody.getPosition().x + Math.cos(rad) * this.config.offsetMultipler
-            pos.y = this.parentBody.getPosition().y + 0.1 + Math.sin(rad) * this.config.offsetMultipler
-            
-            // const projectile = new Projectile(this.scene, pos, new p.Vec2(Math.cos(rad), Math.sin(rad)), {
-            //     texture: this.config.projectileTexture,
-            //     speed: this.config.speed,
-            //     range: this.config.range,
-            //     hitboxSize: {
-            //         width: this.config.hitboxSize.width,
-            //         height: this.config.hitboxSize.height
-            //     }
-            // })
-            // this.scene.projectiles.push(projectile)
+            const audioPos = this.parentBody.getPosition()
+            this.useSound.playSound(audioPos.x+x, audioPos.y+y, true, false)
         }, this.config.attackDelay)
 
         this.sprite.once('animationcomplete', () => {

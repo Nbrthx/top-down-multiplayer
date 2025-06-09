@@ -40,7 +40,12 @@ const accounts: Account[] = [
         "akey": "cb82f45fbe63ae34b8d6b5d0ce29fccfe2c510ee55495a5699dd8f07fa206df718562d7293c1e53e90b9689087c3e09a4f1c886360bcb4f21c173fd99f488d6c",
         "xp": 0,
         "health": 100,
-        "inventory": [{ "id": "dagger", "timestamp": 0}, { "id": "sword", "timestamp": 0}, { "id": "bow", "timestamp": 0}]
+        "inventory": [
+            { "id": "dagger", "timestamp": 0},
+            { "id": "blue-knife", "timestamp": 0},
+            { "id": "sword", "timestamp": 0},
+            { "id": "bow", "timestamp": 0}
+        ]
     },
     {
         "username": "husen",

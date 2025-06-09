@@ -37,14 +37,14 @@ export class GameManager{
         return this.getWorld(this.playerMap.get(playerId) || '')
     }
 
-    public handleInput(id: string, input: InputData){
-        const world = this.getPlayerWorld(id)
+    public handleInput(uid: string, input: InputData){
+        const world = this.getPlayerWorld(uid)
 
         if(!world) return
-        if(!world.players.find(player => player.id == id)) return
+        if(!world.players.find(player => player.uid == uid)) return
 
-        if(!world.inputData.has(id)) world.inputData.set(id, [])
-        world.inputData.get(id)?.push(input)
+        if(!world.inputData.has(uid)) world.inputData.set(uid, [])
+        world.inputData.get(uid)?.push(input)
     }
 
     update() {

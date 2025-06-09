@@ -30,7 +30,8 @@ export const itemList: ItemEntry[] = [
             hitboxSize: { width: 0.7, height: 0.2 },
             hitboxOffsetMultipler: 1.1,
             cooldown: 500,
-            attackDelay: 100
+            attackDelay: 100,
+            canMove: true
         }
     },
     {
@@ -42,7 +43,8 @@ export const itemList: ItemEntry[] = [
             hitboxSize: { width: 0.8, height: 0.7 },
             hitboxOffsetMultipler: 0.9,
             cooldown: 800,
-            attackDelay: 200
+            attackDelay: 200,
+            canMove: true
         }
     },
     {
@@ -53,10 +55,11 @@ export const itemList: ItemEntry[] = [
             projectileTexture: 'arrow',
             offsetMultipler: 0.8,
             hitboxSize: { width: 0.4, height: 0.1 },
-            speed: 8,
-            range: 7,
+            speed: 30,
+            range: 5,
             cooldown: 1200,
-            attackDelay: 200
+            attackDelay: 200,
+            canMove: false
         }
     },
     {
@@ -68,9 +71,25 @@ export const itemList: ItemEntry[] = [
             hitboxSize: { width: 1.4, height: 0.3 },
             hitboxOffsetMultipler: 0.4,
             cooldown: 3000,
-            attackDelay: 300
+            attackDelay: 300,
+            canMove: false
         }
     },
+    {
+        id: 'blue-knife',
+        type: 'range',
+        config: {
+            texture: 'throw',
+            projectileTexture: 'blue-knife',
+            offsetMultipler: 0.9,
+            hitboxSize: { width: 0.2, height: 0.1 },
+            speed: 20,
+            range: 7,
+            cooldown: 600,
+            attackDelay: 400,
+            canMove: true
+        }
+    }
 ];
 
 export class ItemInstance{

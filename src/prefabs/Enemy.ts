@@ -7,7 +7,7 @@ import { SpatialSound } from '../components/SpatialAudio'
 
 export class Enemy extends Phaser.GameObjects.Container{
 
-    id: string
+    uid: string
     maxHealth: number
     health: number
     speed = 3
@@ -28,11 +28,11 @@ export class Enemy extends Phaser.GameObjects.Container{
     target: Player | null
     audio?: { step: SpatialSound; hit: SpatialSound }
 
-    constructor(scene: Game, x: number, y: number, id: string){
+    constructor(scene: Game, x: number, y: number, uid: string){
         super(scene, x, y)
 
         this.scene = scene
-        this.id = id
+        this.uid = uid
 
         scene.add.existing(this)
 

@@ -13,6 +13,7 @@ export interface Melee{
     hitboxOffsetMultipler: number
     cooldown: number
     attackDelay: number
+    canMove: boolean
 }
 
 export class MeleeWeapon extends BaseItem{
@@ -64,15 +65,17 @@ export class MeleeWeapon extends BaseItem{
 
         const rad = Math.atan2(y, x)
         this.setRotation(rad)
-
+        
         const audioPos = this.parentBody.getPosition()
         this.useSound.playSound(audioPos.x+x, audioPos.y+y, true, false)
 
         setTimeout(() => {
+            const realPos = this.scene.realBodyPos.get(this.parentBody) || this.parentBody.getPosition()
+
             this.hitbox.setPosition(
                 new p.Vec2(
-                    (this.parentBody.getPosition().x + Math.cos(rad) * this.config.hitboxOffsetMultipler),
-                    (this.parentBody.getPosition().y + 0.1 + Math.sin(rad) * this.config.hitboxOffsetMultipler)
+                    (realPos.x + Math.cos(rad) * this.config.hitboxOffsetMultipler),
+                    (realPos.y + 0.1 + Math.sin(rad) * this.config.hitboxOffsetMultipler)
                 )
             );
             this.hitbox.setAngle(rad)

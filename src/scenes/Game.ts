@@ -32,6 +32,7 @@ export class Game extends Scene{
     enemies: Enemy[]
     projectiles: Projectile[]
     droppedItems: DroppedItem[];
+    realBodyPos: Map<p.Body, { x: number, y: number }>
 
     attackDir: p.Vec2
 
@@ -64,6 +65,7 @@ export class Game extends Scene{
         this.enemies = []
         this.projectiles = []
         this.droppedItems = []
+        this.realBodyPos = new Map()
 
         this.mapSetup = new MapSetup(this, 'test')
 
@@ -147,6 +149,13 @@ export class Game extends Scene{
             vel.x = this.UI.joystick.x;
             vel.y = this.UI.joystick.y;
         }
+
+        if(!this.player.itemInstance.config.canMove){
+            if(this.player.itemInstance.timestamp+this.player.itemInstance.config.attackDelay > Date.now()){
+                vel.mul(0)
+                console.log('mul 0')
+            }
+        }
         
         vel.normalize();
 
@@ -172,7 +181,7 @@ export class Game extends Scene{
 
             pendingUpdates.forEach(gameState => {
                 gameState.players.forEach(playerData => {
-                    const existingPlayer = latestPlayers.get(playerData.id);
+                    const existingPlayer = latestPlayers.get(playerData.uid);
                     if (existingPlayer) {
                         if(playerData.attackDir.x != 0 || playerData.attackDir.y != 0){
                             existingPlayer.attackDir = playerData.attackDir;
@@ -182,12 +191,12 @@ export class Game extends Scene{
                         existingPlayer.health = playerData.health;
                         existingPlayer.xp = playerData.xp;
                     } else {
-                        latestPlayers.set(playerData.id, playerData);
+                        latestPlayers.set(playerData.uid, playerData);
                     }
                 });
 
                 gameState.enemies.forEach(enemyData => {
-                    const existingEnemy = latestEnemies.get(enemyData.id);
+                    const existingEnemy = latestEnemies.get(enemyData.uid);
                     if (existingEnemy) {
                         if(enemyData.attackDir.x != 0 || enemyData.attackDir.y != 0){
                             existingEnemy.attackDir = enemyData.attackDir;
@@ -196,7 +205,7 @@ export class Game extends Scene{
                         existingEnemy.pos = enemyData.pos;
                         existingEnemy.health = enemyData.health;
                     } else {
-                        latestEnemies.set(enemyData.id, enemyData);
+                        latestEnemies.set(enemyData.uid, enemyData);
                     }
                 });
 

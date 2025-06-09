@@ -68,10 +68,10 @@ export const itemList: Item[] = [
             cooldown: 1200,
             attackDelay: 200,
             damage: 5,
-            knockback: 18,
+            knockback: 22,
             force: -8,
             forceDelay: 100,
-            canMove: true
+            canMove: false
         }
     },
     {
@@ -91,6 +91,25 @@ export const itemList: Item[] = [
             canMove: false
         }
     },
+    {
+        id: 'blue-knife',
+        type: 'range',
+        config: {
+            texture: 'throw',
+            projectileTexture: 'blue-knife',
+            offsetMultipler: 0.9,
+            hitboxSize: { width: 0.2, height: 0.1 },
+            speed: 15,
+            range: 7,
+            cooldown: 600,
+            attackDelay: 400,
+            damage: 1.6,
+            knockback: 10,
+            force: -12,
+            forceDelay: 300,
+            canMove: true
+        }
+    }
 ]
 
 export class ItemInstance{

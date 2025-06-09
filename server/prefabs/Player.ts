@@ -10,7 +10,7 @@ export class Player{
 
     account: Account
 
-    id: string
+    uid: string
     health: number
     maxHealth: number
     speed = 4.2
@@ -26,9 +26,9 @@ export class Player{
     knockbackDir: p.Vec2
     inventory: Inventory
 
-    constructor(scene: Game, x: number, y: number, id: string, account: Account){
+    constructor(scene: Game, x: number, y: number, uid: string, account: Account){
         this.scene = scene
-        this.id = id
+        this.uid = uid
         this.account = account
 
         this.pBody = scene.world.createDynamicBody({

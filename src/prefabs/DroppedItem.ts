@@ -14,8 +14,15 @@ export class DroppedItem extends Phaser.GameObjects.Image{
 
     constructor(scene: Game, x: number, y: number, id: string, uid: string){
         super(scene, x*scene.gameScale*32, y*scene.gameScale*32, 'icon-'+id);
-        this.setScale(scene.gameScale)
+        this.setScale(0)
         this.setAlpha(1).setTint(0xdddddd)
+
+        scene.tweens.add({
+            targets: this,
+            duration: 200,
+            ease: 'Expo.easeInOut',
+            scale: scene.gameScale
+        })
 
         this.tween = scene.tweens.add({
             targets: this,
