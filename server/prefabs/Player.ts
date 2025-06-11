@@ -68,7 +68,7 @@ export class Player{
 
         this.account.health = this.health
 
-        if(!this.itemInstance.config.canMove){
+        if(!this.itemInstance.canMove){
            if(this.itemInstance.isAttacking) this.pBody.setLinearVelocity(new p.Vec2(0, 0))
         }
 
@@ -92,7 +92,7 @@ export class Player{
 
     equipItem(index: number){
         this.scene.world.queueUpdate(() => {
-            const item = this.inventory.items[index]
+            let item = this.inventory.items[index]
 
             if(this.itemInstance){
                 const timestamp = item.timestamp

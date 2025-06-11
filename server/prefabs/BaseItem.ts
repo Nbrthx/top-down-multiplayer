@@ -11,6 +11,11 @@ export abstract class BaseItem {
     timestamp: number
     cooldown: number
     config: BaseItemConfig
+
+    damage: number = 0
+    knockback: number = 0
+    canMove: boolean = true
+
     isAttacking: boolean
 
     constructor(scene: Game, parentBody: p.Body) {

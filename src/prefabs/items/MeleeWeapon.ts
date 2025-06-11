@@ -28,7 +28,10 @@ export class MeleeWeapon extends BaseItem{
         super(scene, parentBody);
         
         scene.add.existing(this);
+
         this.config = config
+        this.canMove = config.canMove
+        this.attackDelay = config.attackDelay
         
         this.attackState = false
 

@@ -10,6 +10,8 @@ export abstract class BaseItem extends Phaser.GameObjects.Container {
     timestamp: number
     cooldown: number
     config: BaseItemConfig
+    canMove: boolean = true;
+    attackDelay: number = 0;
 
     constructor(scene: Game, parentBody: p.Body) {
         super(scene, 0, 16);

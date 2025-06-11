@@ -29,6 +29,9 @@ export class MeleeWeapon extends BaseItem{
         super(scene, parentBody);
         
         this.config = config
+        this.damage = config.damage
+        this.knockback = config.knockback
+        this.canMove = config.canMove
         
         this.attackState = false
 

@@ -1,10 +1,26 @@
 import { itemList } from "./ItemInstance";
 import { Player } from "./Player";
 
-export interface Item{
-    id: string;
-    timestamp: number;
+interface WeaponItem {
+    id: string
+    tag: 'weapon'
+    timestamp: number
 }
+
+interface ResourceItem {
+    id: string
+    tag: 'resource'
+    quantity: number
+    timestamp: number
+}
+
+interface NoItem {
+    id: string
+    tag: null
+    timestamp: number
+}
+
+export type Item = WeaponItem | ResourceItem | NoItem
 
 export class Inventory {
 
@@ -20,7 +36,8 @@ export class Inventory {
         for(let i = 0; i < 25; i++){
             this.items.push({
                 id: '',
-                timestamp: 0
+                tag: null,
+                timestamp: Date.now()
             })
         }
     }
@@ -82,5 +99,5 @@ export class Inventory {
 
     onSetActiveIndex() {}
 
-    onDropItem(index: number, dir: { x: number, y: number }) { index; dir; }
+    onDropItem(index: number, dir: { x: number, y: number }, quantity?: number) { index; dir; quantity; }
 }

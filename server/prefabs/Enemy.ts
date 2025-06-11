@@ -95,7 +95,7 @@ export class Enemy{
             this.attackDir = new p.Vec2(0, 0)
         }
 
-        if(!this.itemInstance.config.canMove){
+        if(!this.itemInstance.canMove){
             if(this.itemInstance.isAttacking) this.pBody.setLinearVelocity(new p.Vec2(0, 0))
         }
         

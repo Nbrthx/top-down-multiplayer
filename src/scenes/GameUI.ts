@@ -6,6 +6,7 @@ import { Player } from '../prefabs/Player'
 import { Joystick } from '../prefabs/Joystick'
 import { Chat } from '../prefabs/ui/Chat'
 import { StatsUI } from '../prefabs/ui/StatsUI'
+import { QuestUI } from '../prefabs/ui/QuestUI'
 
 export const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -31,6 +32,8 @@ export class GameUI extends Phaser.Scene {
     inventoryButton: Phaser.GameObjects.Image
     chatbox: Chat
     joystick2: Joystick
+    questUI: QuestUI
+    redEffect: Phaser.GameObjects.Rectangle
 
     constructor(){
         super('GameUI')
@@ -92,6 +95,11 @@ export class GameUI extends Phaser.Scene {
             }
         })
 
+        this.redEffect = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0xff0000)
+        this.redEffect.setAlpha(0)
+        this.redEffect.setOrigin(0, 0)
+        this.redEffect.setDepth(1000)
+
         if(isMobile()){
             this.joystick = new Joystick({
                 scene: this,
@@ -137,6 +145,10 @@ export class GameUI extends Phaser.Scene {
             right: this.input.keyboard?.addKey('D', false)?.isDown
         }
 
+        if(this.questUI && this.questUI.visible){
+            this.keyboardInput = { up: false, down: false, left: false, right: false }
+        }
+
         if(this.hotbarUI && this.hotbarUI instanceof HotbarUI) this.hotbarUI.update()
 
         if(this.statsUI && this.statsUI instanceof StatsUI && this.gameScene.player){
@@ -153,7 +165,7 @@ export class GameUI extends Phaser.Scene {
 
                 const rad = Math.atan2(y, x)
                 this.gameScene.player.aimAssist.setRotation(rad)
-                this.gameScene.camera.setFollowOffset(-x*40, -y*40)
+                this.gameScene.camera.setFollowOffset(-x*50, -y*50)
             }
         }
     }
@@ -208,8 +220,19 @@ export class GameUI extends Phaser.Scene {
             this.socket.emit('setHotbarIndex', player.inventory.activeIndex)
         }
 
-        player.inventory.onDropItem = (index, dir) => {
-            this.socket.emit('dropItem', index, dir)
+        player.inventory.onDropItem = (index, dir, quantity) => {
+            this.socket.emit('dropItem', index, dir, quantity)
+        }
+        
+        this.questUI = new QuestUI(this)
+
+        this.questUI.onOpen = (pos) => {
+            const player = this.gameScene.player
+            this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 100)
+        }
+
+        this.questUI.onClose = () => {
+            this.gameScene.camera.setFollowOffset(0, 0)
         }
     }
 }

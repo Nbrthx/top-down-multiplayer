@@ -6,10 +6,26 @@ import * as bodyParser from 'body-parser'
 import { SocketManager } from './SocketManager'
 import { RestApi } from './RestApi'
 
-export interface Item{
+interface WeaponItem {
     id: string
+    tag: 'weapon'
     timestamp: number
 }
+
+interface ResourceItem {
+    id: string
+    tag: 'resource'
+    quantity: number
+    timestamp: number
+}
+
+interface NoItem {
+    id: string
+    tag: null
+    timestamp: number
+}
+
+export type Item = WeaponItem | ResourceItem | NoItem
 
 export interface Account{
     username: string,
@@ -17,7 +33,8 @@ export interface Account{
     akey: string,
     health: number,
     xp: number,
-    inventory: (Item | undefined | null)[]
+    inventory: Item[]
+    questCompleted: string[]
 }
 
 const app = express()
@@ -41,11 +58,12 @@ const accounts: Account[] = [
         "xp": 0,
         "health": 100,
         "inventory": [
-            { "id": "dagger", "timestamp": 0},
-            { "id": "blue-knife", "timestamp": 0},
-            { "id": "sword", "timestamp": 0},
-            { "id": "bow", "timestamp": 0}
-        ]
+            { "id": "dagger", "tag": "weapon", "timestamp": 0 },
+            { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
+            { "id": "sword", "tag": "weapon", "timestamp": 0 },
+            { "id": "bow", "tag": "weapon", "timestamp": 0 }
+        ],
+        "questCompleted": []
     },
     {
         "username": "husen",
@@ -53,7 +71,8 @@ const accounts: Account[] = [
         "akey": "6fd2f0798d96fc7ab4df873357c18f452c87bc608b4fd429c8851f439ea7fefe1974e718dd0411c76575fddd6dbf10644a8046321243589c2710fa3a47af14cf",
         "xp": 0,
         "health": 100,
-        "inventory": []
+        "inventory": [],
+        "questCompleted": []
     }
 ]
 

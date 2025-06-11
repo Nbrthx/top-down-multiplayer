@@ -183,6 +183,13 @@ export class NetworkHandler{
                     if(scene.player.health > playerData.health){
                         scene.camera.shake(100, 0.008)
                         scene.player.hitEffect()
+                        scene.tweens.add({
+                            targets: scene.UI.redEffect,
+                            alpha: 0.2,
+                            duration: 100,
+                            yoyo: true,
+                            ease: 'Sine.easeInOut'
+                        })
                     }
                     scene.player.health = playerData.health
                 }

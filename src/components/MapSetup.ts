@@ -1,5 +1,6 @@
 import p from 'planck'
 import { Game } from '../scenes/Game'
+import { NPC } from '../prefabs/NPC'
 
 export class MapSetup{
 
@@ -9,6 +10,7 @@ export class MapSetup{
     collision: p.Body[]
     entrances: p.Body[]
     enterpoint: Map<string, p.Vec2>
+    npcs: NPC[]
 
     constructor(scene: Game, mapName: string){
         this.scene = scene
@@ -18,6 +20,7 @@ export class MapSetup{
         this.collision = []
         this.entrances = []
         this.enterpoint = new Map()
+        this.npcs = []
 
         const map = scene.add.tilemap(mapName)
         const tileset = map.addTilesetImage('tilemaps', 'tilemaps') as Phaser.Tilemaps.Tileset
@@ -31,6 +34,7 @@ export class MapSetup{
         scene.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
 
         this.initCollision(map)
+        this.createNPCs(map)
         this.createBounds(map.width, map.height)
         this.createEntrances(map)
         this.createEnterPoint(map)
@@ -81,8 +85,30 @@ export class MapSetup{
         })
     }
 
+    createNPCs(map: Phaser.Tilemaps.Tilemap){
+        const scene = this.scene
+
+        map.getObjectLayer('npcs')?.objects.map(_o => {
+            const o = _o as { name: string, x: number, y: number, width: number, height: number}
+
+            const npc = new NPC(scene, o.x*this.gameScale, o.y*this.gameScale, o.name)
+            npc.askButton.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+                pointer.event.preventDefault()
+                scene.input.stopPropagation()
+
+                scene.UI.questUI.setText('Mission 1', 'kill enemy 3 time', {
+                    x: npc.x,
+                    y: npc.y
+                })
+            })
+
+            this.npcs.push(npc)
+        })
+    }
+
     createEntrances(map: Phaser.Tilemaps.Tilemap){
         const scene = this.scene
+
 
         map.getObjectLayer('entrance')?.objects.map(_o => {
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
@@ -145,6 +171,11 @@ export class MapSetup{
             this.scene.world.destroyBody(v)
         })
         this.entrances = []
+
+        this.npcs.forEach(v => {
+            v.destroy()
+        })
+        this.npcs = []
     }
 
     createEnterPoint(map: Phaser.Tilemaps.Tilemap) {

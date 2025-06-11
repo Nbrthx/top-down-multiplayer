@@ -3,8 +3,9 @@ import { Game } from "../GameWorld";
 import { BaseItem } from "./BaseItem";
 import { MeleeWeapon, Melee } from "./items/MeleeWeapon";
 import { RangeWeapon, Range } from "./items/RangeWeapon";
+import { Resource } from './items/ResourceItem';
 
-interface MeleeIteme {
+interface MeleeItem {
     id: string
     type: 'melee'
     config: Melee
@@ -16,9 +17,15 @@ interface RangeItem {
     config: Range
 }
 
-type Item = MeleeIteme | RangeItem
+interface ResourceItem {
+    id: string
+    type: 'resource'
+    config: Resource
+}
 
-export type BaseItemConfig = Melee | Range
+type Item = MeleeItem | RangeItem | ResourceItem
+
+export type BaseItemConfig = Melee | Range | Resource;
 
 export const itemList: Item[] = [
     {
@@ -49,7 +56,7 @@ export const itemList: Item[] = [
             cooldown: 800,
             attackDelay: 200,
             damage: 5,
-            knockback: 19,
+            knockback: 20,
             force: 10,
             forceDelay: 0,
             canMove: true
@@ -68,7 +75,7 @@ export const itemList: Item[] = [
             cooldown: 1200,
             attackDelay: 200,
             damage: 5,
-            knockback: 22,
+            knockback: 19,
             force: -8,
             forceDelay: 100,
             canMove: false
@@ -102,12 +109,20 @@ export const itemList: Item[] = [
             speed: 15,
             range: 7,
             cooldown: 600,
-            attackDelay: 400,
+            attackDelay: 300,
             damage: 1.6,
             knockback: 10,
             force: -12,
-            forceDelay: 300,
+            forceDelay: 200,
             canMove: true
+        }
+    },
+    {
+        id: 'wood',
+        type: 'resource',
+        config: {
+            isUsable: true,
+            cooldown: 1000
         }
     }
 ]
@@ -118,19 +133,19 @@ export class ItemInstance{
     parentBody: p.Body;
     itemInstance: BaseItem
 
-    constructor(scene: Game, parentBody: p.Body, weaponId?: string){
+    constructor(scene: Game, parentBody: p.Body, itemId?: string){
         this.scene = scene;
         this.parentBody = parentBody;
 
         const defaultConfig = itemList[0].config as Melee;
-        const weapon = itemList.find(weapon => weapon.id === weaponId || '');
+        const item = itemList.find(item => item.id === itemId || '');
 
-        if(weapon){
-            if(weapon.type === 'melee'){
-                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, weapon.config);
+        if(item){
+            if(item.type === 'melee'){
+                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, item.config);
             }
-            else if(weapon.type === 'range'){
-                this.itemInstance = new RangeWeapon(this.scene, this.parentBody, weapon.config);
+            else if(item.type === 'range'){
+                this.itemInstance = new RangeWeapon(this.scene, this.parentBody, item.config);
             }
             else{
                 this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultConfig);

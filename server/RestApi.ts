@@ -33,7 +33,8 @@ export class RestApi{
                 akey: akey as string,
                 xp: 0,
                 health: 100,
-                inventory: []
+                inventory: [],
+                questCompleted: []
             });
 
             console.log("User registered: "+username)

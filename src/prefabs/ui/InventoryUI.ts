@@ -9,6 +9,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
     inventoryContainer: Phaser.GameObjects.Container;
     hotbarContainer: Phaser.GameObjects.Container;
     background: Phaser.GameObjects.Rectangle;
+    popupRange: PopupRange;
 
     constructor(scene: GameUI, inventory: Inventory) {
         super(scene, scene.scale.width / 2, scene.scale.height / 2);
@@ -17,6 +18,9 @@ export class InventoryUI extends Phaser.GameObjects.Container {
         scene.add.existing(this);
 
         this.inventory = inventory;
+        
+        this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
+        this.background.setInteractive({ dropZone: true }).setName('background')
 
         this.image = this.scene.add.image(0, 0, 'inventory');
         this.image.setScale(4)
@@ -25,10 +29,15 @@ export class InventoryUI extends Phaser.GameObjects.Container {
         this.inventoryContainer = this.scene.add.container(-320 + 16, -328).setName('inventory');
         this.hotbarContainer = this.scene.add.container(-320 + 16, 232).setName('hotbar');
 
-        this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
-        this.background.setInteractive({ dropZone: true }).setName('background')
+        this.popupRange = new PopupRange(scene, inventory);
 
-        this.add([this.background, this.image, this.inventoryContainer, this.hotbarContainer])
+        this.add([
+            this.background,
+            this.image,
+            this.inventoryContainer,
+            this.hotbarContainer,
+            this.popupRange
+        ])
 
         this.updateItems()
     }
@@ -91,7 +100,10 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                         const x = pointer.x - this.scene.scale.width/2
                         const y = pointer.y - this.scene.scale.height/2
 
-                        this.inventory.onDropItem(i*5 + j + startIndex, { x: x, y: y })
+                        if(item.tag == 'resource' && item.quantity > 1) {
+                            this.popupRange.dropMultipleItems(i*5 + j + startIndex, { x: x, y: y }, item.quantity);
+                        }
+                        else this.inventory.onDropItem(i*5 + j + startIndex, { x: x, y: y })
                     }
                     else if(!target.name || target.name == ''){
                         itemIcon.x = x + 48;
@@ -115,5 +127,81 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
     destroy() {
         super.destroy(true)
+    }
+}
+
+class PopupRange extends Phaser.GameObjects.Container {
+
+    scene: GameUI;
+    inventory: Inventory;
+
+    dot: Phaser.GameObjects.Arc;
+    dropButton: Phaser.GameObjects.Text;
+    countText: Phaser.GameObjects.Text;
+
+    constructor(scene: GameUI, inventory: Inventory) {
+        super(scene, 0, 0);
+
+        scene.add.existing(this);
+
+        this.scene = scene;
+        this.inventory = inventory;
+        this.setVisible(false);
+
+        const background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
+        background.setInteractive()
+
+        const box = scene.add.rectangle(0, 0, 500, 200, 0xbbbbbb)
+
+        const bar = scene.add.rectangle(0, 0, 400, 10, 0x000000);
+
+        this.countText = scene.add.text(0, -60, 'Items Count: 0', {
+            fontFamily: 'PixelFont', fontSize: 24, color: '#000000',
+        }).setOrigin(0.5, 0.5);
+
+        this.dot = scene.add.arc(-200, 0, 10)
+        this.dot.setFillStyle(0xff0000, 1)
+        this.dot.setOrigin(0.5, 0.5)
+        this.dot.setInteractive({ draggable: true });
+        
+        this.dropButton = scene.add.text(0, 60, 'Drop Item', {
+            fontFamily: 'PixelFont', fontSize: 32, color: '#000000',
+            backgroundColor: '#ffffff', padding: { x: 40, y: 5 }
+        }).setOrigin(0.5, 0.5);
+
+        this.add([
+            background,
+            box,
+            bar,
+            this.dot,
+            this.countText,
+            this.dropButton
+        ]);
+    }
+
+    dropMultipleItems(index: number, dir: { x: number, y: number }, quantity: number) {
+        this.setVisible(true);
+
+        this.dot.on('drag', (_pointer: Phaser.Input.Pointer, dragX: number) => {
+            this.dot.x = dragX;
+
+            const step = 400 / (quantity-1);
+            this.dot.x = Math.round((dragX + 200) / step) * step - 200;
+
+            if(this.dot.x < -200) this.dot.x = -200
+            if(this.dot.x > 200) this.dot.x = 200
+            
+            this.countText.setText(`Items Count: ${Math.abs(Math.round((this.dot.x + 200) / 400 * (quantity-1)))+1}`);
+        })
+
+        this.dropButton.setInteractive();
+        this.dropButton.on('pointerdown', () => {
+            const itemCount = Math.abs(Math.round((this.dot.x + 200) / 400 * (quantity-1)))+1;
+            this.inventory.onDropItem(index, dir, itemCount);
+
+            this.setVisible(false);
+            this.dot.off('pointerdown')
+            this.dropButton.off('pointerdown');
+        });
     }
 }

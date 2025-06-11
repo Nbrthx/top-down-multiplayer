@@ -16,15 +16,21 @@ export class Inventory {
         for(let i = 0; i < 25; i++){
             this.items.push({
                 id: '',
-                timestamp: 0
+                tag: null,
+                timestamp: Date.now()
             })
         }
     }
 
-    addItem(id: string) {
+    addItem(id: string, quantity: number = 1): boolean {
         for(let i = 0; i < 25; i++){
             if(this.items[i] === undefined || this.items[i].id == ''){
-                this.items[i] = { id: id, timestamp: Date.now() }
+                if(quantity){
+                    this.items[i] = { id: id, tag: 'resource', quantity: quantity, timestamp: Date.now() }
+                }
+                else{
+                    this.items[i] = { id: id, tag: 'weapon', timestamp: Date.now() }
+                }
 
                 if(i == this.activeIndex) this.parent.equipItem(this.activeIndex)
 
@@ -38,12 +44,31 @@ export class Inventory {
         return false
     }
 
-    removeItem(index: number) {
+    removeItem(index: number, quantity: number = 1): boolean {
+        if(index >= 25) return false
         if(this.items[index] === undefined) return false
 
-        this.items[index] = {
-            id: '',
-            timestamp: 0
+        const tag = this.items[index].tag
+
+        if(tag == 'weapon'){
+            this.items[index] = {
+                id: '',
+                tag: null,
+                timestamp: Date.now()
+            }
+        }
+        else if(tag == 'resource'){
+            if(this.items[index].quantity > quantity){
+                this.items[index].quantity -= quantity
+            }
+            else if(this.items[index].quantity == quantity){
+                this.items[index] = {
+                    id: '',
+                    tag: null,
+                    timestamp: Date.now()
+                }
+            }
+            else return false
         }
 
         if(index == this.activeIndex) this.parent.equipItem(this.activeIndex)

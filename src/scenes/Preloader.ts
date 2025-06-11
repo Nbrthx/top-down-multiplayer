@@ -61,7 +61,11 @@ export class Preloader extends Scene{
         this.load.image('inventory', 'ui/inventory.png')
         this.load.image('hotbar', 'ui/hotbar.png')
         this.load.image('stats', 'ui/stats.png')
+        this.load.image('ask-button', 'ui/ask-button.png')
         this.load.spritesheet('cooldown-anim', 'ui/cooldown-anim.png', { frameWidth: 24, frameHeight: 24 })
+
+        this.load.image('box-nineslice', 'ui/box-nineslice.png')
+        this.load.image('button-nineslice', 'ui/button-nineslice.png')
 
         this.load.image('logo', 'logo.png');
 
@@ -116,7 +120,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'throw-attack',
-            frames: this.anims.generateFrameNumbers('throw', { frames: [0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4] }),
+            frames: this.anims.generateFrameNumbers('throw', { frames: [0, 0, 0, 0, 0, 0, 1, 2, 3, 4] }),
             frameRate: 20
         })
         this.anims.create({

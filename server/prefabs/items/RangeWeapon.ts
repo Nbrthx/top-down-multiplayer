@@ -30,6 +30,7 @@ export class RangeWeapon extends BaseItem{
         super(scene, parentBody);
         
         this.config = config
+        this.canMove = config.canMove
         
         this.attackState = false
 
@@ -106,7 +107,10 @@ export class Projectile{
     pBody: p.Body;
     basePos: p.Vec2
     attackDir: p.Vec2;
+    
     config: ProjectileConfig
+    damage: number = 0
+    knockback: number = 0
 
     constructor(scene: Game, parentBody: p.Body, pos: p.Vec2, dir: p.Vec2, config: ProjectileConfig) {
         this.scene = scene
@@ -114,7 +118,10 @@ export class Projectile{
         this.uid = crypto.randomUUID()
         this.basePos = pos.clone()
         this.attackDir = new p.Vec2(dir.x, dir.y)
+
         this.config = config
+        this.damage = config.damage
+        this.knockback = config.knockback
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(pos.x, pos.y),

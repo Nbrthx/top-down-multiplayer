@@ -81,7 +81,20 @@ export class MapSetup{
     createEnemy(map: Tilemap){
         const scene = this.scene
 
-        map.layers.find(v => v.name == 'enemys')?.objects.forEach(_o => {
+        map.layers.find(v => v.name == 'enemies')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, name: string }
+
+            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale)
+
+            scene.entityBodys.push(enemy.pBody)
+            scene.enemies.push(enemy)
+        })
+    }
+
+    createEnti(map: Tilemap){
+        const scene = this.scene
+
+        map.layers.find(v => v.name == 'enemies')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, name: string }
 
             const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale)

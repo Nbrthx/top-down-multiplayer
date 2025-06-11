@@ -85,7 +85,6 @@ export class Game extends Scene{
 
             let x = pointer.worldX-this.player.x
             let y = pointer.worldY-this.player.y-12
-
             const rad = Math.atan2(y, x)
 
             this.player.aimAssist.setRotation(rad)
@@ -93,9 +92,10 @@ export class Game extends Scene{
             this.camera.setFollowOffset(-x/this.gameScale/4, -y/this.gameScale/4)
         })
 
-        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer, objects: Phaser.GameObjects.GameObject[]) => {
             if(!this.player) return;
             if(isMobile()) return
+            if(objects.length > 0) return
 
             let x = pointer.worldX-this.player.x
             let y = pointer.worldY-this.player.y-12
@@ -150,8 +150,8 @@ export class Game extends Scene{
             vel.y = this.UI.joystick.y;
         }
 
-        if(!this.player.itemInstance.config.canMove){
-            if(this.player.itemInstance.timestamp+this.player.itemInstance.config.attackDelay > Date.now()){
+        if(!this.player.itemInstance.canMove){
+            if(this.player.itemInstance.timestamp+this.player.itemInstance.attackDelay > Date.now()){
                 vel.mul(0)
                 console.log('mul 0')
             }
@@ -228,6 +228,10 @@ export class Game extends Scene{
 
         this.others.forEach(other => {
             other.update()
+        })
+
+        this.mapSetup.npcs.forEach(npc => {
+            if(npc.active) npc.update()
         })
     }
 }

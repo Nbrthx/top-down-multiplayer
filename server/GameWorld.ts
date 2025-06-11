@@ -62,7 +62,6 @@ export class Game{
             const weapon = bodyA.getUserData() as BaseItem | Projectile
             const parent = weapon.parentBody.getUserData() 
             const target = bodyB.getUserData()
-            const config = weapon.config
 
             const isPlayer = (obj: any) => obj instanceof Player
             const isEnemy = (obj: any) => obj instanceof Enemy
@@ -70,8 +69,8 @@ export class Game{
             const hit = () => {
                 if(!isEnemy(target) && !isPlayer(target)) return;
                 if (weapon.attackDir.length() > 0) {
-                    target.health -= config.damage;
-                    target.knockback = config.knockback;
+                    target.health -= weapon.damage;
+                    target.knockback = weapon.knockback;
                     target.knockbackDir = new p.Vec2(weapon.attackDir.x, weapon.attackDir.y);
                 }
             }
@@ -275,7 +274,7 @@ export class Game{
         console.log('Player '+uid+' has removed from '+this.id)
     }
 
-    playerDropItem(uid: string, index: number, dir: { x: number, y: number }){
+    playerDropItem(uid: string, index: number, dir: { x: number, y: number }, quantity?: number){
         const player = this.players.find(v => v.uid == uid)
         if(!player) return
 
@@ -286,7 +285,7 @@ export class Game{
             newDir.normalize()
             pos.add(newDir)
 
-            const droppedItem = new DroppedItem(this, pos.x, pos.y, item.id)
+            const droppedItem = new DroppedItem(this, pos.x, pos.y, item.id, quantity)
             this.droppedItems.push(droppedItem)
         }
     }

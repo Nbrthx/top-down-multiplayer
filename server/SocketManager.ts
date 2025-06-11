@@ -65,13 +65,13 @@ export class SocketManager {
             socket.broadcast.to(player.scene.id).emit('otherUpdateHotbar', socket.id, index)
         })
 
-        socket.on('dropItem', (index: number, dir: { x: number, y: number }) => {
+        socket.on('dropItem', (index: number, dir: { x: number, y: number }, quantity?: number) => {
             if(!Number.isInteger(index) && typeof dir.x !== 'number' && typeof dir.y !== 'number') return
 
             const world = this.gameManager.getPlayerWorld(socket.id)
             if(!world) return
 
-            world.playerDropItem(socket.id, index, dir)
+            world.playerDropItem(socket.id, index, dir, quantity)
         })
 
         socket.on('chat', msg => {

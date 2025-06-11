@@ -230,14 +230,14 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
         {
          "draworder":"topdown",
          "id":6,
-         "name":"enemys",
+         "name":"enemies",
          "objects":[
                 {
                  "height":0,
@@ -253,7 +253,30 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":10,
+         "name":"npcs",
+         "objects":[
+                {
+                 "height":0,
+                 "id":19,
+                 "name":"npc1",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":688,
+                 "y":208
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -385,8 +408,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":10,
- "nextobjectid":19,
+ "nextlayerid":11,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

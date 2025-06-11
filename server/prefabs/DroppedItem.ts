@@ -13,7 +13,7 @@ export class DroppedItem{
     timeout: NodeJS.Timeout
 
 
-    constructor(scene: Game, x: number, y: number, id: string){
+    constructor(scene: Game, x: number, y: number, id: string, quantity?: number){
         this.scene = scene;
         this.uid = crypto.randomUUID();
         this.id = id;
@@ -24,8 +24,7 @@ export class DroppedItem{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.2),
-            isSensor: true
+            shape: new p.Box(0.2, 0.2)
         })
         this.pBody.setUserData(this)
 
@@ -34,7 +33,7 @@ export class DroppedItem{
 
             if(!(player instanceof Player)) return;
 
-            if(player.inventory.addItem(this.id)){
+            if(player.inventory.addItem(this.id, quantity)){
                 this.isActive = false
             }
         })
