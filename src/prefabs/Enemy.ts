@@ -65,7 +65,7 @@ export class Enemy extends Phaser.GameObjects.Container{
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
         this.triggerArea = this.createArea(2)
-        this.visionArea = this.createArea(6)
+        this.visionArea = this.createArea(7)
 
         this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar])
     }

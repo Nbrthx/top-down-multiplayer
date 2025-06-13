@@ -8,6 +8,7 @@ import { Enemy } from './prefabs/Enemy'
 import { DroppedItem } from './prefabs/DroppedItem'
 import { Projectile } from './prefabs/items/RangeWeapon'
 import { BaseItem } from './prefabs/BaseItem'
+import { Quests } from './components/Quests'
 
 export class Game{
 
@@ -43,7 +44,7 @@ export class Game{
 
         this.inputData = new Map()
 
-        this.players = []; // { socketId: Player }
+        this.players = [];
         this.enemies = [];
         this.droppedItems = [];
         this.projectiles = []
@@ -145,18 +146,19 @@ export class Game{
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
 
-                const items = [{ id: 'sword' }, { id: 'bow' }]
+                const items = ['sword', 'bow']
                 const randomItem = items[Math.floor(Math.random()*2)]
                 
-                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem.id)
+                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem)
                 this.droppedItems.push(droppedItem)
 
                 enemy.attacker.forEach(player => {
                     player.account.xp += 1
+                    player.questInProgress?.addProgress('kill', enemy.id)
                 })
 
                 setTimeout(() => {
-                    const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32)
+                    const newEnemy = new Enemy(this, x*this.gameScale*32, y*this.gameScale*32, enemy.id)
                     this.entityBodys.push(newEnemy.pBody)
                     this.enemies.push(newEnemy)
                 }, 5000)
@@ -171,14 +173,15 @@ export class Game{
         this.droppedItems.sort((a) => a.isActive ? 1 : -1);
         this.droppedItems.slice().reverse().forEach(v =>{
             if(!v.isActive){
-                v.destroy()
                 this.droppedItems.splice(this.droppedItems.indexOf(v), 1)
+                v.destroy()
             }
         })
     }
 
     broadcastOutput(){
         const gameState = {
+            id: this.id,
             players: this.players.map(v => {
                 return {
                     uid: v.uid,
@@ -219,11 +222,34 @@ export class Game{
 
     addPlayer(uid: string, account: Account, from?: string){
         const enterPos = this.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+
         const player = new Player(this, enterPos.x, enterPos.y, uid, account)
-        player.inventory.updateInventory(account.inventory)
-        
-        player.account.inventory = player.inventory.items
-        player.health = account.health
+
+        if(account.questInProgress){
+            const npcId = account.questInProgress[0]
+            const quest = Quests.getQuestByNpcId(npcId, account.questCompleted)
+            player.questInProgress = quest
+            
+            if(player.questInProgress && quest){
+                player.questInProgress.setTaskProgress(account.questInProgress[1])
+
+                player.questInProgress.onProgress = () => {
+                    player.account.questInProgress = [npcId, quest.taskProgress];
+                }
+
+                player.questInProgress.onComplete = (xp, item?, gold?) => {
+                    player.account.questCompleted.push(quest.config.id || '');
+                    player.account.xp += xp || 0;
+                    player.account.gold += gold || 0;
+                    if(item && item.length > 0){
+                        item.forEach(([itemName, itemQuantity]) => {
+                            player.inventory.addItem(itemName, itemQuantity);
+                        });
+                    }
+                    account.questInProgress = undefined
+                }
+            }
+        }
 
         this.entityBodys.push(player.pBody)
         this.players.push(player)
@@ -244,7 +270,7 @@ export class Game{
             }
         }))
         socket?.broadcast.to(this.id).emit('playerJoined', {
-            id: socket.id,
+            uid: socket.id,
             username: account.username,
             items: account.inventory,
             from: from || 'spawn',

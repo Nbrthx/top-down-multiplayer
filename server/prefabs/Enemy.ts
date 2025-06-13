@@ -7,6 +7,7 @@ import { MeleeWeapon } from './items/MeleeWeapon'
 
 export class Enemy{
 
+    id: string
     uid: string
     maxHealth: number
     health: number
@@ -29,8 +30,9 @@ export class Enemy{
     knockback: number
     knockbackDir: p.Vec2
 
-    constructor(scene: Game, x: number, y: number){
+    constructor(scene: Game, x: number, y: number, id: string){
         this.scene = scene
+        this.id = id
         this.uid = crypto.randomUUID()
 
         this.pBody = scene.world.createDynamicBody({
@@ -58,7 +60,7 @@ export class Enemy{
         this.attacker = []
 
         this.triggerArea = this.createArea(2)
-        this.visionArea = this.createArea(6)
+        this.visionArea = this.createArea(7)
 
         this.triggerEvent()
         this.visionEvent()
@@ -118,6 +120,8 @@ export class Enemy{
 
         this.triggerArea.setPosition(this.pBody.getPosition())
         this.visionArea.setPosition(this.defaultPos)
+
+        this.healWhenNoTarget()
     }
 
     createArea(radius: number){
@@ -162,6 +166,13 @@ export class Enemy{
                 this.visionArea.setActive(true)
             }, 1000)
         })
+    }
+
+    healWhenNoTarget(){
+        if(!this.target){
+            this.health += 0.1
+            if(this.health > this.maxHealth) this.health = this.maxHealth
+        }
     }
 
     destroy() {

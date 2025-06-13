@@ -18,7 +18,6 @@ export interface Melee{
 
 export class MeleeWeapon extends BaseItem{
 
-    sprite: Phaser.GameObjects.Sprite;
     config: Melee
     useSound: SpatialSound
     hitbox: p.Body;
@@ -73,7 +72,7 @@ export class MeleeWeapon extends BaseItem{
         this.useSound.playSound(audioPos.x+x, audioPos.y+y, true, false)
 
         setTimeout(() => {
-            const realPos = this.scene.realBodyPos.get(this.parentBody) || this.parentBody.getPosition()
+            const realPos = this.scene?.realBodyPos.get(this.parentBody) || this.parentBody.getPosition()
 
             this.hitbox.setPosition(
                 new p.Vec2(

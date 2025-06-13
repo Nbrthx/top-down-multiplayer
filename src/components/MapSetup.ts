@@ -1,6 +1,7 @@
 import p from 'planck'
 import { Game } from '../scenes/Game'
-import { NPC } from '../prefabs/NPC'
+import { NPC, NPClist } from '../prefabs/NPC'
+import { QuestConfig } from '../prefabs/ui/QuestUI'
 
 export class MapSetup{
 
@@ -92,13 +93,33 @@ export class MapSetup{
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
 
             const npc = new NPC(scene, o.x*this.gameScale, o.y*this.gameScale, o.name)
+            const npcData = NPClist.find(v => v.id == o.name) || {
+                name: o.name,
+                biography: 'No biography available.',
+            }
+            
             npc.askButton.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
                 pointer.event.preventDefault()
                 scene.input.stopPropagation()
 
-                scene.UI.questUI.setText('Mission 1', 'kill enemy 3 time', {
-                    x: npc.x,
-                    y: npc.y
+                this.scene.socket.emit('getQuestData', o.name, (quest: QuestConfig) => {
+
+                    let rewardText = 'xp: '+quest?.reward?.xp+'\n'
+                    if(quest.reward.gold) rewardText += 'gold: '+quest.reward.gold+'\n'
+                    if(quest.reward.item && quest.reward.item.length > 0){
+                        rewardText += 'item: '
+                        let itemLength = quest.reward.item.length
+                        quest.reward.item.forEach((item, index) => {
+                            rewardText += item[0]+' x'+item[1]
+                            if(index < itemLength - 1) rewardText += ', '
+                        })
+                    }
+
+                    scene.UI.questUI.setText(npc.id, npcData.name, npcData.biography, quest.name, quest.description+'\n'+rewardText, {
+                        x: npc.x,
+                        y: npc.y
+                    })
+
                 })
             })
 

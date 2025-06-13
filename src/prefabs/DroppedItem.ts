@@ -14,22 +14,29 @@ export class DroppedItem extends Phaser.GameObjects.Image{
 
     constructor(scene: Game, x: number, y: number, id: string, uid: string){
         super(scene, x*scene.gameScale*32, y*scene.gameScale*32, 'icon-'+id);
+
         this.setScale(0)
         this.setAlpha(1).setTint(0xdddddd)
 
         scene.tweens.add({
             targets: this,
             duration: 200,
-            ease: 'Expo.easeInOut',
+            ease: 'Quad.easeInOut',
             scale: scene.gameScale
         })
-
         this.tween = scene.tweens.add({
             targets: this,
             yoyo: true,
             alpha: 0.4,
             duration: 500,
             loop: -1
+        })
+        this.tween = scene.tweens.add({
+            targets: this,
+            yoyo: true,
+            y: this.y - 100,
+            duration: 200,
+            ease: 'Quad.easeOut',
         })
         
         this.scene = scene;
@@ -43,7 +50,7 @@ export class DroppedItem extends Phaser.GameObjects.Image{
             fixedRotation: true
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.2),
+            shape: new p.Box(0.3, 0.3),
             isSensor: true
         })
         this.pBody.setUserData(this)

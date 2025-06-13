@@ -1,11 +1,16 @@
 import { Game } from '../scenes/Game'
 
-export const NPCs: {
+export const NPClist: {
     id: string
     name: string
     sprite: string
-    questId: string
-}[] = []
+    biography: string
+}[] = [{
+    id: 'npc1',
+    name: 'Goblin Hunter',
+    sprite: 'char',
+    biography: 'A skilled hunter from the Goblin tribe, known for their agility and cunning traps. They are always on the lookout for new challenges and prey.'
+}]
 
 export class NPC extends Phaser.GameObjects.Container{
 

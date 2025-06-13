@@ -20,7 +20,6 @@ export interface Range{
 
 export class RangeWeapon extends BaseItem{
 
-    sprite: Phaser.GameObjects.Sprite;
     config: Range
     useSound: SpatialSound
     attackState: boolean;

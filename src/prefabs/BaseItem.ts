@@ -6,6 +6,8 @@ export abstract class BaseItem extends Phaser.GameObjects.Container {
 
     scene: Game;
     parentBody: p.Body;
+
+    sprite: Phaser.GameObjects.Sprite;
     
     timestamp: number
     cooldown: number

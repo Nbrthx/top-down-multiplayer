@@ -34,6 +34,8 @@ export class Inventory {
 
                 if(i == this.activeIndex) this.parent.equipItem(this.activeIndex)
 
+                this.parent.questInProgress?.addProgress('collect', id, quantity)
+
                 const io = this.parent.scene.gameManager.io
                 io.to(this.parent.uid).emit('updateInventory', this.items)
                 io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.uid, this.items)

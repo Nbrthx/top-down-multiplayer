@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { GameManager, InputData } from './GameManager';
 import { Server as HTTPServer } from 'http'
 import { Account } from './server';
+import { QuestConfig, Quests } from './components/Quests';
 
 export class SocketManager {
 
@@ -58,7 +59,7 @@ export class SocketManager {
         socket.on('setHotbarIndex', (index: number) => {
             if(!Number.isInteger(index)) return
 
-            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.uid == socket.id)
+            const player = this.getPlayer(socket.id)
             if(!player) return
 
             player.inventory.setActiveIndex(index)
@@ -77,7 +78,7 @@ export class SocketManager {
         socket.on('chat', msg => {
             if(typeof msg !== 'string' && msg.length > 64) return
 
-            const player = this.gameManager.getPlayerWorld(socket.id)?.players.find(v => v.uid == socket.id)
+            const player = this.getPlayer(socket.id)
             if(!player) return
 
             this.io.to(player.scene.id).emit('chat', {
@@ -85,6 +86,49 @@ export class SocketManager {
                 username: player.account.username,
                 msg: msg
             })
+        })
+
+        socket.on('acceptQuest', (npcId: string) => {
+            if(typeof npcId !== 'string') return
+
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const quest = Quests.getQuestByNpcId(npcId, player.account.questCompleted)
+            if(!quest) return
+
+            console.log('Quest accepted:', quest.config.id)
+
+            player.questInProgress = quest
+            player.account.questInProgress = [npcId, quest.taskProgress]
+
+            player.questInProgress.onProgress = taskProgress => {
+                player.account.questInProgress = [npcId, taskProgress];
+            }
+
+            player.questInProgress.onComplete = (xp, item?, gold?) => {
+                player.account.questCompleted.push(quest.config.id);
+                player.account.xp += xp || 0;
+                player.account.gold += gold || 0;
+                if(item && item.length > 0){
+                    item.forEach(([itemName, itemQuantity]) => {
+                        player.inventory.addItem(itemName, itemQuantity);
+                    });
+                }
+                player.account.questInProgress = undefined
+            }
+        })
+
+        socket.on('getQuestData', (npcId: string, callback: (quest: QuestConfig) => void) => {
+            if(typeof npcId !== 'string') return
+
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const quest = Quests.getQuestByNpcId(npcId, player.account.questCompleted)
+            if(!quest) return
+
+            callback(quest.config || null)
         })
 
         socket.on('ping', (callback) => {
@@ -96,6 +140,10 @@ export class SocketManager {
             this.removeAuthedId(socket.id)
         });
         
+    }
+
+    getPlayer(id: string){
+        return this.gameManager.getPlayerWorld(id)?.players.find(v => v.uid == id)
     }
 
     getAccountData(id: string){

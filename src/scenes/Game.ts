@@ -20,6 +20,7 @@ export class Game extends Scene{
     socket: Socket
     UI: GameUI
 
+    worldId: string
     world: p.World
     gameScale = 4;
     contactEvents: ContactEvents
@@ -47,6 +48,7 @@ export class Game extends Scene{
     }
 
     create (){
+        this.worldId = 'test'
         this.world = new p.World()
         this.contactEvents = new ContactEvents(this.world)
         
@@ -180,6 +182,8 @@ export class Game extends Scene{
             let finalProjectiles: GameState['projectiles'] = [];
 
             pendingUpdates.forEach(gameState => {
+                if(gameState.id != this.worldId) return
+
                 gameState.players.forEach(playerData => {
                     const existingPlayer = latestPlayers.get(playerData.uid);
                     if (existingPlayer) {
@@ -215,6 +219,7 @@ export class Game extends Scene{
             });
 
             const mergedGameState: GameState = {
+                id: this.worldId,
                 players: Array.from(latestPlayers.values()),
                 enemies: Array.from(latestEnemies.values()),
                 droppedItems: finalDroppedItems,

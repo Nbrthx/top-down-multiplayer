@@ -19,6 +19,7 @@ export interface OutputData{
 }
 
 export interface GameState{
+    id: string
     players: (OutputData & { xp: number })[]
     enemies: OutputData[]
     droppedItems: {
@@ -108,10 +109,7 @@ export class NetworkHandler{
         console.log(account)
         if(account && account.inventory) this.isAuthed = true
 
-        scene.player.inventory.updateInventory(account.inventory)
-        scene.player.inventory.setActiveIndex(0)
-        scene.player.health = account.health
-        scene.player.barUpdate(scene.player.damageBar)
+        scene.player.syncData(account.health, account.inventory, 0)
 
         scene.UI.setupUI(scene.player)
 
@@ -120,11 +118,7 @@ export class NetworkHandler{
             console.log(v.uid)
 
             const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.uid, v.username)
-            other.inventory.updateInventory(v.items)
-            other.inventory.setActiveIndex(v.activeIndex)
-            other.health = v.health
-            other.barUpdate(other.damageBar)
-            
+            other.syncData(v.health, v.items, v.activeIndex)
             scene.others.push(other)
         })
     }
@@ -141,9 +135,7 @@ export class NetworkHandler{
         const pos = scene.mapSetup.enterpoint.get(data.from) || { x: 100, y: 100 }
 
         const other = new Player(scene, pos.x, pos.y, data.uid, data.username)
-        other.inventory.updateInventory(data.items)
-        other.health = data.health
-        other.barUpdate(other.damageBar)
+        other.syncData(data.health, data.items, 0)
 
         scene.others.push(other)
     }
@@ -159,6 +151,8 @@ export class NetworkHandler{
     }
 
     output(data: GameState){
+        if(data.id != this.scene.worldId) return
+
         this.pendingOutput.push(data)
     }
 
@@ -173,6 +167,7 @@ export class NetworkHandler{
             if(playerData.uid == scene.player.uid){
                 const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
                 const currentPosition = scene.player.pBody.getPosition()
+
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 scene.player.stats.setTotalXp(playerData.xp)
@@ -188,7 +183,8 @@ export class NetworkHandler{
                             alpha: 0.2,
                             duration: 100,
                             yoyo: true,
-                            ease: 'Sine.easeInOut'
+                            ease: 'Sine.easeInOut',
+                            onComplete: () => scene.UI.redEffect.setAlpha(0)
                         })
                     }
                     scene.player.health = playerData.health
@@ -296,8 +292,8 @@ export class NetworkHandler{
         scene.droppedItems.slice().reverse().forEach((item) => {
             const itemData = data.droppedItems.find(v => v.uid == item.uid)
             if(!itemData){
-                item.destroy()
                 scene.droppedItems.splice(scene.droppedItems.indexOf(item), 1)
+                item.destroy()
             }
         })
 
@@ -322,8 +318,8 @@ export class NetworkHandler{
         scene.projectiles.slice().reverse().forEach((projectile) => {
             const projectileData = data.projectiles.find(v => v.uid == projectile.uid)
             if(!projectileData){
-                projectile.destroy()
                 scene.projectiles.splice(scene.projectiles.indexOf(projectile), 1)
+                projectile.destroy()
             }
         })
         
@@ -354,6 +350,7 @@ export class NetworkHandler{
     changeWorld(from: string, worldId: string, callback: () => void){
         const scene = this.scene
         
+        scene.worldId = worldId
         scene.mapSetup.destroy()
         scene.mapSetup = new MapSetup(scene, worldId)
         

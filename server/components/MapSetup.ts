@@ -84,20 +84,7 @@ export class MapSetup{
         map.layers.find(v => v.name == 'enemies')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number, name: string }
 
-            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale)
-
-            scene.entityBodys.push(enemy.pBody)
-            scene.enemies.push(enemy)
-        })
-    }
-
-    createEnti(map: Tilemap){
-        const scene = this.scene
-
-        map.layers.find(v => v.name == 'enemies')?.objects.forEach(_o => {
-            const o = _o as { x: number, y: number, name: string }
-
-            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale)
+            const enemy = new Enemy(scene, o.x*scene.gameScale, o.y*scene.gameScale, o.name)
 
             scene.entityBodys.push(enemy.pBody)
             scene.enemies.push(enemy)
@@ -120,12 +107,14 @@ export class MapSetup{
             scene.contactEvents.addEvent(scene.entityBodys, body, (bodyA) => {
                 const player = bodyA.getUserData()
 
-                if(player instanceof Player){
+                if(!(player instanceof Player)) return
+
+                scene.world.queueUpdate(() => {
                     scene.removePlayer(player.uid)
                     scene.gameManager.io.to(player.uid).emit('changeWorld', scene.id, o.name, () => {
                         scene.gameManager.getWorld(o.name)?.addPlayer(player.uid, player.account, scene.id)
                     })
-                }
+                })
             })
         })
     }

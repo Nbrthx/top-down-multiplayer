@@ -21,12 +21,18 @@ export class DroppedItem{
 
         this.pBody = scene.world.createDynamicBody({
             position: new p.Vec2(x, y),
-            fixedRotation: true
+            fixedRotation: true,
+            active: false
         })
         this.pBody.createFixture({
-            shape: new p.Box(0.2, 0.2)
+            shape: new p.Box(0.3, 0.3),
+            isSensor: true
         })
         this.pBody.setUserData(this)
+
+        setTimeout(() => {
+            this.pBody.setActive(true)
+        }, 200)
 
         scene.contactEvents.addEvent(scene.entityBodys, this.pBody, (bodyA) => {
             const player = bodyA.getUserData();

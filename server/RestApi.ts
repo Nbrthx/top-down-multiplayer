@@ -32,6 +32,7 @@ export class RestApi{
                 pubKey: pubKey as string,
                 akey: akey as string,
                 xp: 0,
+                gold: 0,
                 health: 100,
                 inventory: [],
                 questCompleted: []

@@ -2,7 +2,7 @@ import { Game } from '../scenes/Game'
 import p from 'planck'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
-import { Inventory } from './Inventory'
+import { Inventory, Item } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
 import { TextBox } from './TextBox'
 import { Stats } from '../components/Stats'
@@ -32,6 +32,7 @@ export class Player extends Phaser.GameObjects.Container{
     attackDir: p.Vec2
     textbox: TextBox
     aimAssist: Phaser.GameObjects.Rectangle
+    itemIcon: Phaser.GameObjects.Image
 
     constructor(scene: Game, x: number, y: number, uid: string, username: string){
         super(scene, x, y)
@@ -70,6 +71,12 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
 
+        this.itemIcon = scene.add.image(56, 0, '').setOrigin(0.5, 0.5)
+        this.itemIcon.setScale(3)
+        this.itemIcon.setTint(0x000000)
+        this.itemIcon.setRotation(Math.PI/8)
+        this.itemIcon.setVisible(false)
+
         this.aimAssist = scene.add.rectangle(0,12, 96, 24, 0xffffff, 0.5).setOrigin(-1.5, 0.5).setVisible(false)
         
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
@@ -79,7 +86,7 @@ export class Player extends Phaser.GameObjects.Container{
             stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setResolution(4)
 
-        this.add([shadow, this.aimAssist, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar, this.nameText, this.textbox])
+        this.add([shadow, this.aimAssist, this.itemInstance, this.sprite, this.itemIcon, this.emptyBar, this.damageBar, this.healthBar, this.nameText, this.textbox])
     }
 
     update(){
@@ -117,6 +124,11 @@ export class Player extends Phaser.GameObjects.Container{
             this.attackDir = new p.Vec2(0, 0)
         }
 
+        if(this.itemInstance.sprite.anims.isPlaying){
+            this.itemIcon.setAlpha(0)
+        }
+        else this.itemIcon.setAlpha(0.7)
+
         this.setDepth(this.y/this.scene.gameScale)
 
         const isReady = this.itemInstance.timestamp+this.itemInstance.config.cooldown < Date.now()
@@ -127,6 +139,14 @@ export class Player extends Phaser.GameObjects.Container{
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
         
         this.barUpdate(this.healthBar)
+    }
+
+    syncData(health: number, items: Item[], activeIndex: number){
+        this.health = health
+        this.inventory.updateInventory(items)
+        this.inventory.setActiveIndex(activeIndex)
+
+        this.barUpdate(this.damageBar)
     }
 
     barUpdate(bar: Phaser.GameObjects.Rectangle){
@@ -148,6 +168,9 @@ export class Player extends Phaser.GameObjects.Container{
 
             const newItemInstance = new ItemInstance(this.scene, this.pBody, item.id).itemInstance
             newItemInstance.timestamp = item.timestamp
+
+            if(this.scene.textures.exists('icon-'+item.id)) this.itemIcon.setTexture('icon-'+item.id).setVisible(true)
+            else this.itemIcon.setVisible(false)
 
             this.itemInstance = newItemInstance
             this.addAt(this.itemInstance, 0)

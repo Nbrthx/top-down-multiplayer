@@ -5,6 +5,7 @@ import { Inventory } from './Inventory'
 import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { MeleeWeapon } from './items/MeleeWeapon'
+import { Quest } from '../components/Quests'
 
 export class Player{
 
@@ -24,7 +25,9 @@ export class Player{
     forceDir: p.Vec2
     knockback: number
     knockbackDir: p.Vec2
+
     inventory: Inventory
+    questInProgress: Quest | null = null
 
     constructor(scene: Game, x: number, y: number, uid: string, account: Account){
         this.scene = scene
@@ -41,11 +44,11 @@ export class Player{
             filterMaskBits: 1,
         })
         this.pBody.setUserData(this)
-
+        
         this.inventory = new Inventory(this)
 
         this.maxHealth = 100
-        this.health = this.maxHealth
+        this.health = account.health || this.maxHealth
 
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
         this.attackDir = new p.Vec2(0, 0)
@@ -55,6 +58,9 @@ export class Player{
 
         this.knockback = 0
         this.knockbackDir = new p.Vec2(0, 0)
+
+        this.inventory.updateInventory(account.inventory)
+        account.inventory = this.inventory.items
     }
 
     update(){
@@ -114,5 +120,6 @@ export class Player{
         this.scene.world.destroyBody(this.pBody)
         this.scene.contactEvents.destroyEventByBody(this.pBody)
         this.itemInstance.destroy()
+        this.questInProgress?.destroy()
     }
 }
