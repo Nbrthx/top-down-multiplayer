@@ -60,7 +60,7 @@ export class Enemy{
         this.attacker = []
 
         this.triggerArea = this.createArea(2)
-        this.visionArea = this.createArea(7)
+        this.visionArea = this.createArea(6)
 
         this.triggerEvent()
         this.visionEvent()
@@ -73,7 +73,17 @@ export class Enemy{
         if(this.target && this.target instanceof Player){
             const dir = this.target.pBody.getPosition().clone().sub(this.pBody.getPosition())
             
-            if(dir.length() > 1.4){
+            if(dir.length() > 3.4){
+                dir.normalize()
+                dir.mul(this.speed)
+                this.pBody.setLinearVelocity(dir)
+            }
+            else if(dir.length() > 1.4){
+                let rad = Math.atan2(dir.y, dir.x)
+                rad += (Math.floor(Date.now()/400)%3 - 1)*0.7
+                dir.x = Math.cos(rad)
+                dir.y = Math.sin(rad)
+
                 dir.normalize()
                 dir.mul(this.speed)
                 this.pBody.setLinearVelocity(dir)
@@ -148,7 +158,7 @@ export class Enemy{
 
                 setTimeout(() => {
                     this.triggerArea.setActive(true)
-                }, 1000)
+                }, 1200)
             }, 300)
         })
     }
@@ -170,7 +180,7 @@ export class Enemy{
 
     healWhenNoTarget(){
         if(!this.target){
-            this.health += 0.1
+            this.health += 0.04
             if(this.health > this.maxHealth) this.health = this.maxHealth
         }
     }

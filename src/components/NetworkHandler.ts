@@ -26,6 +26,7 @@ export interface GameState{
         uid: string
         id: string
         pos: { x: number, y: number }
+        quantity: number
     }[]
     projectiles: {
         uid: string
@@ -85,6 +86,8 @@ export class NetworkHandler{
         this.socket.on('otherUpdateHotbar', this.otherUpdateHotbar.bind(this))
 
         this.socket.on('changeWorld', this.changeWorld.bind(this))
+
+        this.socket.on('questProgress', this.questProgress.bind(this))
 
         this.socket.on('chat', this.chat.bind(this))
 
@@ -221,10 +224,10 @@ export class NetworkHandler{
                     scene.others.splice(scene.others.indexOf(other), 1)
                     other.destroy()
                     this.scene.add.particles(other.x, other.y, 'red-circle-particle', {
-                        color: [0xff9999],
+                        color: [0xcc9999],
                         lifespan: 500,
                         speed: { min: 200, max: 300 },
-                        scale: { start: 2, end: 0 },
+                        scale: { start: 4, end: 0 },
                         gravityY: 500,
                         emitting: false
                     }).explode(8)
@@ -268,10 +271,10 @@ export class NetworkHandler{
                     scene.enemies.splice(scene.enemies.indexOf(enemy), 1)
                     enemy.destroy()
                     this.scene.add.particles(enemy.x, enemy.y, 'red-circle-particle', {
-                        color: [0xff9999],
+                        color: [0xcc9999],
                         lifespan: 500,
                         speed: { min: 200, max: 300 },
-                        scale: { start: 2, end: 0 },
+                        scale: { start: 4, end: 0 },
                         gravityY: 500,
                         emitting: false
                     }).explode(8)
@@ -283,7 +286,7 @@ export class NetworkHandler{
             const item = scene.droppedItems.find(v => v.uid == itemData.uid)
             if(!item){
                 console.log('spawn item', itemData)
-                const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.uid)
+                const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.uid, itemData.quantity)
                 this.scene.droppedItems.push(newItem)
             }
         })
@@ -362,6 +365,17 @@ export class NetworkHandler{
         console.log('change position by client')
 
         scene.world.queueUpdate(() => callback())
+    }
+
+    questProgress(taskInstruction: string, taskProgress?: { type: string, target: string, progress: number, max: number }[]){
+        const scene = this.scene
+
+        let text = '\n'
+        taskProgress?.forEach(v => {
+            text += `${v.type} ${v.target}: ${v.progress}/${v.max}\n`
+        })
+        
+        scene.UI.instructionText.setText(taskInstruction+text)
     }
 
     chat(data: { id: string, username: string, msg: string}){

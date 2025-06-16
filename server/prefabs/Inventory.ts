@@ -22,10 +22,20 @@ export class Inventory {
         }
     }
 
-    addItem(id: string, quantity: number = 1): boolean {
+    getItem(id: string){
+        return this.items.find(item => item.id === id)
+    }
+
+    addItem(id: string, quantity: number): boolean {
+        const itemData = itemList.find(item => item.id === id)
+        if(!itemData) return false
+
         for(let i = 0; i < 25; i++){
-            if(this.items[i] === undefined || this.items[i].id == ''){
-                if(quantity){
+            const item = this.items[i]
+            if(!item || item.id == '' || (item.id == id && item.tag == 'resource')){
+
+                if(itemData.type === 'resource'){
+                    if(item.id == id && item.tag == 'resource') quantity += item.quantity
                     this.items[i] = { id: id, tag: 'resource', quantity: quantity, timestamp: Date.now() }
                 }
                 else{
@@ -46,7 +56,7 @@ export class Inventory {
         return false
     }
 
-    removeItem(index: number, quantity: number = 1): boolean {
+    removeItem(index: number, quantity: number): boolean {
         if(index >= 25) return false
         if(this.items[index] === undefined) return false
 

@@ -7,6 +7,8 @@ export class DroppedItem{
     scene: Game
     uid: string;
     id: string
+    quantity: number
+
     pBody: p.Body
     isActive: boolean
 
@@ -17,6 +19,7 @@ export class DroppedItem{
         this.scene = scene;
         this.uid = crypto.randomUUID();
         this.id = id;
+        this.quantity = quantity || 1;
         this.isActive = true
 
         this.pBody = scene.world.createDynamicBody({
@@ -39,7 +42,7 @@ export class DroppedItem{
 
             if(!(player instanceof Player)) return;
 
-            if(player.inventory.addItem(this.id, quantity)){
+            if(player.inventory.addItem(this.id, this.quantity)){
                 this.isActive = false
             }
         })

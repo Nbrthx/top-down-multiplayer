@@ -48,6 +48,7 @@ export class Preloader extends Scene{
         this.load.image('icon-bow', 'icon/bow.png')
         this.load.image('icon-dagger', 'icon/dagger.png')
         this.load.image('icon-blue-knife', 'icon/blue-knife.png')
+        this.load.image('icon-wood', 'icon/wood.png')
         this.load.image('icon-inventory', 'icon/inventory.png')
 
         // Environtment

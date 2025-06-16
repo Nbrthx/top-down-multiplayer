@@ -92,9 +92,17 @@ export const itemList: Item[] = [
             hitboxSize: { width: 0.2, height: 0.1 },
             speed: 20,
             range: 7,
-            cooldown: 600,
+            cooldown: 400,
             attackDelay: 300,
             canMove: true
+        }
+    },
+    {
+        id: 'wood',
+        type: 'resource',
+        config: {
+            isUsable: false,
+            cooldown: 1000
         }
     }
 ];

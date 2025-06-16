@@ -23,7 +23,7 @@ const generateSalt = (password: string) => {
 export function generateSecurity(username: string, password: string) {
     const key = ec.genKeyPair();
     const privKey = key.getPrivate('hex');
-    const pubKey = key.getPublic('hex');
+    const pubKey = key.getPublic(true, 'hex');
 
     const salt = generateSalt(password);
 
@@ -44,7 +44,7 @@ export function generateSecurity(username: string, password: string) {
 export function generateSecurityWithSalt(username: string, salt: Uint8Array) {
     const key = ec.genKeyPair();
     const privKey = key.getPrivate('hex');
-    const pubKey = key.getPublic('hex');
+    const pubKey = key.getPublic(true, 'hex');
 
     const privKeyBytes = aesjs.utils.utf8.toBytes(privKey);
         

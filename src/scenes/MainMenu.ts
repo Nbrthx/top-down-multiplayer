@@ -5,8 +5,14 @@ export const HOST_ADDRESS = 'http://localhost:3000'
 
 export class MainMenu extends Scene{
 
+    respawn: boolean = false
+
     constructor (){
         super('MainMenu');
+    }
+
+    init(data: { respawn: boolean }){
+        this.respawn = data.respawn
     }
 
     create (){
@@ -74,5 +80,7 @@ export class MainMenu extends Scene{
 
             authentication.socket.disconnect()
         })
+
+        if(this.respawn) this.scene.start('Game');
     }
 }

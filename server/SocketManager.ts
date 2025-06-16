@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { GameManager, InputData } from './GameManager';
 import { Server as HTTPServer } from 'http'
-import { Account } from './server';
+import { Account, Item } from './server';
 import { QuestConfig, Quests } from './components/Quests';
 
 export class SocketManager {
@@ -88,11 +88,43 @@ export class SocketManager {
             })
         })
 
+        socket.on('getQuestData', (npcId: string, callback: (quest: QuestConfig, isHaveOtherQuest: boolean, progressState: number) => void) => {
+            if(typeof npcId !== 'string') return
+
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const quest = Quests.getQuestByNpcId(npcId, player.account.questCompleted)
+            if(!quest) return callback({
+                id: '',
+                name: '',
+                description: '',
+                reward: {
+                    xp: 0
+                },
+                taskInstruction: '',
+                task: []
+            }, false, 0)
+
+            let isHaveOtherQuest = false
+            let progressState = 0
+
+            if(player.questInProgress){
+                isHaveOtherQuest = player.questInProgress.config.id !== quest.config.id
+                progressState = player.questInProgress.config.id === quest.config.id ?
+                    (player.questInProgress.isComplete ? 2 : 1) : 0
+            }
+
+            callback(quest.config, isHaveOtherQuest, progressState)
+        })
+
         socket.on('acceptQuest', (npcId: string) => {
             if(typeof npcId !== 'string') return
 
             const player = this.getPlayer(socket.id)
             if(!player) return
+
+            if(player.questInProgress) return
 
             const quest = Quests.getQuestByNpcId(npcId, player.account.questCompleted)
             if(!quest) return
@@ -102,33 +134,69 @@ export class SocketManager {
             player.questInProgress = quest
             player.account.questInProgress = [npcId, quest.taskProgress]
 
-            player.questInProgress.onProgress = taskProgress => {
-                player.account.questInProgress = [npcId, taskProgress];
-            }
+            quest.onProgress((taskProgress) => {
+                player.account.questInProgress = [npcId, taskProgress]
+                socket.emit('questProgress', quest.config.taskInstruction, taskProgress.map((v, i) => {
+                    return {
+                        type: quest.config.task[i].type,
+                        target: quest.config.task[i].target,
+                        progress: v,
+                        max: quest.config.task[i].amount
+                    }
+                }))
+                console.log('Quest progress:', taskProgress) // Debugging line
+            })
 
-            player.questInProgress.onComplete = (xp, item?, gold?) => {
-                player.account.questCompleted.push(quest.config.id);
-                player.account.xp += xp || 0;
-                player.account.gold += gold || 0;
-                if(item && item.length > 0){
-                    item.forEach(([itemName, itemQuantity]) => {
-                        player.inventory.addItem(itemName, itemQuantity);
-                    });
+            quest.setTaskProgress(quest.taskProgress)
+
+            quest.config.task.forEach(v => {
+                if(v.type == 'collect'){
+                    const getItem = player.inventory.getItem(v.target) as Item & { quantity: number }
+                    if(player.questInProgress) {
+                        player.questInProgress.addProgress('collect', v.target, getItem?.quantity || 0)
+                    }
                 }
-                player.account.questInProgress = undefined
-            }
+            })
         })
 
-        socket.on('getQuestData', (npcId: string, callback: (quest: QuestConfig) => void) => {
-            if(typeof npcId !== 'string') return
-
+        socket.on('declineQuest', () => {
             const player = this.getPlayer(socket.id)
-            if(!player) return
+            if(!player || !player.questInProgress) return
 
-            const quest = Quests.getQuestByNpcId(npcId, player.account.questCompleted)
-            if(!quest) return
+            player.questInProgress.destroy()
+            player.questInProgress = null
+            player.account.questInProgress = undefined
 
-            callback(quest.config || null)
+            socket.emit('questProgress', 'No instruction yet')
+        })
+
+        socket.on('completeQuest', () => {
+            const player = this.getPlayer(socket.id)
+            if(!player || !player.questInProgress) return
+
+            const quest = player.questInProgress
+            
+            if(quest && quest.isComplete){
+                const { xp = 0, item = [], gold = 0 } = quest.config.reward
+
+                player.account.questCompleted.push(quest.config.id);
+                player.account.xp += xp;
+                player.account.gold += gold;
+                
+                if(item.length > 0){
+                    item.forEach(([itemName, itemQuantity]) => {
+                        if(typeof itemName === 'string' && typeof itemQuantity === 'number') {
+                            player.inventory.addItem(itemName, itemQuantity);
+                        }
+                    });
+                }
+
+                player.questInProgress.destroy()
+                player.questInProgress = null
+                player.account.questInProgress = undefined
+                
+                socket.emit('questProgress', 'No instruction yet')
+            }
         })
 
         socket.on('ping', (callback) => {

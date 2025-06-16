@@ -102,7 +102,23 @@ export class MapSetup{
                 pointer.event.preventDefault()
                 scene.input.stopPropagation()
 
-                this.scene.socket.emit('getQuestData', o.name, (quest: QuestConfig) => {
+                this.scene.socket.emit('getQuestData', o.name, (quest: QuestConfig, isHaveOtherQuest: boolean, progressState: number) => {
+
+                    let warningText = ''
+                    if(isHaveOtherQuest){
+                        warningText = 'Careful, you have other quest in progress, it will be overrided'
+                    }
+                    else if(progressState == 1){
+                        warningText = 'You already have this quest in progress'
+                    }
+                    else if(progressState == 2){
+                        warningText = 'Complete this quest to get reward'
+                    }
+
+                    let taskText = ''
+                    quest.task.forEach((task) => {
+                        taskText += task.type+': '+task.target+' x'+task.amount+'\n'
+                    })
 
                     let rewardText = 'xp: '+quest?.reward?.xp+'\n'
                     if(quest.reward.gold) rewardText += 'gold: '+quest.reward.gold+'\n'
@@ -115,10 +131,22 @@ export class MapSetup{
                         })
                     }
 
-                    scene.UI.questUI.setText(npc.id, npcData.name, npcData.biography, quest.name, quest.description+'\n'+rewardText, {
-                        x: npc.x,
-                        y: npc.y
-                    })
+                    const config = {
+                        npcId: npc.id,
+                        npcName: npcData.name,
+                        biography: 'Biography:\n'+npcData.biography,
+                        header: quest.name,
+                        text: quest.description+'\n\nTask:\n'+taskText+'\nReward:\n'+rewardText,
+                        warn: warningText,
+                        pos: {
+                            x: npc.x,
+                            y: npc.y
+                        },
+                        isHaveOtherQuest: isHaveOtherQuest,
+                        progressState: progressState
+                    }
+
+                    scene.UI.questUI.setText(config)
 
                 })
             })

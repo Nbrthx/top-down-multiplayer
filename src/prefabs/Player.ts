@@ -77,7 +77,8 @@ export class Player extends Phaser.GameObjects.Container{
         this.itemIcon.setRotation(Math.PI/8)
         this.itemIcon.setVisible(false)
 
-        this.aimAssist = scene.add.rectangle(0,12, 96, 24, 0xffffff, 0.5).setOrigin(-1.5, 0.5).setVisible(false)
+        this.aimAssist = scene.add.rectangle(0,12, 96, 24, 0xffffff, 0.5)
+        this.aimAssist.setOrigin(-1.5, 0.5).setVisible(false).setRounded(8)
         
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 

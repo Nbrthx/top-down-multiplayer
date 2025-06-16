@@ -1,40 +1,55 @@
 import p from 'planck'
 import { Game } from '../scenes/Game';
 
-export class DroppedItem extends Phaser.GameObjects.Image{
+export class DroppedItem extends Phaser.GameObjects.Container{
 
     scene: Game
     uid: string
     id: string
+    quantity: number
     pBody: p.Body
+
+    sprite: Phaser.GameObjects.Sprite
+    countText: Phaser.GameObjects.Text
     
     tween: Phaser.Tweens.Tween;
     timeout: NodeJS.Timeout
 
 
-    constructor(scene: Game, x: number, y: number, id: string, uid: string){
-        super(scene, x*scene.gameScale*32, y*scene.gameScale*32, 'icon-'+id);
+    constructor(scene: Game, x: number, y: number, id: string, uid: string, quantity: number){
+        super(scene, x*scene.gameScale*32, y*scene.gameScale*32);
 
-        this.setScale(0)
-        this.setAlpha(1).setTint(0xdddddd)
+        this.sprite = scene.add.sprite(0, 0, 'icon-'+id)
+        this.sprite.setScale(0)
+        this.sprite.setAlpha(1).setTint(0xdddddd)
+        this.sprite.setDepth(1);
+        this.sprite.setOrigin(0.5, 0.5);
+
+        this.countText = scene.add.text(32, 32, 'x'+quantity, {
+            fontSize: 24, fontFamily: 'PixelFont', color: '#ffffff'
+        })
+        this.countText.setOrigin(0, 0)
+        this.countText.setVisible(quantity > 1)
+
+        this.add([this.sprite, this.countText])
 
         scene.tweens.add({
-            targets: this,
+            targets: this.sprite,
             duration: 200,
             ease: 'Quad.easeInOut',
             scale: scene.gameScale
         })
         this.tween = scene.tweens.add({
-            targets: this,
+            targets: [this.sprite, this.countText],
             yoyo: true,
             alpha: 0.4,
             duration: 500,
             loop: -1
         })
         this.tween = scene.tweens.add({
-            targets: this,
+            targets: [this.sprite, this.countText],
             yoyo: true,
-            y: this.y - 100,
+            y: this.sprite.y - 100,
             duration: 200,
             ease: 'Quad.easeOut',
         })
@@ -42,6 +57,7 @@ export class DroppedItem extends Phaser.GameObjects.Image{
         this.scene = scene;
         this.uid = uid
         this.id = id;
+        this.quantity = quantity;
         
         scene.add.existing(this);
 
@@ -54,9 +70,6 @@ export class DroppedItem extends Phaser.GameObjects.Image{
             isSensor: true
         })
         this.pBody.setUserData(this)
-
-        this.setDepth(1);
-        this.setOrigin(0.5, 0.5);
 
         this.timeout = setTimeout(() => {
             this.destroy();

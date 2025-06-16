@@ -146,10 +146,7 @@ export class Game{
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
 
-                const items = ['sword', 'bow']
-                const randomItem = items[Math.floor(Math.random()*2)]
-                
-                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, randomItem)
+                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, 'wood')
                 this.droppedItems.push(droppedItem)
 
                 enemy.attacker.forEach(player => {
@@ -205,6 +202,7 @@ export class Game{
                     uid: v.uid,
                     id: v.id,
                     pos: v.pBody.getPosition(),
+                    quantity: v.quantity
                 }
             }),
             projectiles: this.projectiles.map(v => {
@@ -231,23 +229,17 @@ export class Game{
             player.questInProgress = quest
             
             if(player.questInProgress && quest){
-                player.questInProgress.setTaskProgress(account.questInProgress[1])
-
-                player.questInProgress.onProgress = () => {
-                    player.account.questInProgress = [npcId, quest.taskProgress];
-                }
-
-                player.questInProgress.onComplete = (xp, item?, gold?) => {
-                    player.account.questCompleted.push(quest.config.id || '');
-                    player.account.xp += xp || 0;
-                    player.account.gold += gold || 0;
-                    if(item && item.length > 0){
-                        item.forEach(([itemName, itemQuantity]) => {
-                            player.inventory.addItem(itemName, itemQuantity);
-                        });
-                    }
-                    account.questInProgress = undefined
-                }
+                quest.onProgress((taskProgress) => {
+                    player.account.questInProgress = [npcId, taskProgress]
+                    socket?.emit('questProgress', quest.config.taskInstruction, taskProgress.map((v, i) => {
+                        return {
+                            type: quest.config.task[i].type,
+                            target: quest.config.task[i].target,
+                            progress: v,
+                            max: quest.config.task[i].amount
+                        }
+                    }))
+                })
             }
         }
 
@@ -277,6 +269,9 @@ export class Game{
             health: account.health
         });
 
+
+        if(account.questInProgress) player.questInProgress?.setTaskProgress(account.questInProgress[1])
+
         console.log('Player '+uid+' has added to '+this.id)
     }
 
@@ -305,7 +300,7 @@ export class Game{
         if(!player) return
 
         const item = player.inventory.items[index]
-        if(player.inventory.removeItem(index)){
+        if(player.inventory.removeItem(index, quantity || 1)){
             const pos = player.pBody.getPosition().clone()
             const newDir = new p.Vec2(dir.x, dir.y)
             newDir.normalize()

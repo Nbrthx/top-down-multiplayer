@@ -34,6 +34,7 @@ export class GameUI extends Phaser.Scene {
     joystick2: Joystick
     questUI: QuestUI
     redEffect: Phaser.GameObjects.Rectangle
+    instructionText: Phaser.GameObjects.Text
 
     constructor(){
         super('GameUI')
@@ -45,7 +46,13 @@ export class GameUI extends Phaser.Scene {
 
         this.input.addPointer(2)
 
-        this.debugText = this.add.text(100, 100, 'Ping: 0ms\nFPS: 0', {
+        this.add.rectangle(50, 20, 500, 192, 0x223344, 0.5).setOrigin(0)
+        this.instructionText = this.add.text(80, 40, 'No instructions yet', {
+            fontFamily: 'PixelFont', fontSize: 24,
+            color: '#fff'
+        }).setOrigin(0).setWordWrapWidth(440)
+
+        this.debugText = this.add.text(50, 300, 'Ping: 0ms\nFPS: 0', {
             fontSize: 24, fontStyle: 'bold',
             color: '#fff'
         })
@@ -114,7 +121,7 @@ export class GameUI extends Phaser.Scene {
 
             this.joystick2 = new Joystick({
                 scene: this,
-                x: this.scale.width - 320,
+                x: this.scale.width - 360,
                 y: this.scale.height - 360,
                 size: 260,
                 knobSize: 80,
@@ -228,11 +235,23 @@ export class GameUI extends Phaser.Scene {
 
         this.questUI.onOpen = (pos) => {
             const player = this.gameScene.player
-            this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 100)
+            this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
+            this.tweens.add({
+                targets: this.gameScene.camera,
+                zoom: 1.2,
+                duration: 400,
+                ease: 'Linear'
+            })
         }
 
         this.questUI.onClose = () => {
             this.gameScene.camera.setFollowOffset(0, 0)
+            this.tweens.add({
+                targets: this.gameScene.camera,
+                zoom: 1,
+                duration: 400,
+                ease: 'Linear'
+            })
         }
     }
 }

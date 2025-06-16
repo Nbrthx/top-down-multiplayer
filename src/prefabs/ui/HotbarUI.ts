@@ -65,7 +65,9 @@ export class HotbarUI extends Phaser.GameObjects.Container {
     eventHandler(){
         this.scene.input.off('wheel')
         this.scene.input.keyboard?.off('keydown')
-        this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+        this.scene.input.on('wheel', (pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+            if(pointer.event.defaultPrevented) return
+
             if (deltaY > 0) {
                 this.inventory.activeIndex = (this.inventory.activeIndex + 1) % 5;
             } else if (deltaY < 0) {
@@ -127,6 +129,15 @@ export class HotbarUI extends Phaser.GameObjects.Container {
             })
 
             container.add([box, cooldownBox]);
+
+            if(item.tag == 'resource'){
+                const itemCount = this.scene.add.text(x + 80, y + 80, 'x'+item.quantity, {
+                    fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
+                    stroke: '#000000', strokeThickness: 4
+                }).setOrigin(0.5, 0.5).setDepth(10000000000000000000000000000000000000000)
+
+                container.add(itemCount)
+            }
         }
     }
 

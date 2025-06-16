@@ -28,11 +28,13 @@ export class QuestUI extends Phaser.GameObjects.Container {
 
     headerText: Phaser.GameObjects.Text;
     taskText: Phaser.GameObjects.Text;
+    taskTextDefaultY: number = -270;
 
     buttonGo: Phaser.GameObjects.NineSlice;
     buttonTextGo: Phaser.GameObjects.Text;
-    buttonCancel: Phaser.GameObjects.NineSlice;
-    buttonTextCancel: Phaser.GameObjects.Text;
+    buttonBack: Phaser.GameObjects.NineSlice;
+    buttonTextBack: Phaser.GameObjects.Text;
+    warningText: Phaser.GameObjects.Text;
 
     constructor(scene: GameUI) {
         super(scene, 0, scene.scale.height);
@@ -48,13 +50,15 @@ export class QuestUI extends Phaser.GameObjects.Container {
         this.background = scene.add.rectangle(scene.scale.width/2, -scene.scale.height/2, scene.scale.width, scene.scale.height)
         this.background.setInteractive()
 
+        const contentBox = scene.add.rectangle(scene.scale.width/2, scene.scale.height-145, scene.scale.width, 250, 0xffffff).setVisible(false)
+
         this.npcName = scene.add.text(80, -310, '', {
             fontFamily: 'PixelFont', fontSize: 32, color: '#444444',
             letterSpacing: 2
         })
         this.npcName.setOrigin(0, 0.5)
 
-        this.npcBiography = scene.add.text(80, -270, '', {
+        this.npcBiography = scene.add.text(80, -280, '', {
             fontFamily: 'PixelFont', fontSize: 24, color: '#444444',
             letterSpacing: 1
         })
@@ -70,11 +74,35 @@ export class QuestUI extends Phaser.GameObjects.Container {
         this.headerText.setOrigin(0, 0.5)
 
         this.taskText = scene.add.text(scene.scale.width/3+80, -260, '', {
-            fontFamily: 'PixelFont', fontSize: 32, color: '#000000',
+            fontFamily: 'PixelFont', fontSize: 24, color: '#000000',
             letterSpacing: 1
         })
         this.taskText.setOrigin(0, 0)
         this.taskText.setWordWrapWidth(scene.scale.width/2 - 160, true)
+        this.taskText.setMask(contentBox.createGeometryMask())
+        this.taskText.setInteractive({ draggable: true })
+        this.taskText.on('wheel', (pointer: Phaser.Input.Pointer, _deltaX: number, deltaY: number) => {
+            pointer.event.preventDefault()
+
+            this.taskText.y -= deltaY*0.1
+            if(this.taskText.y > this.taskTextDefaultY) this.taskText.y = this.taskTextDefaultY
+            if(this.taskText.y < -260 - this.taskText.height + 190) this.taskText.y = -260 - this.taskText.height + 190
+        })
+        this.taskText.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if(!pointer.isDown) return
+            pointer.event.preventDefault()
+
+            this.taskText.y += pointer.y - pointer.prevPosition.y
+            if(this.taskText.y > this.taskTextDefaultY) this.taskText.y = this.taskTextDefaultY
+            if(this.taskText.y < -260 - this.taskText.height + 190) this.taskText.y = -260 - this.taskText.height + 190
+        })
+
+        this.warningText = scene.add.text(scene.scale.width/3+80, -270, '', {
+            fontFamily: 'PixelFont', fontSize: 24, color: '#cc0000',
+            letterSpacing: 1, stroke: '#e0e0e0', strokeThickness: 4
+        })
+        this.warningText.setOrigin(0, 0)
+        this.warningText.setWordWrapWidth(scene.scale.width/2 - 160, true)
 
         this.buttonGo = scene.add.nineslice(scene.scale.width-200, -300, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
         this.buttonGo.setScale(4)
@@ -84,20 +112,20 @@ export class QuestUI extends Phaser.GameObjects.Container {
             fontFamily: 'PixelFont', fontSize: 32, color: '#000000'
         }).setOrigin(0.5, 0.5);
 
-        this.buttonCancel = scene.add.nineslice(scene.scale.width-200, -220, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
-        this.buttonCancel.setScale(4)
-        this.buttonCancel.setInteractive();
-        this.buttonCancel.on('pointerdown', () => {
-            this.buttonCancel.setTint(0x888888);
+        this.buttonBack = scene.add.nineslice(scene.scale.width-200, -220, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
+        this.buttonBack.setScale(4)
+        this.buttonBack.setInteractive();
+        this.buttonBack.on('pointerdown', () => {
+            this.buttonBack.setTint(0x888888);
             setTimeout(() => {
                 this.setVisible(false);
                 this.onClose()
 
-                this.buttonCancel.clearTint();
+                this.buttonBack.clearTint();
             }, 100);
         });
 
-        this.buttonTextCancel = scene.add.text(this.buttonCancel.x, this.buttonCancel.y, 'Cancel', {
+        this.buttonTextBack = scene.add.text(this.buttonBack.x, this.buttonBack.y, 'Back', {
             fontFamily: 'PixelFont', fontSize: 32, color: '#000000'
         }).setOrigin(0.5, 0.5);
 
@@ -107,36 +135,86 @@ export class QuestUI extends Phaser.GameObjects.Container {
             this.npcName, this.npcBiography,
             splitter,
             this.headerText, this.taskText,
+            this.warningText,
             this.buttonGo, this.buttonTextGo,
-            this.buttonCancel, this.buttonTextCancel,
+            this.buttonBack, this.buttonTextBack
         ]);
     }
 
-    setText(npcId: string, npcName: string, biography: string, header: string, text: string, pos: { x: number, y: number }) {
+    setText(config: {
+        npcId: string,
+        npcName: string,
+        biography: string,
+        header: string,
+        text: string,
+        warn: string
+        pos: { x: number, y: number }
+        isHaveOtherQuest: boolean
+        progressState: number
+    }) {
         if(!this.headerText || !this.taskText) return;
-        if(header.length > 30) header = header.substring(0, 30) + '...';
-        if(text.length > 200) text = text.substring(0, 200) + '...';
+        if(config.header.length > 30) config.header = config.header.substring(0, 30) + '...';
+        if(config.text.length > 200) config.text = config.text.substring(0, 200) + '...';
 
         this.setVisible(true);
 
-        this.npcName.setText(npcName);
-        this.npcBiography.setText(biography);
+        this.npcName.setText(config.npcName);
+        this.npcBiography.setText(config.biography);
 
-        this.headerText.setText(header);
-        this.taskText.setText(text);
+        this.headerText.setText(config.header);
+        this.taskText.setText(config.text);
+
+        if(config.isHaveOtherQuest || config.progressState != 0){
+            this.taskTextDefaultY = -236
+            this.taskText.setY(-236)
+        }
+        else{
+            this.taskTextDefaultY = -270
+            this.taskText.setY(-270)
+        }
+
+        this.warningText.setText(config.warn)
+
+        if(config.progressState == 0) this.buttonTextGo.setText('Accept')
+        else if(config.progressState == 1) this.buttonTextGo.setText('Decline')
+        else this.buttonTextGo.setText('Complete')
+
+        if(config.header == ''){
+            this.buttonGo.setVisible(false)
+            this.buttonTextGo.setVisible(false)
+            this.buttonBack.setY(this.buttonGo.y)
+            this.buttonTextBack.setY(this.buttonTextGo.y)
+            this.headerText.setText('No Quest Yet')
+            this.taskText.setText('')
+        }
+        else{
+            this.buttonGo.setVisible(true)
+            this.buttonTextGo.setVisible(true)
+            this.buttonBack.setY(this.buttonGo.y + 80)
+            this.buttonTextBack.setY(this.buttonTextGo.y + 80)
+        }
+
+        if(config.progressState == 1) this.warningText.setColor('#cc0000') // RED
+        else this.warningText.setColor('#00aa22') // GREEN
 
         this.buttonGo.on('pointerdown', () => {
+            this.buttonGo.off('pointerdown')
             this.buttonGo.setTint(0x888888);
             setTimeout(() => {
                 this.setVisible(false);
-                this.scene.socket.emit('acceptQuest', npcId)
+
+                console.log(config)
+
+                if(config.progressState == 0) this.scene.socket.emit('acceptQuest', config.npcId)
+                else if(config.progressState == 1) this.scene.socket.emit('declineQuest')
+                else this.scene.socket.emit('completeQuest')
 
                 this.onClose()
                 this.buttonGo.clearTint();
             }, 100);
         });
 
-        this.onOpen(pos)
+        this.onOpen(config.pos)
     }
 
     destroy(){

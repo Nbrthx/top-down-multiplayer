@@ -106,11 +106,11 @@ export const itemList: Item[] = [
             projectileTexture: 'blue-knife',
             offsetMultipler: 0.9,
             hitboxSize: { width: 0.2, height: 0.1 },
-            speed: 15,
+            speed: 10,
             range: 8,
-            cooldown: 600,
+            cooldown: 400,
             attackDelay: 300,
-            damage: 1.6,
+            damage: 1.2,
             knockback: 10,
             force: -12,
             forceDelay: 200,
@@ -121,7 +121,7 @@ export const itemList: Item[] = [
         id: 'wood',
         type: 'resource',
         config: {
-            isUsable: true,
+            isUsable: false,
             cooldown: 1000
         }
     }

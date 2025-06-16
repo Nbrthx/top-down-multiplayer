@@ -121,6 +121,15 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                 })
 
                 container.add(itemIcon);
+
+                if(item.tag == 'resource'){
+                    const itemCount = this.scene.add.text(x + 80, y + 80, 'x'+item.quantity, {
+                        fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
+                        stroke: '#000000', strokeThickness: 4
+                    }).setOrigin(0.5, 0.5).setDepth(10000000000000000000000000000000000000000)
+
+                    container.add(itemCount)
+                }
             }
         }
     }
@@ -150,16 +159,23 @@ class PopupRange extends Phaser.GameObjects.Container {
 
         const background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
         background.setInteractive()
+        background.on('pointerdown', () => {
+            this.setVisible(false);
+            this.dot.setX(-200)
+            this.countText.setText('Items Count: 1')
+            this.dot.off('drag')
+            this.dropButton.off('pointerdown');
+        })
 
         const box = scene.add.rectangle(0, 0, 500, 200, 0xbbbbbb)
 
         const bar = scene.add.rectangle(0, 0, 400, 10, 0x000000);
 
-        this.countText = scene.add.text(0, -60, 'Items Count: 0', {
+        this.countText = scene.add.text(0, -60, 'Items Count: 1', {
             fontFamily: 'PixelFont', fontSize: 24, color: '#000000',
         }).setOrigin(0.5, 0.5);
 
-        this.dot = scene.add.arc(-200, 0, 10)
+        this.dot = scene.add.arc(-200, 0, 16)
         this.dot.setFillStyle(0xff0000, 1)
         this.dot.setOrigin(0.5, 0.5)
         this.dot.setInteractive({ draggable: true });
@@ -200,7 +216,9 @@ class PopupRange extends Phaser.GameObjects.Container {
             this.inventory.onDropItem(index, dir, itemCount);
 
             this.setVisible(false);
-            this.dot.off('pointerdown')
+            this.dot.setX(-200)
+            this.countText.setText('Items Count: 1')
+            this.dot.off('drag')
             this.dropButton.off('pointerdown');
         });
     }

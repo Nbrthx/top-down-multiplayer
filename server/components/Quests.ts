@@ -1,5 +1,3 @@
-
-
 interface Task {
     type: 'kill' | 'collect' | 'deliver' | 'explore' | 'craft'
     target: string
@@ -27,15 +25,15 @@ const quests: {
             description: 'The Goblin King has been terrorizing our village. Defeat him and bring me his crown.',
             taskInstruction: 'Defeat the Goblin King and bring his crown',
             task: [{ type: 'kill', target: 'enemy1', amount: 1 }],
-            reward: { xp: 100, item: [['dagger', 1]], gold: 50 }
+            reward: { xp: 3, item: [['sword', 1]], gold: 50 }
         },
         {
             id: 'quest2',
-            name: 'Collect Healing Herbs',
-            description: 'I need healing herbs to treat the wounded. Collect 5 healing herbs from the forest.',
-            taskInstruction: 'Collect 5 Healing Herbs',
-            task: [{ type: 'collect', target: 'healing-herb', amount: 5 }],
-            reward: { xp: 50, item: [['healing-potion', 1]], gold: 20 }
+            name: 'Collect Wood',
+            description: 'I need wood to build a new house. Collect 3 pieces of wood from the forest.',
+            taskInstruction: 'Collect 3 Wood',
+            task: [{ type: 'collect', target: 'wood', amount: 3  }],
+            reward: { xp: 6, item: [['bow', 1]], gold: 20 }
         }
     ],
     'npc2': [
@@ -65,6 +63,8 @@ export class Quest {
 
     config: QuestConfig;
     taskProgress: number[]; // for tracking progress in the task
+    isComplete: boolean = false;
+    private progressCallback: (taskProgress: number[], isComplete: boolean) => void = () => {}; // Default empty function
 
     constructor(config: QuestConfig) {
         this.config = config;
@@ -74,29 +74,25 @@ export class Quest {
     setTaskProgress(progress: number[]) {
         if (progress.length !== this.config.task.length) return;
         this.taskProgress = progress;
-        this.isComplete();
+        this.progressCheck();
+        this.progressCallback(this.taskProgress, this.isComplete);
     }
 
     addProgress(taskType: string, target: string, quantity: number = 1){
         this.config.task.forEach((task, i) => {
             if(task.type == taskType && task.target == target){
-                if (!this.taskProgress) {
-                    this.taskProgress = new Array(this.config.task.length).fill(0);
-                }
-                this.taskProgress[i] = (this.taskProgress[i] || 0) + quantity;
-                
-                if( this.taskProgress[i] > this.config.task[i].amount) {
+                this.taskProgress[i] += quantity;
+                if(this.taskProgress[i] > this.config.task[i].amount) {
                     this.taskProgress[i] = this.config.task[i].amount;
                 }
 
-                this.onProgress(this.taskProgress);
-                
-                this.isComplete()
+                this.progressCheck();
+                this.progressCallback(this.taskProgress, this.isComplete);
             }
         })
     }
 
-    private isComplete() {
+    private progressCheck() {
         let isComplete = true;
         for (let i = 0; i < this.config.task.length; i++) {
             if (this.taskProgress[i] < this.config.task[i].amount) {
@@ -104,18 +100,15 @@ export class Quest {
                 break;
             }
         }
-        if(isComplete) {
-            this.onComplete(this.config.reward.xp, this.config.reward.item, this.config.reward.gold);
-        }
+        this.isComplete = isComplete;
     }
 
-    onProgress(taskProgress: number[]) { taskProgress; }
-
-    onComplete(xp: number, item?: [string, number][], gold?: number) { xp; item; gold; }
+    onProgress(callback: (taskProgress: number[], isComplete: boolean) => void) {
+        this.progressCallback = callback;
+    }
 
     destroy(){
-        this.onProgress = () => {}
-        this.onComplete = (xp: number, item?: [string, number][], gold?: number) => { xp; item; gold; }
+        this.progressCallback = () => {}
     }
 }
 
@@ -127,15 +120,26 @@ export class Quests {
     }
 
     static getQuestByNpcId(npcId: string, completedQuest: string[]): Quest | null {
-        const quest = this.getQuestsByNpcId(npcId)
-        if(!quest || quest.length === 0) return null
+        const quests = this.getQuestsByNpcId(npcId);
+        if(!quests || quests.length === 0) return null;
 
-        let index = 0
-        for(const q of quest){
-            if(q.config.repeatable) break
-            if(completedQuest.includes(q.config.id)) index++
+        // Cari quest yang belum selesai atau quest repeatable yang sudah diselesaikan
+        for(const quest of quests) {
+            const isCompleted = completedQuest.includes(quest.config.id);
+            // Berikan quest jika belum selesai atau quest repeatable
+            if(!isCompleted || quest.config.repeatable) {
+                return quest;
+            }
         }
 
-        return quest[index] || null
+        // Jika semua quest telah diselesaikan dan tidak ada yang repeatable,
+        // berikan quest repeatable terakhir jika ada
+        for(const quest of quests) {
+            if(quest.config.repeatable) {
+                return quest;
+            }
+        }
+
+        return null; // Semua quest telah diselesaikan
     }
 }
