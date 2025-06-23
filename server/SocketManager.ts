@@ -4,6 +4,36 @@ import { Server as HTTPServer } from 'http'
 import { Account, Item } from './server';
 import { QuestConfig, Quests } from './components/Quests';
 
+interface OutfitList {
+    male: {
+        hair: string[],
+        face: string[],
+        body: string[],
+        leg: string[]
+    },
+    female: {
+        hair: string[],
+        face: string[],
+        body: string[],
+        leg: string[]
+    }
+}
+
+const outfitList: OutfitList = {
+    male: {
+        hair: ['basic', 'spread', 'short'],
+        face: ['basic'],
+        body: ['basic', 'black', 'brown'],
+        leg: ['basic', 'grey']
+    },
+    female: {
+        hair: ['basic', 'bodied', 'ponytail'],
+        face: ['basic'],
+        body: ['basic', 'black', 'grey'],
+        leg: ['basic', 'skirt']
+    }
+}
+
 export class SocketManager {
 
     private io: Server;
@@ -197,6 +227,58 @@ export class SocketManager {
                 
                 socket.emit('questProgress', 'No instruction yet')
             }
+        })
+
+        socket.on('changeGender', (isMale: boolean) => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+            if(typeof isMale !== 'boolean') return
+
+            player.account.outfit = {
+                isMale,
+                color: player.account.outfit.color,
+                hair: 'basic',
+                face: 'basic',
+                body: 'basic',
+                leg: 'basic'
+            }
+            player.outfit = {
+                isMale,
+                color: player.outfit.color,
+                hair: 'basic',
+                face: 'basic',
+                body: 'basic',
+                leg: 'basic'
+            }
+
+            socket.broadcast.emit('changeGender', socket.id, isMale)
+        })
+
+        socket.on('changeOutfit', (model: string, outfit: string | number) => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            if(['color', 'hair', 'face', 'body', 'leg'].indexOf(model) == -1) return
+            if(model == 'color') outfit = Number(outfit)
+            if(typeof outfit !== 'string' && typeof outfit !== 'number') return
+
+            if(['hair', 'face', 'body', 'leg'].indexOf(model) > -1 && typeof outfit === 'string'){
+                const key = model as 'hair' | 'face' | 'body' | 'leg'
+                const genderKey = player.outfit.isMale ? 'male' : 'female'
+                if(!outfitList[genderKey][key].includes(outfit)) return
+            }
+
+            player.account.outfit = {
+                ...player.account.outfit,
+                [model]: outfit
+            }
+
+            player.outfit = {
+                ...player.outfit,
+                [model]: outfit
+            }
+
+            socket.broadcast.emit('changeOutfit', socket.id, model, outfit)
         })
 
         socket.on('ping', (callback) => {

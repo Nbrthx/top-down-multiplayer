@@ -40,6 +40,14 @@ interface Account{
     username: string,
     xp: number,
     health: number,
+    outfit: {
+        isMale: boolean
+        color: number
+        hair: string
+        face: string
+        body: string
+        leg: string
+    }
     inventory: Item[]
 }
 
@@ -89,6 +97,10 @@ export class NetworkHandler{
 
         this.socket.on('questProgress', this.questProgress.bind(this))
 
+        this.socket.on('changeGender', this.changeGender.bind(this))
+
+        this.socket.on('changeOutfit', this.changeOutfit.bind(this))
+
         this.socket.on('chat', this.chat.bind(this))
 
         this.socket.on('disconnect', () => {
@@ -106,13 +118,21 @@ export class NetworkHandler{
         activeIndex: number
         pos: { x: number, y: number }
         health: number
+        outfit: {
+            isMale: boolean
+            color: number
+            hair: string
+            face: string
+            body: string
+            leg: string
+        }
     }[]){
         const scene = this.scene
         
         console.log(account)
         if(account && account.inventory) this.isAuthed = true
 
-        scene.player.syncData(account.health, account.inventory, 0)
+        scene.player.syncData(account.health, account.inventory, 0, account.outfit)
 
         scene.UI.setupUI(scene.player)
 
@@ -121,7 +141,8 @@ export class NetworkHandler{
             console.log(v.uid)
 
             const other = new Player(scene, v.pos.x*scene.gameScale*32, v.pos.y*scene.gameScale*32, v.uid, v.username)
-            other.syncData(v.health, v.items, v.activeIndex)
+            other.syncData(v.health, v.items, v.activeIndex, v.outfit)
+
             scene.others.push(other)
         })
     }
@@ -132,13 +153,21 @@ export class NetworkHandler{
         items: Item[]
         from: string
         health: number
+        outfit: {
+            isMale: boolean
+            color: number
+            hair: string
+            face: string
+            body: string
+            leg: string
+        }
     }){
         const scene = this.scene
 
         const pos = scene.mapSetup.enterpoint.get(data.from) || { x: 100, y: 100 }
 
         const other = new Player(scene, pos.x, pos.y, data.uid, data.username)
-        other.syncData(data.health, data.items, 0)
+        other.syncData(data.health, data.items, 0, data.outfit)
 
         scene.others.push(other)
     }
@@ -332,8 +361,8 @@ export class NetworkHandler{
         this.scene.player.inventory.updateInventory(items)
     }
 
-    otherUpdateInventory(id: string, items: Item[]){
-        const other = this.scene.others.find(v => v.uid == id)
+    otherUpdateInventory(uid: string, items: Item[]){
+        const other = this.scene.others.find(v => v.uid == uid)
         if(!other) return
 
         console.log('other updated', items)
@@ -341,8 +370,8 @@ export class NetworkHandler{
         other.inventory.updateInventory(items)
     }
 
-    otherUpdateHotbar(id: string, index: number){
-        const other = this.scene.others.find(v => v.uid == id)
+    otherUpdateHotbar(uid: string, index: number){
+        const other = this.scene.others.find(v => v.uid == uid)
         if(!other) return
 
         console.log('other updated hotbar', index)
@@ -376,6 +405,21 @@ export class NetworkHandler{
         })
         
         scene.UI.instructionText.setText(taskInstruction+text)
+    }
+
+    changeGender(uid: string, isMale: boolean){
+        const other = this.scene.others.find(v => v.uid == uid)
+        if(!other) return
+
+        other.sprite.changeGender(isMale)
+    }
+
+    changeOutfit(uid: string, model: string, outfit: string | number){
+        const other = this.scene.others.find(v => v.uid == uid)
+        if(!other) return
+
+        if(model == 'color' && typeof outfit === 'number') other.sprite.changeHairColor(outfit)
+        else if(typeof outfit === 'string') other.sprite.changeOutfit(model, outfit)
     }
 
     chat(data: { id: string, username: string, msg: string}){

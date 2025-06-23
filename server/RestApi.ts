@@ -34,6 +34,14 @@ export class RestApi{
                 xp: 0,
                 gold: 0,
                 health: 100,
+                outfit: {
+                    isMale: false,
+                    color: 0xffffff,
+                    hair: "basic",
+                    face: "basic",
+                    body: "basic",
+                    leg: "basic"
+                },
                 inventory: [],
                 questCompleted: []
             });

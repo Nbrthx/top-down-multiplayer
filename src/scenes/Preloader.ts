@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { outfitList, spriteFrames } from '../prefabs/Outfit';
 
 export class Preloader extends Scene{
     constructor (){
@@ -28,7 +29,22 @@ export class Preloader extends Scene{
         // Character
         this.load.image('shadow', 'character/shadow.png')
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
-        this.load.spritesheet('frogger', 'character/frogger.png', { frameWidth: 384, frameHeight: 128 })
+
+        // Character Male
+        for (const _key in outfitList.male) {
+            const key = _key as keyof typeof outfitList.male
+            for (const outfit of outfitList.male[key]) {
+                this.load.spritesheet(`${outfit}-${key}-male`, `character/male/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
+            }
+        }
+
+        // Character Female
+        for (const _key in outfitList.female) {
+            const key = _key as keyof typeof outfitList.male
+            for (const outfit of outfitList.female[key]) {
+                this.load.spritesheet(`${outfit}-${key}-female`, `character/female/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
+            }
+        }
 
         // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
@@ -63,6 +79,10 @@ export class Preloader extends Scene{
         this.load.image('hotbar', 'ui/hotbar.png')
         this.load.image('stats', 'ui/stats.png')
         this.load.image('ask-button', 'ui/ask-button.png')
+        this.load.image('ui-change-outfit', 'ui/change-outfit.png')
+        this.load.image('ui-fullscreen', 'ui/fullscreen.png')
+        this.load.image('ui-debug', 'ui/debug.png')
+
         this.load.spritesheet('cooldown-anim', 'ui/cooldown-anim.png', { frameWidth: 24, frameHeight: 24 })
 
         this.load.image('box-nineslice', 'ui/box-nineslice.png')
@@ -82,6 +102,7 @@ export class Preloader extends Scene{
     }
 
     create (){
+
         this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNumbers('char', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }),
@@ -101,18 +122,41 @@ export class Preloader extends Scene{
             repeat: -1
         })
 
-        this.anims.create({
-            key: 'frogger-idle',
-            frames: this.anims.generateFrameNumbers('frogger', { frames: [17, 18, 19, 20] }),
-            frameRate: 10,
-            repeat: -1
-        })
-        this.anims.create({
-            key: 'frogger-run',
-            frames: this.anims.generateFrameNumbers('frogger', { frames: [51, 52, 53, 54, 55, 56, 57, 58] }),
-            frameRate: 12,
-            repeat: -1
-        })
+        for (const _key in outfitList.male) {
+            const key = _key as keyof typeof outfitList.male
+
+            for (const outfit of outfitList.male[key]) {
+                const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
+                animations.forEach(anim => {
+                    const frames = spriteFrames[anim][key];
+                    this.anims.create({
+                        key: `${outfit}-${key}-male-${anim}`,
+                        frames: this.anims.generateFrameNumbers(`${outfit}-${key}-male`, { frames: frames }),
+                        frameRate: 12,
+                        repeat: -1
+                    });
+                    console.log(`${outfit}-${key}-male-${anim}`)
+                });
+            }
+        }
+
+        for (const _key in outfitList.female) {
+            const key = _key as keyof typeof outfitList.female
+
+            for (const outfit of outfitList.female[key]) {
+                const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
+                animations.forEach(anim => {
+                    const frames = spriteFrames[anim][key];
+                    this.anims.create({
+                        key: `${outfit}-${key}-female-${anim}`,
+                        frames: this.anims.generateFrameNumbers(`${outfit}-${key}-female`, { frames: frames }),
+                        frameRate: 12,
+                        repeat: -1
+                    });
+                    console.log(`${outfit}-${key}-female-${anim}`)
+                });
+            }
+        }
 
         this.anims.create({
             key: 'punch-attack',

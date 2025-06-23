@@ -34,6 +34,14 @@ export interface Account{
     health: number
     xp: number
     gold: number
+    outfit: {
+        isMale: boolean
+        color: number
+        hair: string
+        face: string
+        body: string
+        leg: string
+    }
     inventory: Item[]
     questCompleted: string[]
     questInProgress?: [string, number[]]
@@ -60,6 +68,14 @@ const accounts: Account[] = [
         "xp": 0,
         "gold": 0,
         "health": 100,
+        "outfit": {
+            "isMale": false,
+            "color": 0xffffff,
+            "hair": "basic",
+            "face": "basic",
+            "body": "basic",
+            "leg": "basic"
+        },
         "inventory": [
             { "id": "dagger", "tag": "weapon", "timestamp": 0 },
             { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
@@ -75,6 +91,14 @@ const accounts: Account[] = [
         "xp": 0,
         "gold": 0,
         "health": 100,
+        "outfit": {
+            "isMale": false,
+            "color": 0xffffff,
+            "hair": "basic",
+            "face": "basic",
+            "body": "basic",
+            "leg": "basic"
+        },
         "inventory": [],
         "questCompleted": []
     }

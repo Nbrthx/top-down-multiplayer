@@ -7,6 +7,7 @@ import { Joystick } from '../prefabs/Joystick'
 import { Chat } from '../prefabs/ui/Chat'
 import { StatsUI } from '../prefabs/ui/StatsUI'
 import { QuestUI } from '../prefabs/ui/QuestUI'
+import { OutfitUI } from '../prefabs/ui/OutfitUI'
 
 export const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -35,6 +36,7 @@ export class GameUI extends Phaser.Scene {
     questUI: QuestUI
     redEffect: Phaser.GameObjects.Rectangle
     instructionText: Phaser.GameObjects.Text
+    outfitUI: OutfitUI
 
     constructor(){
         super('GameUI')
@@ -80,25 +82,32 @@ export class GameUI extends Phaser.Scene {
             this.chatbox.setVisible(false)
         })
 
-        const debugToggle = this.add.text(this.scale.width - 50, 50, 'Debug?', {
-            fontSize: 24, color: '#000000', fontStyle: 'bold'
-        }).setOrigin(1, 0)
+        const debugToggle = this.add.image(this.scale.width - 100, 50, 'ui-debug').setScale(3)
         debugToggle.setInteractive()
         debugToggle.on('pointerup', () => {
             this.gameScene.isDebug = !this.gameScene.isDebug
             this.gameScene.debugGraphics.clear()
         })
 
-        const fullscreenToggle = this.add.text(this.scale.width - 250, 50, 'Fullscreen?', {
-            fontSize: 24, color: '#000000', fontStyle: 'bold'
-        }).setOrigin(1, 0)
+        const fullscreenToggle = this.add.image(this.scale.width - 200, 50, 'ui-fullscreen').setScale(3)
         fullscreenToggle.setInteractive()
-        fullscreenToggle.on('pointerup', () => {
+        fullscreenToggle.on('pointerdown', () => {
             if (this.scale.isFullscreen){
                 this.scale.stopFullscreen();
             }
             else{
                 this.scale.startFullscreen();
+            }
+        })
+
+        const changeOutfitToggle = this.add.image(this.scale.width - 300, 50, 'ui-change-outfit').setScale(3)
+        changeOutfitToggle.setInteractive()
+        changeOutfitToggle.on('pointerdown', () => {
+            if (!this.outfitUI.visible){
+                this.outfitUI.setVisible(true)
+            }
+            else{
+                this.outfitUI.setVisible(false)
             }
         })
 
@@ -245,6 +254,30 @@ export class GameUI extends Phaser.Scene {
         }
 
         this.questUI.onClose = () => {
+            this.gameScene.camera.setFollowOffset(0, 0)
+            this.tweens.add({
+                targets: this.gameScene.camera,
+                zoom: 1,
+                duration: 400,
+                ease: 'Linear'
+            })
+        }
+
+        this.outfitUI = new OutfitUI(this, player)
+        this.outfitUI.setVisible(false)
+
+        this.outfitUI.onOpen = (pos) => {
+            const player = this.gameScene.player
+            this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
+            this.tweens.add({
+                targets: this.gameScene.camera,
+                zoom: 1.2,
+                duration: 400,
+                ease: 'Linear'
+            })
+        }
+
+        this.outfitUI.onClose = () => {
             this.gameScene.camera.setFollowOffset(0, 0)
             this.tweens.add({
                 targets: this.gameScene.camera,

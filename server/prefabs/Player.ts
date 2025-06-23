@@ -26,6 +26,14 @@ export class Player{
     knockback: number
     knockbackDir: p.Vec2
 
+    outfit: {
+        isMale: boolean
+        color: number
+        hair: string
+        face: string
+        body: string
+        leg: string
+    }
     inventory: Inventory
     questInProgress: Quest | null = null
 
@@ -45,6 +53,7 @@ export class Player{
         })
         this.pBody.setUserData(this)
         
+        this.outfit = account.outfit
         this.inventory = new Inventory(this)
 
         this.maxHealth = 100

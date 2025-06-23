@@ -6,6 +6,7 @@ import { Inventory, Item } from './Inventory'
 import { SpatialSound } from '../components/SpatialAudio'
 import { TextBox } from './TextBox'
 import { Stats } from '../components/Stats'
+import { Outfit } from './Outfit'
 
 export class Player extends Phaser.GameObjects.Container{
 
@@ -16,7 +17,7 @@ export class Player extends Phaser.GameObjects.Container{
 
     scene: Game
     itemInstance: BaseItem
-    sprite: Phaser.GameObjects.Sprite
+    sprite: Outfit
     emptyBar: Phaser.GameObjects.Rectangle
     damageBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
@@ -69,7 +70,7 @@ export class Player extends Phaser.GameObjects.Container{
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, 'punch').itemInstance
 
-        this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
+        this.sprite = new Outfit(scene)
 
         this.itemIcon = scene.add.image(56, 0, '').setOrigin(0.5, 0.5)
         this.itemIcon.setScale(3)
@@ -106,11 +107,11 @@ export class Player extends Phaser.GameObjects.Container{
         }
 
         if(vel.x != 0 || vel.y != 0){
-            if(vel.y > -0.1) this.sprite.play('run-down', true)
-            else this.sprite.play('run-up', true)
+            if(vel.y > -0.1) this.sprite.play('rundown', true)
+            else this.sprite.play('runup', true)
         
-            if(vel.x > 0) this.sprite.flipX = false
-            else if(vel.x < 0) this.sprite.flipX = true
+            if(vel.x > 0) this.sprite.setFlipX(false)
+            else if(vel.x < 0) this.sprite.setFlipX(true)
 
             const { x, y } = this.pBody.getPosition()
             this.audio?.step.playSound(x, y)
@@ -142,10 +143,20 @@ export class Player extends Phaser.GameObjects.Container{
         this.barUpdate(this.healthBar)
     }
 
-    syncData(health: number, items: Item[], activeIndex: number){
+    syncData(health: number, items: Item[], activeIndex: number, outfit: {
+            isMale: boolean,
+            color: number,
+            hair: string,
+            face: string,
+            body: string,
+            leg: string
+    }){
         this.health = health
         this.inventory.updateInventory(items)
         this.inventory.setActiveIndex(activeIndex)
+
+        const { isMale, color, hair, face, body, leg } = outfit
+        this.sprite.setOutfit(isMale, color, hair, face, body, leg)
 
         this.barUpdate(this.damageBar)
     }
@@ -189,7 +200,7 @@ export class Player extends Phaser.GameObjects.Container{
                 return
             }
 
-            if(this.sprite.isTinted) this.sprite.clearTint()
+            if(this.sprite.isTinted()) this.sprite.clearTint()
             else this.sprite.setTintFill(0xffffff)
             itr++
 

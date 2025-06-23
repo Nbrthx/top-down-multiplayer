@@ -258,7 +258,8 @@ export class Game{
                 items: v.inventory.items,
                 activeIndex: v.inventory.activeIndex,
                 pos: v.pBody.getPosition(),
-                health: v.health
+                health: v.health,
+                outfit: v.outfit
             }
         }))
         socket?.broadcast.to(this.id).emit('playerJoined', {
@@ -266,7 +267,8 @@ export class Game{
             username: account.username,
             items: account.inventory,
             from: from || 'spawn',
-            health: account.health
+            health: account.health,
+            outfit: account.outfit
         });
 
 
