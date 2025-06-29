@@ -30,12 +30,23 @@ export class Inventory {
         const itemData = itemList.find(item => item.id === id)
         if(!itemData) return false
 
+        const existItem = this.getItem(id)
+        if(existItem && existItem.tag == 'resource'){
+            existItem.quantity += quantity
+
+            this.parent.questInProgress?.addProgress('collect', id, quantity)
+
+            const io = this.parent.scene.gameManager.io
+            io.to(this.parent.uid).emit('updateInventory', this.items)
+            io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.uid, this.items)
+
+            return true
+        }
         for(let i = 0; i < 25; i++){
             const item = this.items[i]
-            if(!item || item.id == '' || (item.id == id && item.tag == 'resource')){
+            if(!item || item.id == ''){
 
-                if(itemData.type === 'resource'){
-                    if(item.id == id && item.tag == 'resource') quantity += item.quantity
+                if(itemData.type == 'resource'){
                     this.items[i] = { id: id, tag: 'resource', quantity: quantity, timestamp: Date.now() }
                 }
                 else{
@@ -90,6 +101,15 @@ export class Inventory {
         io.to(this.parent.scene.id).emit('otherUpdateInventory', this.parent.uid, this.items)
 
         return true
+    }
+
+    removeItemById(id: string, quantity: number): boolean {
+        for(let i = 0; i < 25; i++){
+            if(this.items[i] && this.items[i].id == id){
+                return this.removeItem(i, quantity)
+            }
+        }
+        return false
     }
 
     swapItem(index: number, index2: number) {

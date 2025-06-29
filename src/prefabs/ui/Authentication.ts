@@ -101,7 +101,7 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
                     xhrApi('POST', HOST_ADDRESS+'/login', decrypted, (data: { message: string }) => {
                         if(data.message == 'User logged in successfully!'){
                             localStorage.setItem('username', username)
-                            this.scene.registry.set('socket', this.socket)
+                            if(this.scene) this.scene.registry.set('socket', this.socket)
                             this.setVisible(false)
                         }
                         else{

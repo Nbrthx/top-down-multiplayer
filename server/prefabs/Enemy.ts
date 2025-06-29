@@ -5,6 +5,80 @@ import { ItemInstance } from './ItemInstance'
 import { Player } from './Player'
 import { MeleeWeapon } from './items/MeleeWeapon'
 
+interface EnemyConfig {
+    id: string
+    maxHealth: number
+    speed: number
+    visionDistance: number
+    attackDistance: number
+    zigzagDistance: number
+    stopDistance: number
+    attackSpeed: number
+    attackDelay: number
+    weapon: string
+    xpReward: number
+    itemReward?: [string, number]
+}
+
+const enemyList: EnemyConfig[] = [
+    {
+        id: 'enemy1',
+        maxHealth: 60,
+        speed: 2.8,
+        visionDistance: 6,
+        attackDistance: 2,
+        zigzagDistance: 3.4,
+        stopDistance: 1.4,
+        attackSpeed: 1400,
+        attackDelay: 300,
+        weapon: 'sword',
+        xpReward: 1,
+        itemReward: ['wood', 1]
+    },
+    {
+        id: 'enemy2',
+        maxHealth: 80,
+        speed: 2.4,
+        visionDistance: 6,
+        attackDistance: 6,
+        zigzagDistance: 7,
+        stopDistance: 3.4,
+        attackSpeed: 1400,
+        attackDelay: 200,
+        weapon: 'bow',
+        xpReward: 2,
+        itemReward: ['wood', 2]
+    },
+    {
+        id: 'enemy3',
+        maxHealth: 100,
+        speed: 3,
+        visionDistance: 7,
+        attackDistance: 7,
+        zigzagDistance: 8,
+        stopDistance: 5,
+        attackSpeed: 500,
+        attackDelay: 50,
+        weapon: 'blue-knife',
+        xpReward: 4,
+        itemReward: ['wood', 3]
+    },
+    {
+        id: 'enemy4',
+        maxHealth: 120,
+        speed: 3.4,
+        visionDistance: 7,
+        attackDistance: 2,
+        zigzagDistance: 5,
+        stopDistance: 1.4,
+        attackSpeed: 800,
+        attackDelay: 50,
+        weapon: 'sword',
+        xpReward: 8,
+        itemReward: ['wood', 4]
+    }
+]
+
 export class Enemy{
 
     id: string
@@ -12,6 +86,8 @@ export class Enemy{
     maxHealth: number
     health: number
     speed = 3
+
+    config: EnemyConfig
 
     scene: Game
     itemInstance: BaseItem
@@ -48,19 +124,22 @@ export class Enemy{
 
         this.defaultPos = this.pBody.getPosition().clone()
 
-        this.maxHealth = 100
+        this.config = enemyList.find(e => e.id === id) || enemyList[0]
+        this.speed = this.config.speed
+
+        this.maxHealth = this.config.maxHealth
         this.health = this.maxHealth
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, this.config.weapon).itemInstance
         if(this.itemInstance instanceof MeleeWeapon){
             this.scene.addHitbox(this.itemInstance.hitbox, this.scene.entityBodys)
         }
 
         this.attacker = []
 
-        this.triggerArea = this.createArea(2)
-        this.visionArea = this.createArea(6)
+        this.triggerArea = this.createArea(this.config.attackDistance)
+        this.visionArea = this.createArea(this.config.visionDistance)
 
         this.triggerEvent()
         this.visionEvent()
@@ -73,12 +152,12 @@ export class Enemy{
         if(this.target && this.target instanceof Player){
             const dir = this.target.pBody.getPosition().clone().sub(this.pBody.getPosition())
             
-            if(dir.length() > 3.4){
+            if(dir.length() > this.config.zigzagDistance){
                 dir.normalize()
                 dir.mul(this.speed)
                 this.pBody.setLinearVelocity(dir)
             }
-            else if(dir.length() > 1.4){
+            else if(dir.length() > this.config.stopDistance){
                 let rad = Math.atan2(dir.y, dir.x)
                 rad += (Math.floor(Date.now()/400)%3 - 1)*0.7
                 dir.x = Math.cos(rad)
@@ -88,7 +167,32 @@ export class Enemy{
                 dir.mul(this.speed)
                 this.pBody.setLinearVelocity(dir)
             }
+            else if(dir.length() < this.config.stopDistance-1){
+                dir.normalize()
+                dir.mul(-this.speed)
+                this.pBody.setLinearVelocity(dir)
+            }
             else this.pBody.setLinearVelocity(new p.Vec2(0, 0))
+
+            if(this.pBody.getLinearVelocity().length() > 0.1){
+                let wallDir = new p.Vec2(0, 0)
+                let minDist = 1
+                for(let collision of this.scene.mapSetup.collision){
+                    const bodySize = collision.getUserData() as { width: number, height: number } | undefined
+                    const corners = [[0, 0], [0, bodySize?.height || 0], [bodySize?.width || 0, 0], [bodySize?.width || 0, bodySize?.height || 0]]
+                    for(let corner of corners){
+                        const cornerPos = collision.getPosition().clone().add(new p.Vec2(corner[0]/32, corner[1]/32))
+                        if(this.pBody.getPosition().clone().sub(cornerPos).length() < minDist){
+                            minDist = this.pBody.getPosition().clone().sub(cornerPos).length()
+                            wallDir = this.pBody.getPosition().clone().sub(cornerPos)
+                        }
+                    }
+                }
+                wallDir.normalize()
+                wallDir.mul(this.speed)
+                const vel = this.pBody.getLinearVelocity().clone().add(wallDir)
+                this.pBody.setLinearVelocity(vel)
+            }
         }
         else{
             const dir = this.defaultPos.clone().sub(this.pBody.getPosition())
@@ -148,6 +252,7 @@ export class Enemy{
     triggerEvent(){
         this.scene.contactEvents.addEvent(this.scene.entityBodys, this.triggerArea, (bodyA) => {
             if(bodyA == this.pBody) return
+            if(!(bodyA.getUserData() instanceof Player) || bodyA.getUserData() instanceof Enemy) return
 
             const dir = bodyA.getPosition().clone().sub(this.pBody.getPosition())
             dir.normalize()
@@ -158,15 +263,15 @@ export class Enemy{
 
                 setTimeout(() => {
                     this.triggerArea.setActive(true)
-                }, 1200)
-            }, 300)
+                }, this.config.attackSpeed)
+            }, this.config.attackDelay)
         })
     }
 
     visionEvent(){
         this.scene.contactEvents.addEvent(this.scene.entityBodys, this.visionArea, (bodyA) => {
             if(bodyA == this.pBody) return
-            if(!(bodyA.getUserData() instanceof Player)) return
+            if(!(bodyA.getUserData() instanceof Player) || bodyA.getUserData() instanceof Enemy) return
 
             this.target = bodyA.getUserData() as Player
             this.scene.world.queueUpdate(() => this.visionArea.setActive(false))
@@ -180,7 +285,7 @@ export class Enemy{
 
     healWhenNoTarget(){
         if(!this.target){
-            this.health += 0.04
+            this.health += 0.03
             if(this.health > this.maxHealth) this.health = this.maxHealth
         }
     }

@@ -54,10 +54,10 @@ export class GameUI extends Phaser.Scene {
             color: '#fff'
         }).setOrigin(0).setWordWrapWidth(440)
 
-        this.debugText = this.add.text(50, 300, 'Ping: 0ms\nFPS: 0', {
-            fontSize: 24, fontStyle: 'bold',
-            color: '#fff'
-        })
+        this.debugText = this.add.text(this.scale.width - 50, 200, 'Ping: 0ms\nFPS: 0', {
+            fontSize: 24, fontStyle: 'bold', align: 'right',
+            color: '#fff', stroke: '#000', strokeThickness: 1
+        }).setOrigin(1)
 
         setInterval(() => {
             const then = Date.now()
@@ -72,7 +72,7 @@ export class GameUI extends Phaser.Scene {
 
         this.gameScene = this.scene.get('Game') as Game
 
-        const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.6)
+        const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.5)
         bottomBox.setOrigin(0.5, 1)
 
         this.inventoryButton = this.add.image(this.scale.width/2, this.scale.height - 80, 'icon-inventory')
@@ -198,6 +198,8 @@ export class GameUI extends Phaser.Scene {
             this.statsUI.destroy()
             this.inventoryUI.destroy()
             this.chatbox.destroy()
+            this.questUI.destroy()
+            this.outfitUI.destroy()
         })
     }
 
@@ -247,7 +249,7 @@ export class GameUI extends Phaser.Scene {
             this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
             this.tweens.add({
                 targets: this.gameScene.camera,
-                zoom: 1.2,
+                zoom: 1.6,
                 duration: 400,
                 ease: 'Linear'
             })
@@ -271,7 +273,7 @@ export class GameUI extends Phaser.Scene {
             this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
             this.tweens.add({
                 targets: this.gameScene.camera,
-                zoom: 1.2,
+                zoom: 1.6,
                 duration: 400,
                 ease: 'Linear'
             })

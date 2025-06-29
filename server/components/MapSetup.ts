@@ -38,6 +38,7 @@ export class MapSetup{
         this.initCollision(map)
         this.createEnemy(map)
         this.createEntrances(map)
+        this.createHealArea(map)
         this.createBounds(map.width, map.height)
         this.createEnterPoint(map)
     }
@@ -50,6 +51,16 @@ export class MapSetup{
 
             const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y)/32))
             body.createFixture(new p.Box(o.width/2/32, o.height/2/32, new p.Vec2(o.width/2/32, o.height/2/32)))
+            body.setUserData({ width: o.width, height: o.height })
+            this.collision.push(body)
+        })
+
+        map.layers.find(v => v.name == 'waterColl')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, width: number, height: number }
+
+            const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y)/32))
+            body.createFixture(new p.Box(o.width/2/32, o.height/2/32, new p.Vec2(o.width/2/32, o.height/2/32)))
+            body.setUserData({ width: o.width, height: o.height })
             this.collision.push(body)
         })
 
@@ -94,7 +105,7 @@ export class MapSetup{
     createEntrances(map: Tilemap){
         const scene = this.scene
 
-        map.layers.find(v => v.name == 'entrance')?.objects.map(_o => {
+        map.layers.find(v => v.name == 'entrance')?.objects.forEach(_o => {
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
 
             const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
@@ -116,6 +127,21 @@ export class MapSetup{
                     })
                 })
             })
+        })
+    }
+
+    createHealArea(map: Tilemap){
+        const scene = this.scene
+
+        map.layers.find(v => v.name == 'heal')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, width: number, height: number}
+
+            const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
+            body.createFixture({
+                shape: new p.Box(o.width/2/32, o.height/2/32),
+                isSensor: true
+            })
+            body.setUserData('heal')
         })
     }
 

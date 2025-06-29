@@ -38,10 +38,19 @@ export function createDebugGraphics(scene: Game, debugGraphics: Phaser.GameObjec
                 }
                 debugGraphics.closePath();
                 debugGraphics.strokePath();
+
+                debugGraphics.strokeCircle(body.getPosition().x * scene.gameScale * 32, body.getPosition().y * scene.gameScale * 32, 8)
+
+                debugGraphics.beginPath()
+                debugGraphics.lineStyle(2, color, 1);
+                debugGraphics.moveTo(position.x * scene.gameScale * 32, position.y * scene.gameScale * 32);
+                debugGraphics.lineTo((position.x + body.getLinearVelocity().x) * scene.gameScale * 32, (position.y + body.getLinearVelocity().y) * scene.gameScale * 32);
+                debugGraphics.strokePath()
             }
             if(shape instanceof p.Circle){
                 const center = shape.m_p.clone().add(position);
                 debugGraphics.strokeCircle(center.x * scene.gameScale * 32, center.y * scene.gameScale * 32, shape.m_radius * scene.gameScale * 32)
+                debugGraphics.strokeCircle(center.x * scene.gameScale * 32, center.y * scene.gameScale * 32, 8)
             }
         }
     }

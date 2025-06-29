@@ -69,10 +69,13 @@ export class Preloader extends Scene{
 
         // Environtment
         this.load.image('tilemaps', 'environment/tilemaps2.png')
-        this.load.image('tree1', 'environment/tree1.png')
+        this.load.spritesheet('tree1', 'environment/tree1.png', { frameWidth: 96, frameHeight: 128 })
 
-        this.load.tilemapTiledJSON('test', 'environment/test.json')
-        this.load.tilemapTiledJSON('test2', 'environment/test2.json')
+        this.load.tilemapTiledJSON('map1', 'environment/map1.json')
+        this.load.tilemapTiledJSON('map2', 'environment/map2.json')
+        this.load.tilemapTiledJSON('map3', 'environment/map3.json')
+        this.load.tilemapTiledJSON('map4', 'environment/map4.json')
+        this.load.tilemapTiledJSON('map5', 'environment/map5.json')
 
         // UI
         this.load.image('inventory', 'ui/inventory.png')
@@ -182,6 +185,13 @@ export class Preloader extends Scene{
             key: 'dagger-attack',
             frames: this.anims.generateFrameNumbers('dagger', { frames: [0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8] }),
             frameRate: 20
+        })
+
+        this.anims.create({
+            key: 'tree1-wave',
+            frames: this.anims.generateFrameNumbers('tree1', { frames: [0, 1, 2, 3, 4, 5, 0, 6, 7, 8, 9, 10] }),
+            frameRate: 10,
+            repeat: -1
         })
 
         this.scene.start('MainMenu', { autoJoin: true });

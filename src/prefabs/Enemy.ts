@@ -4,17 +4,69 @@ import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Player } from './Player'
 import { SpatialSound } from '../components/SpatialAudio'
+import { Outfit } from './Outfit'
+
+interface EnemyConfig {
+    id: string
+    name: string
+    maxHealth: number
+    visionDistance: number
+    attackDistance: number
+    weapon: string
+    outfit: [boolean, number, string, string, string, string]
+}
+
+export const enemyList: EnemyConfig[] = [
+    {
+        id: 'enemy1',
+        name: 'Swordman',
+        maxHealth: 60,
+        visionDistance: 6,
+        attackDistance: 2,
+        weapon: 'sword',
+        outfit: [true, 0xffaaaa, 'basic', 'basic', 'basic', 'basic']
+    },
+    {
+        id: 'enemy2',
+        name: 'Archer',
+        maxHealth: 80,
+        visionDistance: 6,
+        attackDistance: 6,
+        weapon: 'bow',
+        outfit: [false, 0xffaaaa, 'basic', 'basic', 'basic', 'basic']
+    },
+    {
+        id: 'enemy3',
+        name: 'Ninja',
+        maxHealth: 100,
+        visionDistance: 7,
+        attackDistance: 7,
+        weapon: 'blue-knife',
+        outfit: [false, 0xffaaff, 'bodied', 'basic', 'grey', 'basic']
+    },
+    {
+        id: 'enemy4',
+        name: 'Assassin',
+        maxHealth: 100,
+        visionDistance: 7,
+        attackDistance: 2,
+        weapon: 'sword',
+        outfit: [true, 0x99ccff, 'spread', 'basic', 'black', 'basic']
+    }
+]
 
 export class Enemy extends Phaser.GameObjects.Container{
 
+    id: string
     uid: string
     maxHealth: number
     health: number
-    speed = 3
+
+    config: EnemyConfig
 
     scene: Game
     itemInstance: BaseItem
-    sprite: Phaser.GameObjects.Sprite
+    sprite: Outfit
     emptyBar: Phaser.GameObjects.Rectangle
     damageBar: Phaser.GameObjects.Rectangle
     healthBar: Phaser.GameObjects.Rectangle
@@ -27,11 +79,13 @@ export class Enemy extends Phaser.GameObjects.Container{
     visionArea: p.Body
     target: Player | null
     audio?: { step: SpatialSound; hit: SpatialSound }
+    nameText: Phaser.GameObjects.Text
 
-    constructor(scene: Game, x: number, y: number, uid: string){
+    constructor(scene: Game, x: number, y: number, id: string, uid: string){
         super(scene, x, y)
 
         this.scene = scene
+        this.id = id
         this.uid = uid
 
         scene.add.existing(this)
@@ -47,9 +101,11 @@ export class Enemy extends Phaser.GameObjects.Container{
         })
         this.pBody.setUserData(this)
 
+        this.config = enemyList.find(e => e.id === id) || enemyList[0]
+
         this.defaultPos = this.pBody.getPosition().clone()
 
-        this.maxHealth = 100
+        this.maxHealth = this.config.maxHealth
         this.health = this.maxHealth
 
         this.emptyBar = scene.add.rectangle(0, -130, 166, 18, 0x494449).setRounded(4)
@@ -57,17 +113,24 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.healthBar = scene.add.rectangle(0, -130, 164, 16, 0xbb4433).setRounded(4)
 
         this.attackDir = new p.Vec2(0, 0)
-        this.itemInstance = new ItemInstance(scene, this.pBody, 'sword').itemInstance
+        this.itemInstance = new ItemInstance(scene, this.pBody, this.config.weapon).itemInstance
 
-        this.sprite = scene.add.sprite(0, -36, 'char').setScale(scene.gameScale)
-        this.sprite.setTint(0xff9999)
+        this.sprite = new Outfit(scene)
+
+        const [isMale, color, hair, face, body, leg] = this.config.outfit
+        this.sprite.setOutfit(isMale, color, hair, face, body, leg)
         
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
-        this.triggerArea = this.createArea(2)
-        this.visionArea = this.createArea(6)
+        this.nameText = scene.add.text(0, -38*scene.gameScale, this.config.name, {
+            fontFamily: 'PixelFont', fontSize: 24, letterSpacing: 2,
+            stroke: '#000000', strokeThickness: 4
+        }).setOrigin(0.5).setResolution(4)
 
-        this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar])
+        this.triggerArea = this.createArea(this.config.attackDistance, true)
+        this.visionArea = this.createArea(this.config.visionDistance)
+
+        this.add([shadow, this.itemInstance, this.sprite, this.emptyBar, this.damageBar, this.healthBar, this.nameText])
     }
 
     update(){
@@ -82,11 +145,11 @@ export class Enemy extends Phaser.GameObjects.Container{
         }
 
         if(vel.x != 0 || vel.y != 0){
-            if(vel.y > -0.1) this.sprite.play('run-down', true)
-            else this.sprite.play('run-up', true)
+            if(vel.y > -0.1) this.sprite.play('rundown', true)
+            else this.sprite.play('runup', true)
         
-            if(vel.x > 0) this.sprite.flipX = false
-            else if(vel.x < 0) this.sprite.flipX = true
+            if(vel.x > 0) this.sprite.setFlipX(false)
+            else if(vel.x < 0) this.sprite.setFlipX(true)
             
             const { x, y } = this.pBody.getPosition()
             this.audio?.step.playSound(x, y)
@@ -115,8 +178,8 @@ export class Enemy extends Phaser.GameObjects.Container{
         }
     }
 
-    createArea(radius: number){
-        const pBody = this.scene.world.createKinematicBody()
+    createArea(radius: number, isTrigger = false){
+        const pBody = isTrigger ? this.scene.world.createKinematicBody() : this.scene.world.createBody()
         pBody.createFixture({
             shape: new p.Circle(new p.Vec2(0, 0), radius),
             isSensor: true
@@ -137,7 +200,7 @@ export class Enemy extends Phaser.GameObjects.Container{
                 return
             }
 
-            if(this.sprite.tintFill) this.sprite.setTint(0xff5544)
+            if(this.sprite.isTinted()) this.sprite.clearTint()
             else this.sprite.setTintFill(0xffffff)
             itr++
 

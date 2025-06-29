@@ -1,7 +1,7 @@
 import p from 'planck'
 import { Game } from '../scenes/Game'
-import { NPC, NPClist } from '../prefabs/NPC'
-import { QuestConfig } from '../prefabs/ui/QuestUI'
+import { NPC, npcList } from '../prefabs/NPC'
+import { handleQuest } from './HandleQuest'
 
 export class MapSetup{
 
@@ -24,7 +24,7 @@ export class MapSetup{
         this.npcs = []
 
         const map = scene.add.tilemap(mapName)
-        const tileset = map.addTilesetImage('tilemaps', 'tilemaps') as Phaser.Tilemaps.Tileset
+        const tileset = map.addTilesetImage('tilemaps2', 'tilemaps') as Phaser.Tilemaps.Tileset
 
         map.layers.forEach(v => {
             const layer = map.createLayer(v.name, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
@@ -32,12 +32,13 @@ export class MapSetup{
             this.layers.push(layer)
         })
 
-        scene.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale)
+        scene.camera.setBounds(0, 0, map.widthInPixels*this.gameScale, map.heightInPixels*this.gameScale+80)
 
         this.initCollision(map)
         this.createNPCs(map)
         this.createBounds(map.width, map.height)
         this.createEntrances(map)
+        this.createHealArea(map)
         this.createEnterPoint(map)
     }
 
@@ -51,12 +52,20 @@ export class MapSetup{
             this.collision.push(body)
         })
 
+        map.getObjectLayer('waterColl')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, width: number, height: number}
+            const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y)/32))
+            body.createFixture(new p.Box(o.width/2/32, o.height/2/32, new p.Vec2(o.width/2/32, o.height/2/32)))
+            this.collision.push(body)
+        })
+
         let i = 0
         map.getObjectLayer('tree1')?.objects.forEach(_o => {
             const o = _o as { x: number, y: number }
-            const tree = scene.add.image(o.x*scene.gameScale, o.y*scene.gameScale, 'tree1')
+            const tree = scene.add.sprite(o.x*scene.gameScale, (o.y-8)*scene.gameScale, 'tree1')
             tree.setScale(scene.gameScale).setOrigin(0.5, 0.85).setDepth(o.y-16)
             tree.setTint(i%2 == 0 ? 0xeeffee : 0xffffcc)
+            tree.play('tree1-wave')
 
             const body = scene.world.createBody(new p.Vec2((o.x+16/32)/32, (o.y+24/32)/32))
             body.createFixture(new p.Box(24/2/32, 16/2/32))
@@ -89,11 +98,11 @@ export class MapSetup{
     createNPCs(map: Phaser.Tilemaps.Tilemap){
         const scene = this.scene
 
-        map.getObjectLayer('npcs')?.objects.map(_o => {
+        map.getObjectLayer('npcs')?.objects.forEach(_o => {
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
 
             const npc = new NPC(scene, o.x*this.gameScale, o.y*this.gameScale, o.name)
-            const npcData = NPClist.find(v => v.id == o.name) || {
+            const npcData = npcList.find(v => v.id == o.name) || {
                 name: o.name,
                 biography: 'No biography available.',
             }
@@ -102,53 +111,7 @@ export class MapSetup{
                 pointer.event.preventDefault()
                 scene.input.stopPropagation()
 
-                this.scene.socket.emit('getQuestData', o.name, (quest: QuestConfig, isHaveOtherQuest: boolean, progressState: number) => {
-
-                    let warningText = ''
-                    if(isHaveOtherQuest){
-                        warningText = 'Careful, you have other quest in progress, it will be overrided'
-                    }
-                    else if(progressState == 1){
-                        warningText = 'You already have this quest in progress'
-                    }
-                    else if(progressState == 2){
-                        warningText = 'Complete this quest to get reward'
-                    }
-
-                    let taskText = ''
-                    quest.task.forEach((task) => {
-                        taskText += task.type+': '+task.target+' x'+task.amount+'\n'
-                    })
-
-                    let rewardText = 'xp: '+quest?.reward?.xp+'\n'
-                    if(quest.reward.gold) rewardText += 'gold: '+quest.reward.gold+'\n'
-                    if(quest.reward.item && quest.reward.item.length > 0){
-                        rewardText += 'item: '
-                        let itemLength = quest.reward.item.length
-                        quest.reward.item.forEach((item, index) => {
-                            rewardText += item[0]+' x'+item[1]
-                            if(index < itemLength - 1) rewardText += ', '
-                        })
-                    }
-
-                    const config = {
-                        npcId: npc.id,
-                        npcName: npcData.name,
-                        biography: 'Biography:\n'+npcData.biography,
-                        header: quest.name,
-                        text: quest.description+'\n\nTask:\n'+taskText+'\nReward:\n'+rewardText,
-                        warn: warningText,
-                        pos: {
-                            x: npc.x,
-                            y: npc.y
-                        },
-                        isHaveOtherQuest: isHaveOtherQuest,
-                        progressState: progressState
-                    }
-
-                    scene.UI.questUI.setText(config)
-
-                })
+                handleQuest(scene, o.name, npcData.name, npcData.biography, { x: npc.x, y: npc.y })
             })
 
             this.npcs.push(npc)
@@ -159,16 +122,60 @@ export class MapSetup{
         const scene = this.scene
 
 
-        map.getObjectLayer('entrance')?.objects.map(_o => {
+        map.getObjectLayer('entrance')?.objects.forEach(_o => {
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
+
+            const entrance = scene.add.rectangle(o.x*scene.gameScale, o.y*scene.gameScale, o.width*scene.gameScale, o.height*scene.gameScale, 0xffff00, 0.8)
+            entrance.setStrokeStyle(2, 0xcccc00)
+            entrance.setOrigin(0).setAlpha(0.4)
+
+            scene.tweens.add({
+                targets: entrance,
+                alpha: 0.1,
+                duration: 500,
+                ease: 'Quad.easeOut',
+                yoyo: true,
+                repeat: -1
+            })
 
             const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
             body.createFixture({
                 shape: new p.Box(o.width/2/32, o.height/2/32),
                 isSensor: true
             })
-            body.setUserData(o.name)
+            body.setUserData(entrance)
+
             this.entrances.push(body)
+        })
+    }
+
+    createHealArea(map: Phaser.Tilemaps.Tilemap){
+        const scene = this.scene
+
+
+        map.getObjectLayer('heal')?.objects.forEach(_o => {
+            const o = _o as { x: number, y: number, width: number, height: number}
+
+            const healArea = scene.add.rectangle(o.x*scene.gameScale, o.y*scene.gameScale, o.width*scene.gameScale, o.height*scene.gameScale, 0x00ff00, 0.7)
+            healArea.setStrokeStyle(4, 0x00cc33)
+            healArea.setOrigin(0).setAlpha(0.4)
+            healArea.setRounded(16)
+
+            scene.tweens.add({
+                targets: healArea,
+                alpha: 0.2,
+                duration: 1000,
+                ease: 'Quad.easeOut',
+                yoyo: true,
+                repeat: -1
+            })
+
+            const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
+            body.createFixture({
+                shape: new p.Box(o.width/2/32, o.height/2/32),
+                isSensor: true
+            })
+            body.setUserData(healArea)
         })
     }
 
@@ -217,6 +224,9 @@ export class MapSetup{
         this.scene.droppedItems = []
         
         this.entrances.forEach(v => {
+            const object = v.getUserData() as Phaser.GameObjects.GameObject
+            if(object) object.destroy()
+
             this.scene.world.destroyBody(v)
         })
         this.entrances = []

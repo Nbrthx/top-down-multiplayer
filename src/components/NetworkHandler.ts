@@ -2,7 +2,7 @@ import p from 'planck'
 import { Socket } from "socket.io-client";
 import { Game } from "../scenes/Game";
 import { Player } from "../prefabs/Player";
-import { Enemy } from '../prefabs/Enemy';
+import { Enemy, enemyList } from '../prefabs/Enemy';
 import { DroppedItem } from '../prefabs/DroppedItem';
 import { MapSetup } from './MapSetup';
 import { Projectile, ProjectileConfig } from '../prefabs/items/RangeWeapon';
@@ -21,7 +21,7 @@ export interface OutputData{
 export interface GameState{
     id: string
     players: (OutputData & { xp: number })[]
-    enemies: OutputData[]
+    enemies: (OutputData & { id: string })[]
     droppedItems: {
         uid: string
         id: string
@@ -266,14 +266,6 @@ export class NetworkHandler{
 
         data.enemies.forEach(enemyData => {
             const enemy = scene.enemies.find(v => v.uid == enemyData.uid)
-            if(!enemy){
-                console.log('spawn enemy')
-                const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.uid)
-                newEnemy.health = enemyData.health
-                newEnemy.barUpdate(newEnemy.damageBar)
-                this.scene.enemies.push(newEnemy)
-            }
-
             if(enemy){
                 const targetPosition = new p.Vec2(enemyData.pos.x, enemyData.pos.y)
                 const currentPosition = enemy.pBody.getPosition()
@@ -308,6 +300,15 @@ export class NetworkHandler{
                         emitting: false
                     }).explode(8)
                 }
+            }
+
+
+            if(!enemy){
+                console.log('spawn enemy')
+                const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.id, enemyData.uid)
+                newEnemy.health = enemyData.health
+                newEnemy.barUpdate(newEnemy.damageBar)
+                this.scene.enemies.push(newEnemy)
             }
         })
 
@@ -401,7 +402,9 @@ export class NetworkHandler{
 
         let text = '\n'
         taskProgress?.forEach(v => {
-            text += `${v.type} ${v.target}: ${v.progress}/${v.max}\n`
+            let target = ''
+            if(v.type == 'kill') target = enemyList.find((enemy) => enemy.id == v.target)?.name || v.target
+            text += `${v.type} ${target}: ${v.progress}/${v.max}\n`
         })
         
         scene.UI.instructionText.setText(taskInstruction+text)

@@ -103,6 +103,8 @@ export class Player{
             if(this.force > 0) this.force -= 2
             else this.force += 2
         }
+
+        this.healWhenInArea()
     }
 
     equipItem(index: number){
@@ -123,6 +125,19 @@ export class Player{
 
             this.itemInstance = newItemInstance
         })
+    }
+
+    healWhenInArea(){
+        for(let ce = this.pBody.getContactList(); ce; ce = ce.next){
+            const contact = ce.contact
+            const bodyAData = contact.getFixtureA().getBody().getUserData()
+            const bodyBData = contact.getFixtureB().getBody().getUserData()
+            if(typeof bodyAData == 'string' && bodyAData == 'heal' || typeof bodyBData == 'string' && bodyBData == 'heal'){
+                this.health += 0.03
+                if(this.health > this.maxHealth) this.health = this.maxHealth
+                return
+            }
+        }
     }
 
     destroy(){

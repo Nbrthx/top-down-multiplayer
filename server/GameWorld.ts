@@ -146,11 +146,14 @@ export class Game{
                 this.enemies.splice(this.enemies.indexOf(enemy), 1)
                 enemy.destroy()
 
-                const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, 'wood')
-                this.droppedItems.push(droppedItem)
+                const item = enemy.config.itemReward
+                if(item){
+                    const droppedItem = new DroppedItem(this, enemyPos.x, enemyPos.y, item[0], item[1])
+                    this.droppedItems.push(droppedItem)
+                }
 
                 enemy.attacker.forEach(player => {
-                    player.account.xp += 1
+                    player.account.xp += enemy.config.xpReward
                     player.questInProgress?.addProgress('kill', enemy.id)
                 })
 
@@ -161,6 +164,13 @@ export class Game{
                 }, 5000)
             }
             else enemy.update()
+        })
+
+        this.enemies.sort((a) => a.pBody.isActive() ? 1 : -1);
+        this.enemies.slice().reverse().forEach(v =>{
+            if(!v.pBody.isActive()){
+                this.enemies.splice(this.enemies.indexOf(v), 1)
+            }
         })
 
         this.projectiles.forEach(v => {
@@ -191,6 +201,7 @@ export class Game{
             }),
             enemies: this.enemies.map(v => {
                 return {
+                    id: v.id,
                     uid: v.uid,
                     pos: v.pBody.getPosition(),
                     attackDir: v.attackDir,
@@ -224,13 +235,13 @@ export class Game{
         const player = new Player(this, enterPos.x, enterPos.y, uid, account)
 
         if(account.questInProgress){
-            const npcId = account.questInProgress[0]
-            const quest = Quests.getQuestByNpcId(npcId, account.questCompleted)
+            const questId = account.questInProgress[0]
+            const quest = Quests.getQuestByQuestId(questId)
             player.questInProgress = quest
             
             if(player.questInProgress && quest){
                 quest.onProgress((taskProgress) => {
-                    player.account.questInProgress = [npcId, taskProgress]
+                    player.account.questInProgress = [questId, taskProgress]
                     socket?.emit('questProgress', quest.config.taskInstruction, taskProgress.map((v, i) => {
                         return {
                             type: quest.config.task[i].type,

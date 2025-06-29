@@ -48,7 +48,7 @@ export class Game extends Scene{
     }
 
     create (){
-        this.worldId = 'test'
+        this.worldId = 'map1'
         this.world = new p.World()
         this.contactEvents = new ContactEvents(this.world)
         
@@ -57,7 +57,7 @@ export class Game extends Scene{
         this.debugGraphics = this.add.graphics().setDepth(100000000000000)
 
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
+        this.camera.setBackgroundColor(0x060910);
 
         this.UI = (this.scene.get('GameUI') || this.scene.add('GameUI', new GameUI(), true)) as GameUI
         this.socket = this.UI.socket
@@ -69,7 +69,7 @@ export class Game extends Scene{
         this.droppedItems = []
         this.realBodyPos = new Map()
 
-        this.mapSetup = new MapSetup(this, 'test')
+        this.mapSetup = new MapSetup(this, this.worldId)
 
         this.others = []
 
@@ -127,7 +127,7 @@ export class Game extends Scene{
                 v && v.update()
             })
 
-            if(this.isDebug) createDebugGraphics(this, this.debugGraphics)
+            if(this.isDebug && this.debugGraphics.visible) createDebugGraphics(this, this.debugGraphics)
         }
     }
 
@@ -176,7 +176,7 @@ export class Game extends Scene{
 
         if (pendingUpdates.length > 0) {
             const latestPlayers = new Map<string, OutputData & { xp: number }>();
-            const latestEnemies = new Map<string, OutputData>();
+            const latestEnemies = new Map<string, OutputData & { id: string }>();
             
             let finalDroppedItems: GameState['droppedItems'] = [];
             let finalProjectiles: GameState['projectiles'] = [];

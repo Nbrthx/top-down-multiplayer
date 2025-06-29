@@ -30,10 +30,10 @@ export class QuestUI extends Phaser.GameObjects.Container {
     taskText: Phaser.GameObjects.Text;
     taskTextDefaultY: number = -270;
 
-    buttonGo: Phaser.GameObjects.NineSlice;
-    buttonTextGo: Phaser.GameObjects.Text;
-    buttonBack: Phaser.GameObjects.NineSlice;
-    buttonTextBack: Phaser.GameObjects.Text;
+    buttonGo: Button;
+    buttonBack: Button;
+    buttonPrev: Button;
+    buttonNext: Button;
     warningText: Phaser.GameObjects.Text;
 
     constructor(scene: GameUI) {
@@ -104,30 +104,19 @@ export class QuestUI extends Phaser.GameObjects.Container {
         this.warningText.setOrigin(0, 0)
         this.warningText.setWordWrapWidth(scene.scale.width/2 - 160, true)
 
-        this.buttonGo = scene.add.nineslice(scene.scale.width-200, -300, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
-        this.buttonGo.setScale(4)
-        this.buttonGo.setInteractive();
+        this.buttonGo = new Button(scene, scene.scale.width-200, -300, 'Go')
 
-        this.buttonTextGo = scene.add.text(this.buttonGo.x, this.buttonGo.y, 'Go', {
-            fontFamily: 'PixelFont', fontSize: 32, color: '#000000'
-        }).setOrigin(0.5, 0.5);
-
-        this.buttonBack = scene.add.nineslice(scene.scale.width-200, -220, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
-        this.buttonBack.setScale(4)
-        this.buttonBack.setInteractive();
+        this.buttonBack = new Button(scene, scene.scale.width-200, -220, 'Back')
         this.buttonBack.on('pointerdown', () => {
-            this.buttonBack.setTint(0x888888);
-            setTimeout(() => {
-                this.setVisible(false);
-                this.onClose()
-
-                this.buttonBack.clearTint();
-            }, 100);
+            this.setVisible(false);
+            this.onClose()
         });
 
-        this.buttonTextBack = scene.add.text(this.buttonBack.x, this.buttonBack.y, 'Back', {
-            fontFamily: 'PixelFont', fontSize: 32, color: '#000000'
-        }).setOrigin(0.5, 0.5);
+        this.buttonPrev = new Button(scene, scene.scale.width-200, -140, 'Previous')
+        this.buttonPrev.setVisible(false)
+
+        this.buttonNext = new Button(scene, scene.scale.width-200, -60, 'Next')
+        this.buttonNext.setVisible(false)
 
         this.add([
             this.background,
@@ -136,8 +125,10 @@ export class QuestUI extends Phaser.GameObjects.Container {
             splitter,
             this.headerText, this.taskText,
             this.warningText,
-            this.buttonGo, this.buttonTextGo,
-            this.buttonBack, this.buttonTextBack
+            this.buttonGo,
+            this.buttonBack,
+            this.buttonPrev,
+            this.buttonNext
         ]);
     }
 
@@ -151,7 +142,7 @@ export class QuestUI extends Phaser.GameObjects.Container {
         pos: { x: number, y: number }
         isHaveOtherQuest: boolean
         progressState: number
-    }) {
+    }, questId = '', changeQuest?: (isPrev: boolean) => void) {
         if(!this.headerText || !this.taskText) return;
         if(config.header.length > 30) config.header = config.header.substring(0, 30) + '...';
         if(config.text.length > 200) config.text = config.text.substring(0, 200) + '...';
@@ -175,43 +166,46 @@ export class QuestUI extends Phaser.GameObjects.Container {
 
         this.warningText.setText(config.warn)
 
-        if(config.progressState == 0) this.buttonTextGo.setText('Accept')
-        else if(config.progressState == 1) this.buttonTextGo.setText('Decline')
-        else this.buttonTextGo.setText('Complete')
+        if(config.progressState == 0) this.buttonGo.setText('Accept')
+        else if(config.progressState == 1) this.buttonGo.setText('Decline')
+        else this.buttonGo.setText('Complete')
 
         if(config.header == ''){
             this.buttonGo.setVisible(false)
-            this.buttonTextGo.setVisible(false)
             this.buttonBack.setY(this.buttonGo.y)
-            this.buttonTextBack.setY(this.buttonTextGo.y)
             this.headerText.setText('No Quest Yet')
             this.taskText.setText('')
         }
         else{
             this.buttonGo.setVisible(true)
-            this.buttonTextGo.setVisible(true)
             this.buttonBack.setY(this.buttonGo.y + 80)
-            this.buttonTextBack.setY(this.buttonTextGo.y + 80)
         }
 
-        if(config.progressState == 1) this.warningText.setColor('#cc0000') // RED
+        if(config.progressState == 1 || config.progressState == 0) this.warningText.setColor('#cc0000') // RED
         else this.warningText.setColor('#00aa22') // GREEN
 
+        this.buttonGo.off('pointerdown')
         this.buttonGo.on('pointerdown', () => {
-            this.buttonGo.off('pointerdown')
-            this.buttonGo.setTint(0x888888);
-            setTimeout(() => {
-                this.setVisible(false);
+            this.setVisible(false);
 
-                console.log(config)
+            console.log(config)
 
-                if(config.progressState == 0) this.scene.socket.emit('acceptQuest', config.npcId)
-                else if(config.progressState == 1) this.scene.socket.emit('declineQuest')
-                else this.scene.socket.emit('completeQuest')
+            if(config.progressState == 0){
+                if(questId != '') this.scene.socket.emit('acceptQuest', config.npcId, questId)
+                else this.scene.socket.emit('acceptQuest', config.npcId)
+            }
+            else if(config.progressState == 1) this.scene.socket.emit('declineQuest')
+            else this.scene.socket.emit('completeQuest')
 
-                this.onClose()
-                this.buttonGo.clearTint();
-            }, 100);
+            this.onClose()
+        });
+
+        this.buttonPrev.on('pointerdown', () => {
+            if(changeQuest) changeQuest(true)
+        });
+
+        this.buttonNext.on('pointerdown', () => {
+            if(changeQuest) changeQuest(false)
         });
 
         this.onOpen(config.pos)
@@ -224,4 +218,49 @@ export class QuestUI extends Phaser.GameObjects.Container {
     onOpen(pos: { x: number, y: number }) { pos; }
 
     onClose(){}
+}
+
+class Button extends Phaser.GameObjects.Container{
+
+    bg: Phaser.GameObjects.NineSlice;
+    text: Phaser.GameObjects.Text;
+
+    constructor(scene: Phaser.Scene, x: number, y: number, text: string){
+        super(scene, x, y)
+
+        this.bg = scene.add.nineslice(0, 0, 'button-nineslice', 0, 48, 16, 4, 4, 4, 4)
+        this.bg.setScale(4)
+        this.bg.setInteractive();
+
+        this.text = scene.add.text(0, 0, text, {
+            fontFamily: 'PixelFont', fontSize: 32, color: '#000000'
+        }).setOrigin(0.5, 0.5);
+
+        this.add([this.bg, this.text])
+    }
+
+    on(event: string, listener: (...args: any[]) => void){
+        if(!this.bg || !this.text) return this;
+
+        this.bg.on(event, (...args: any[]) => {
+            this.bg.setTint(0x888888);
+            setTimeout(() => {
+
+                listener(...args);
+
+                this.bg.clearTint();
+            }, 100);
+        });
+
+        return this
+    }
+
+    off(event: string | symbol, fn?: Function, context?: any, once?: boolean): this {
+        this.bg.off(event, fn, context, once);
+        return this
+    }
+
+    setText(text: string){
+        this.text.setText(text)
+    }
 }

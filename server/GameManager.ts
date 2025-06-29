@@ -17,8 +17,11 @@ export class GameManager{
         this.playerMap = new Map();
         this.io = io
 
-        this.createWorld('test')
-        this.createWorld('test2', true)
+        this.createWorld('map1')
+        this.createWorld('map2')
+        this.createWorld('map3')
+        this.createWorld('map4')
+        this.createWorld('map5', true)
 
         setInterval(() => {
             this.update();
