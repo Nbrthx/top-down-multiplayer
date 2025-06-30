@@ -23,7 +23,7 @@ const quests: QuestConfig[] = [
         name: 'Defeat the Swordman',
         description: 'The Swordman is in the forest. Defeat him and get a sword.',
         taskInstruction: 'Defeat the Swordman',
-        task: [{ type: 'kill', target: 'enemy1', amount: 1 }],
+        task: [{ type: 'kill', target: 'enemy1', amount: 1 }, { type: 'collect', target: 'wood', amount: 1 }],
         reward: { xp: 3, item: [['sword', 1]] }
     },
     {
@@ -32,7 +32,7 @@ const quests: QuestConfig[] = [
         name: 'Defeat the Archer',
         description: 'The Archer is in the forest. Defeat him and get a bow.',
         taskInstruction: 'Defeat the Archer',
-        task: [{ type: 'kill', target: 'enemy2', amount: 2  }],
+        task: [{ type: 'kill', target: 'enemy2', amount: 2  }, { type: 'collect', target: 'wood', amount: 4 }],
         reward: { xp: 6, item: [['bow', 1]] }
     },
     {
@@ -59,7 +59,7 @@ const quests: QuestConfig[] = [
         name: 'Grinding Sword',
         description: 'The Swordman is in the forest. Defeat him and collect for me some wood. You will get a more sword.',
         taskInstruction: 'Defeat the Swordman',
-        task: [{ type: 'kill', target: 'enemy1', amount: 1 }, { type: 'collect', target: 'wood', amount: 5 }],
+        task: [{ type: 'kill', target: 'enemy1', amount: 1 }, { type: 'collect', target: 'wood', amount: 10 }],
         reward: { xp: 6, item: [['sword', 1]] },
         repeatable: true
     },
@@ -69,7 +69,7 @@ const quests: QuestConfig[] = [
         name: 'Grinding Bow',
         description: 'The Archer and The Swordman is in the forest. Defeat them and collect for me some wood. You will get a more bow.',
         taskInstruction: 'Defeat the Archer',
-        task: [{ type: 'kill', target: 'enemy1', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 1 }, { type: 'collect', target: 'wood', amount: 10 }],
+        task: [{ type: 'kill', target: 'enemy1', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 1 }, { type: 'collect', target: 'wood', amount: 20 }],
         reward: { xp: 12, item: [['bow', 1]] },
         repeatable: true
     },
@@ -79,7 +79,7 @@ const quests: QuestConfig[] = [
         name: 'Grinding Blue Knife',
         description: 'The Ninja, The Archer and The Swordman is in the forest. Defeat them and collect for me some wood. You will get a more blue knife.',
         taskInstruction: 'Defeat the Ninja',
-        task: [{ type: 'kill', target: 'enemy1', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 2 }, { type: 'kill', target: 'enemy3', amount: 1 }, { type: 'collect', target: 'wood', amount: 15 }],
+        task: [{ type: 'kill', target: 'enemy1', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 2 }, { type: 'kill', target: 'enemy3', amount: 1 }, { type: 'collect', target: 'wood', amount: 30 }],
         reward: { xp: 24, item: [['blue-knife', 1]] },
         repeatable: true
     },
@@ -89,7 +89,7 @@ const quests: QuestConfig[] = [
         name: 'Grinding Dagger',
         description: 'All types of enemies is in the forest. Defeat them and collect for me some wood. You will get a more dagger.',
         taskInstruction: 'Defeat the Assasin',
-        task: [{ type: 'kill', target: 'enemy1', amount: 5 }, { type: 'kill', target: 'enemy2', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 1 }, { type: 'kill', target: 'enemy4', amount: 1 }, { type: 'collect', target: 'wood', amount: 10 }],
+        task: [{ type: 'kill', target: 'enemy1', amount: 5 }, { type: 'kill', target: 'enemy2', amount: 3 }, { type: 'kill', target: 'enemy2', amount: 1 }, { type: 'kill', target: 'enemy4', amount: 1 }, { type: 'collect', target: 'wood', amount: 40 }],
         reward: { xp: 48, item: [['dagger', 1]] },
         repeatable: true
     }

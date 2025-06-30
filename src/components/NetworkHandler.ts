@@ -20,7 +20,7 @@ export interface OutputData{
 
 export interface GameState{
     id: string
-    players: (OutputData & { xp: number })[]
+    players: (OutputData & { xp: number, isPvpProtected: boolean })[]
     enemies: (OutputData & { id: string })[]
     droppedItems: {
         uid: string
@@ -102,6 +102,10 @@ export class NetworkHandler{
         this.socket.on('changeOutfit', this.changeOutfit.bind(this))
 
         this.socket.on('chat', this.chat.bind(this))
+
+        this.socket.on('duelRequest', this.duelRequest.bind(this))
+
+        this.socket.on('duelStart', this.duelStart.bind(this))
 
         this.socket.on('disconnect', () => {
             this.socket.connect()
@@ -203,6 +207,7 @@ export class NetworkHandler{
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 scene.player.stats.setTotalXp(playerData.xp)
+                scene.player.isPvpProtected = playerData.isPvpProtected
 
                 scene.realBodyPos.set(scene.player.pBody, playerData.pos)
 
@@ -242,6 +247,7 @@ export class NetworkHandler{
                 other.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 other.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 other.stats.setTotalXp(playerData.xp)
+                other.isPvpProtected = playerData.isPvpProtected
                 
                 if(other.health != playerData.health){
                     if(other.health > playerData.health){
@@ -380,21 +386,41 @@ export class NetworkHandler{
         other.inventory.setActiveIndex(index)
     }
 
-    changeWorld(from: string, worldId: string, callback: () => void){
+    changeWorld(from: string, worldId: string, isPvpAllowed: boolean, requiredLevel: number){
         const scene = this.scene
-        
-        scene.worldId = worldId
-        scene.mapSetup.destroy()
-        scene.mapSetup = new MapSetup(scene, worldId)
-        
-        const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
-        
-        scene.camera.centerOn(enterPos.x, enterPos.y)
-        scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+
+        if(scene.player.stats.getLevel() < requiredLevel){
+            scene.UI.alertBox.setAlert('You need to be level '+requiredLevel+' to enter this world', false)
+            return
+        }
 
         console.log('change position by client')
 
-        scene.world.queueUpdate(() => callback())
+        if(isPvpAllowed) scene.UI.alertBox.setAlert('Do you want to enter pvp zone?', true, () => {
+            scene.worldId = worldId
+            scene.mapSetup.destroy()
+            scene.mapSetup = new MapSetup(scene, worldId)
+            
+            const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+            
+            scene.camera.centerOn(enterPos.x, enterPos.y)
+            scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+
+            scene.world.queueUpdate(() => scene.socket.emit('confirmChangeWorld'))
+        })
+        else{
+            scene.worldId = worldId
+            scene.mapSetup.destroy()
+            scene.mapSetup = new MapSetup(scene, worldId)
+            
+            const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+            
+            scene.camera.centerOn(enterPos.x, enterPos.y)
+            scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+
+            scene.world.queueUpdate(() => scene.socket.emit('confirmChangeWorld'))
+        }
+
     }
 
     questProgress(taskInstruction: string, taskProgress?: { type: string, target: string, progress: number, max: number }[]){
@@ -430,6 +456,25 @@ export class NetworkHandler{
 
         const other = scene.others.find(v => v.uid == data.id)
         if(other) other.textbox.writeText(data.msg)
+    }
+
+    duelRequest(username: string, level: number){
+        this.scene.UI.alertBox.setAlert(username+' wants to duel you\nLevel: '+level, true, () => {
+            this.socket.emit('duelAccept')
+        })
+    }
+
+    duelStart(){
+        const scene = this.scene
+
+        scene.worldId = 'duel'
+        scene.mapSetup.destroy()
+        scene.mapSetup = new MapSetup(scene, 'duel')
+        
+        const enterPos = scene.mapSetup.enterpoint.get('spawn') || { x: 100, y: 100 }
+        
+        scene.camera.centerOn(enterPos.x, enterPos.y)
+        scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
     }
 
     destroy(){

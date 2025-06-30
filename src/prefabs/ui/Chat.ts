@@ -5,8 +5,8 @@ export class Chat extends Phaser.GameObjects.DOMElement {
 
     scene: GameUI
     socket: Socket
-    submit: HTMLButtonElement | null
-    chat: HTMLInputElement | null
+    submit: HTMLButtonElement
+    chat: HTMLInputElement
 
     constructor(scene: GameUI, socket: Socket){
         super(scene, scene.scale.width/2, 10)
@@ -19,10 +19,13 @@ export class Chat extends Phaser.GameObjects.DOMElement {
         this.createFromCache('chatbox').setName('chatbox')
         this.setScale(1.4).setOrigin(0.5, 0)
 
-        this.submit = this.getChildByID('submit') as HTMLButtonElement
         this.chat = this.getChildByID('chat') as HTMLInputElement
+        this.submit = this.getChildByID('submit') as HTMLButtonElement
 
         this.submit.addEventListener('pointerup', () => this.onSubmit())
+        this.chat.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Enter') this.onSubmit()
+        })
 
         this.chat.onfocus = () => {
             if(scene.input.keyboard){
@@ -31,18 +34,26 @@ export class Chat extends Phaser.GameObjects.DOMElement {
             }
         }
         
-        scene.input.on("pointerdown", () => {
+        scene.gameScene?.input.on("pointerdown", () => {
             if(scene.input.keyboard) scene.input.keyboard.enabled = true
-            this.chat?.blur()
+            this.setVisible(false)
         })
     }
 
     onSubmit(){
-        this.scene.gameScene.player.textbox.writeText(this.chat?.value)
+        if(this.chat?.value.split(' ')[0] != '/duel'){
+            this.scene.gameScene.player.textbox.writeText(this.chat?.value)
+        }
+        else this.scene.alertBox.setAlert('Duel Sented to '+this.chat?.value.split(' ')[1]+' (if player exist)', false)
+
         this.socket.emit('chat', this.chat?.value)
 
         this.chat!.value = ''
         console.log('submit')
+
+        this.chat.blur()
+        if(this.scene.input.keyboard) this.scene.input.keyboard.enabled = true
+        this.setVisible(false)
     }
 
     destroy(){

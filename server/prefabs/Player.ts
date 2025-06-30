@@ -6,6 +6,7 @@ import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { MeleeWeapon } from './items/MeleeWeapon'
 import { Quest } from '../components/Quests'
+import { Stats } from '../components/Stats'
 
 export class Player{
 
@@ -35,7 +36,9 @@ export class Player{
         leg: string
     }
     inventory: Inventory
+    stats: Stats
     questInProgress: Quest | null = null
+    isPvpProtected: boolean
 
     constructor(scene: Game, x: number, y: number, uid: string, account: Account){
         this.scene = scene
@@ -55,6 +58,7 @@ export class Player{
         
         this.outfit = account.outfit
         this.inventory = new Inventory(this)
+        this.stats = new Stats(account)
 
         this.maxHealth = 100
         this.health = account.health || this.maxHealth
@@ -70,6 +74,7 @@ export class Player{
 
         this.inventory.updateInventory(account.inventory)
         account.inventory = this.inventory.items
+        this.isPvpProtected = false
     }
 
     update(){
@@ -133,7 +138,7 @@ export class Player{
             const bodyAData = contact.getFixtureA().getBody().getUserData()
             const bodyBData = contact.getFixtureB().getBody().getUserData()
             if(typeof bodyAData == 'string' && bodyAData == 'heal' || typeof bodyBData == 'string' && bodyBData == 'heal'){
-                this.health += 0.03
+                this.health += 0.05
                 if(this.health > this.maxHealth) this.health = this.maxHealth
                 return
             }

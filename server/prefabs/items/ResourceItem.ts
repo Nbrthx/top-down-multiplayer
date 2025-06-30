@@ -1,6 +1,6 @@
 import { Game } from "../../GameWorld";
 import { BaseItem } from "../BaseItem";
-import p from "planck";
+import * as p from "planck";
 
 export interface Resource {
     isUsable: boolean;

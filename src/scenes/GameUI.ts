@@ -8,6 +8,7 @@ import { Chat } from '../prefabs/ui/Chat'
 import { StatsUI } from '../prefabs/ui/StatsUI'
 import { QuestUI } from '../prefabs/ui/QuestUI'
 import { OutfitUI } from '../prefabs/ui/OutfitUI'
+import { AlertBoxUI } from '../prefabs/ui/AlertBoxUI'
 
 export const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -30,9 +31,11 @@ export class GameUI extends Phaser.Scene {
         right?: boolean
     }
     joystick: Joystick
+    joystick2: Joystick
+
+    alertBox: AlertBoxUI
     inventoryButton: Phaser.GameObjects.Image
     chatbox: Chat
-    joystick2: Joystick
     questUI: QuestUI
     redEffect: Phaser.GameObjects.Rectangle
     instructionText: Phaser.GameObjects.Text
@@ -43,6 +46,8 @@ export class GameUI extends Phaser.Scene {
     }
 
     create(){
+        this.gameScene = this.scene.get('Game') as Game
+
         this.socket = this.registry.get('socket')
         console.log(this.socket)
 
@@ -68,9 +73,12 @@ export class GameUI extends Phaser.Scene {
             })
         }, 1000)
 
-        this.chatbox = new Chat(this, this.socket)
+        this.alertBox = new AlertBoxUI(this, this.scale.width/2, this.scale.height/2)
+        this.alertBox.setDepth(100)
+        this.alertBox.setVisible(false)
 
-        this.gameScene = this.scene.get('Game') as Game
+        this.chatbox = new Chat(this, this.socket)
+        this.chatbox.setVisible(false)
 
         const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.5)
         bottomBox.setOrigin(0.5, 1)
@@ -79,7 +87,6 @@ export class GameUI extends Phaser.Scene {
         this.inventoryButton.setScale(6).setInteractive()
         this.inventoryButton.on('pointerdown', () => {
             this.inventoryUI.setVisible(true)
-            this.chatbox.setVisible(false)
         })
 
         const debugToggle = this.add.image(this.scale.width - 100, 50, 'ui-debug').setScale(3)
@@ -108,6 +115,18 @@ export class GameUI extends Phaser.Scene {
             }
             else{
                 this.outfitUI.setVisible(false)
+            }
+        })
+
+        const chatToggle = this.add.image(this.scale.width - 400, 50, 'ui-chat').setScale(3)
+        chatToggle.setInteractive()
+        chatToggle.on('pointerdown', () => {
+            if (!this.chatbox.visible){
+                this.chatbox.chat.focus()
+                this.chatbox.setVisible(true)
+            }
+            else{
+                this.chatbox.setVisible(false)
             }
         })
 
@@ -161,7 +180,9 @@ export class GameUI extends Phaser.Scene {
             right: this.input.keyboard?.addKey('D', false)?.isDown
         }
 
-        if(this.questUI && this.questUI.visible){
+        if((this.questUI && this.questUI.visible) ||
+            (this.outfitUI && this.outfitUI.visible) ||
+            (this.alertBox && this.alertBox.visible)){
             this.keyboardInput = { up: false, down: false, left: false, right: false }
         }
 
@@ -217,7 +238,6 @@ export class GameUI extends Phaser.Scene {
 
         this.inventoryUI.background.on('pointerdown', () => {
             this.inventoryUI.setVisible(false)
-            this.chatbox.setVisible(true)
         })
 
         player.inventory.onInventoryUpdate = () => {

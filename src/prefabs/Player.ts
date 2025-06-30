@@ -26,6 +26,7 @@ export class Player extends Phaser.GameObjects.Container{
     username: string
     inventory: Inventory
     stats: Stats
+    isPvpProtected: boolean
 
     audio?: { step: SpatialSound, hit: SpatialSound }
 
@@ -57,6 +58,7 @@ export class Player extends Phaser.GameObjects.Container{
         this.username = username
         this.inventory = new Inventory(this)
         this.stats = new Stats()
+        this.isPvpProtected = false
 
         this.textbox = new TextBox(this.scene, 0, -190)
 
@@ -139,6 +141,9 @@ export class Player extends Phaser.GameObjects.Container{
 
         this.x = this.pBody.getPosition().x*this.scene.gameScale*32
         this.y = this.pBody.getPosition().y*this.scene.gameScale*32
+
+        if(this.isPvpProtected) this.sprite.setAlpha(0.7)
+        else this.sprite.setAlpha(1)
         
         this.barUpdate(this.healthBar)
     }

@@ -175,7 +175,7 @@ export class Game extends Scene{
         const pendingUpdates = this.networkHandler.pendingOutput.splice(0); // Ambil semua data dan kosongkan antrian
 
         if (pendingUpdates.length > 0) {
-            const latestPlayers = new Map<string, OutputData & { xp: number }>();
+            const latestPlayers = new Map<string, OutputData & { xp: number, isPvpProtected: boolean }>();
             const latestEnemies = new Map<string, OutputData & { id: string }>();
             
             let finalDroppedItems: GameState['droppedItems'] = [];
@@ -194,6 +194,7 @@ export class Game extends Scene{
                         existingPlayer.pos = playerData.pos;
                         existingPlayer.health = playerData.health;
                         existingPlayer.xp = playerData.xp;
+                        existingPlayer.isPvpProtected = playerData.isPvpProtected
                     } else {
                         latestPlayers.set(playerData.uid, playerData);
                     }

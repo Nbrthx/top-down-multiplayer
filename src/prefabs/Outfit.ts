@@ -17,16 +17,16 @@ interface OutfitList {
 
 export const outfitList: OutfitList = {
     male: {
-        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied'],
-        face: ['basic', 'old'],
-        body: ['basic', 'black', 'brown', 'red'],
-        leg: ['basic', 'grey']
+        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied', 'long'],
+        face: ['basic', 'old', 'green-eye'],
+        body: ['basic', 'black', 'brown', 'red', 'white-shirt'],
+        leg: ['basic', 'grey', 'brown']
     },
     female: {
-        hair: ['basic', 'bodied', 'ponytail', 'short'],
-        face: ['basic'],
-        body: ['basic', 'black', 'grey', 'pink'],
-        leg: ['basic', 'skirt']
+        hair: ['basic', 'bodied', 'ponytail', 'short', 'long'],
+        face: ['basic', 'blue-eye'],
+        body: ['basic', 'black', 'grey', 'pink', 'barista'],
+        leg: ['basic', 'skirt', 'brown']
     }
 }
 

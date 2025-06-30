@@ -76,6 +76,7 @@ export class Preloader extends Scene{
         this.load.tilemapTiledJSON('map3', 'environment/map3.json')
         this.load.tilemapTiledJSON('map4', 'environment/map4.json')
         this.load.tilemapTiledJSON('map5', 'environment/map5.json')
+        this.load.tilemapTiledJSON('duel', 'environment/duel.json')
 
         // UI
         this.load.image('inventory', 'ui/inventory.png')
@@ -85,6 +86,7 @@ export class Preloader extends Scene{
         this.load.image('ui-change-outfit', 'ui/change-outfit.png')
         this.load.image('ui-fullscreen', 'ui/fullscreen.png')
         this.load.image('ui-debug', 'ui/debug.png')
+        this.load.image('ui-chat', 'ui/chat.png')
 
         this.load.spritesheet('cooldown-anim', 'ui/cooldown-anim.png', { frameWidth: 24, frameHeight: 24 })
 
@@ -138,7 +140,6 @@ export class Preloader extends Scene{
                         frameRate: 12,
                         repeat: -1
                     });
-                    console.log(`${outfit}-${key}-male-${anim}`)
                 });
             }
         }
@@ -156,7 +157,6 @@ export class Preloader extends Scene{
                         frameRate: 12,
                         repeat: -1
                     });
-                    console.log(`${outfit}-${key}-female-${anim}`)
                 });
             }
         }

@@ -10,26 +10,31 @@ export class GameManager{
     
     worlds: Game[]
     playerMap: Map<string, string>;
-    io: Server
+    io: Server;
+    playerChangeWorld: Map<string, string>
+    duelRequest: Map<string, string>
 
     constructor(io: Server) {
         this.worlds = [];
         this.playerMap = new Map();
         this.io = io
+        this.playerChangeWorld = new Map()
+        this.duelRequest = new Map()
 
         this.createWorld('map1')
         this.createWorld('map2')
         this.createWorld('map3')
         this.createWorld('map4')
-        this.createWorld('map5', true)
+        this.createWorld('map5', true, 4)
+        this.createWorld('duel', true)
 
         setInterval(() => {
             this.update();
         }, 1000 / 60);
     }
 
-    public createWorld(worldId: string, isPvpAllowed: boolean = false){
-        this.worlds.push(new Game(this, worldId, isPvpAllowed))
+    public createWorld(worldId: string, isPvpAllowed: boolean = false, requiredLevel: number = 0){
+        this.worlds.push(new Game(this, worldId, isPvpAllowed, requiredLevel))
     }
 
     public getWorld(worldId: string){

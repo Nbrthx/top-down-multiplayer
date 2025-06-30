@@ -145,7 +145,6 @@ export class QuestUI extends Phaser.GameObjects.Container {
     }, questId = '', changeQuest?: (isPrev: boolean) => void) {
         if(!this.headerText || !this.taskText) return;
         if(config.header.length > 30) config.header = config.header.substring(0, 30) + '...';
-        if(config.text.length > 200) config.text = config.text.substring(0, 200) + '...';
 
         this.setVisible(true);
 

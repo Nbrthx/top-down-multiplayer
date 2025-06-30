@@ -47,7 +47,7 @@ export const enemyList: EnemyConfig[] = [
     {
         id: 'enemy4',
         name: 'Assassin',
-        maxHealth: 100,
+        maxHealth: 120,
         visionDistance: 7,
         attackDistance: 2,
         weapon: 'sword',

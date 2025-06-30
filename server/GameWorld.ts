@@ -15,6 +15,7 @@ export class Game{
     id: string
     gameManager: GameManager
     isPvpAllowed: boolean
+    requiredLevel: number
 
     world: p.World
     gameScale = 4
@@ -33,10 +34,11 @@ export class Game{
 
     odd: boolean = false
 
-    constructor(gameManager: GameManager, id: string, isPvpAllowed: boolean){
+    constructor(gameManager: GameManager, id: string, isPvpAllowed: boolean, requiredLevel: number = 0){
         this.gameManager = gameManager
         this.id = id
         this.isPvpAllowed = isPvpAllowed
+        this.requiredLevel = requiredLevel
 
         this.world = new p.World()
 
@@ -78,7 +80,7 @@ export class Game{
             
             if(isPlayer(parent) && isPlayer(target)){
                 if(target.uid == parent.uid) return
-                if(!this.isPvpAllowed) return
+                if(target.isPvpProtected || !this.isPvpAllowed) return
 
                 hit()
             }
@@ -109,7 +111,7 @@ export class Game{
             const attackDir = new p.Vec2()
 
             inputData?.forEach(v => {
-                const idir = new p.Vec2(v.dir.x, v.dir.y)
+                const idir = new p.Vec2(v.dir.x || 0, v.dir.y || 0)
 
                 if((v.attackDir.x != 0 || v.attackDir.y != 0) && player.itemInstance.timestamp < Date.now()){
                     attackDir.x = v.attackDir.x
@@ -131,8 +133,18 @@ export class Game{
 
         this.players.forEach(player => {
             if(player.health <= 0){
+                player.stats.removeXp(Math.floor(player.stats.getRealXp()/10))
                 player.account.health = 100
                 this.removePlayer(player.uid)
+
+                if(this.id == 'duel') this.players.forEach(player2 => {
+                    player2.account.health = 100
+                    player2.stats.addXp(Math.floor(player.stats.getRealXp()/11))
+                    this.world.queueUpdate(() => {
+                        this.gameManager.playerChangeWorld.set(player2.uid, 'map1')
+                        this.gameManager.io.to(player2.uid).emit('changeWorld', null, 'map1', false, 0)
+                    })
+                })
             }
             else player.update()
         })
@@ -153,7 +165,7 @@ export class Game{
                 }
 
                 enemy.attacker.forEach(player => {
-                    player.account.xp += enemy.config.xpReward
+                    player.stats.addXp(enemy.config.xpReward)
                     player.questInProgress?.addProgress('kill', enemy.id)
                 })
 
@@ -196,7 +208,8 @@ export class Game{
                     attackDir: v.attackDir,
                     health: v.health,
                     timestamp: Date.now(),
-                    xp: v.account.xp
+                    xp: v.account.xp,
+                    isPvpProtected: v.isPvpProtected
                 }
             }),
             enemies: this.enemies.map(v => {
@@ -233,6 +246,13 @@ export class Game{
         const enterPos = this.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
 
         const player = new Player(this, enterPos.x, enterPos.y, uid, account)
+
+        if(this.isPvpAllowed){
+            player.isPvpProtected = true
+            setTimeout(() => {
+                if(player) player.isPvpProtected = false
+            }, 5000)
+        }
 
         if(account.questInProgress){
             const questId = account.questInProgress[0]

@@ -32,6 +32,7 @@ export class Inventory {
 
         const existItem = this.getItem(id)
         if(existItem && existItem.tag == 'resource'){
+            // @ts-ignore
             existItem.quantity += quantity
 
             this.parent.questInProgress?.addProgress('collect', id, quantity)
@@ -81,9 +82,12 @@ export class Inventory {
             }
         }
         else if(tag == 'resource'){
+            // @ts-ignore
             if(this.items[index].quantity > quantity){
+                // @ts-ignore
                 this.items[index].quantity -= quantity
             }
+            // @ts-ignore
             else if(this.items[index].quantity == quantity){
                 this.items[index] = {
                     id: '',

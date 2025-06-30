@@ -21,16 +21,16 @@ interface OutfitList {
 
 const outfitList: OutfitList = {
     male: {
-        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied'],
-        face: ['basic', 'old'],
-        body: ['basic', 'black', 'brown', 'red'],
-        leg: ['basic', 'grey']
+        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied', 'long'],
+        face: ['basic', 'old', 'green-eye'],
+        body: ['basic', 'black', 'brown', 'red', 'white-shirt'],
+        leg: ['basic', 'grey', 'brown']
     },
     female: {
-        hair: ['basic', 'bodied', 'ponytail', 'short'],
-        face: ['basic'],
-        body: ['basic', 'black', 'grey', 'pink'],
-        leg: ['basic', 'skirt']
+        hair: ['basic', 'bodied', 'ponytail', 'short', 'long'],
+        face: ['basic', 'blue-eye'],
+        body: ['basic', 'black', 'grey', 'pink', 'barista'],
+        leg: ['basic', 'skirt', 'brown']
     }
 }
 
@@ -58,6 +58,24 @@ export class SocketManager {
 
             const world = this.gameManager.getWorld('map1')
             world?.addPlayer(socket.id, account);
+        })
+
+        socket.on('confirmChangeWorld', () => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const worldId = this.gameManager.playerChangeWorld.get(socket.id)
+            if(!worldId) return
+
+            const world = this.gameManager.getWorld(worldId)
+            if(!world) return
+
+            if(player.stats.getLevel() < world.requiredLevel) return
+
+            player.scene.removePlayer(socket.id)
+            world.addPlayer(socket.id, player.account, player.scene.id == 'duel' ? 'spawn' : player.scene.id)
+
+            this.gameManager.playerChangeWorld.delete(socket.id)
         })
 
         socket.on('playerInput', (input: InputData) => {
@@ -111,11 +129,65 @@ export class SocketManager {
             const player = this.getPlayer(socket.id)
             if(!player) return
 
+            const command = msg.split(' ')
+            if(command[0] == '/duel') {
+                const player2Id = this.getIdByUsername(command[1])
+                if(!player2Id && player2Id != socket.id) return
+
+                console.log(player2Id)
+
+                const player2 = this.getPlayer(player2Id)
+                if(!player2) return
+
+                this.gameManager.duelRequest.set(player2.uid, player.uid)
+
+                setTimeout(() => {
+                    this.gameManager.duelRequest.delete(player2.uid)
+                }, 30000)
+
+                this.io.to(player2.uid).emit('duelRequest', player.account.username, player.stats.getLevel())
+                return
+            }
+
             this.io.to(player.scene.id).emit('chat', {
                 id: socket.id,
                 username: player.account.username,
                 msg: msg
             })
+        })
+
+        socket.on('duelAccept', () => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const player2Id = this.gameManager.duelRequest.get(socket.id)
+            if(!player2Id) return
+
+            const player2 = this.getPlayer(player2Id)
+            if(!player2) return
+
+            player.scene.removePlayer(socket.id)
+            player2.scene.removePlayer(player2Id)
+
+            this.io.to(socket.id).emit('duelStart')
+            this.io.to(player2Id).emit('duelStart')
+            
+            setTimeout(() => {
+                this.gameManager.getWorld('duel')?.addPlayer(socket.id, player.account)
+                this.gameManager.getWorld('duel')?.addPlayer(player2Id, player2.account)
+
+
+                this.gameManager.handleInput(socket.id, {
+                    dir: { x: 0, y: 0 },
+                    attackDir: { x: 0, y: 0 }
+                });
+                this.gameManager.handleInput(player2Id, {
+                    dir: { x: 0, y: 0 },
+                    attackDir: { x: 0, y: 0 }
+                });
+            }, 100)
+
+            this.gameManager.duelRequest.delete(socket.id)
         })
 
         socket.on('getQuestData', (npcId: string, callback: (quest: QuestConfig | QuestConfig[], haveOtherQuest: string, progressState: number) => void) => {
@@ -220,7 +292,7 @@ export class SocketManager {
                 })
 
                 player.account.questCompleted.push(quest.config.id);
-                player.account.xp += xp;
+                player.stats.addXp(xp);
                 player.account.gold += gold;
                 
                 if(item.length > 0){
@@ -304,6 +376,17 @@ export class SocketManager {
 
     getPlayer(id: string){
         return this.gameManager.getPlayerWorld(id)?.players.find(v => v.uid == id)
+    }
+
+    getIdByUsername(username: string){
+        let id: string | null = null
+        this.authedId.forEach((v, k) => {
+            if(v == username){
+                id = k
+                return
+            }
+        })
+        return id
     }
 
     getAccountData(id: string){
