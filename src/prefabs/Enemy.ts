@@ -49,7 +49,7 @@ export const enemyList: EnemyConfig[] = [
         name: 'Assassin',
         maxHealth: 120,
         visionDistance: 7,
-        attackDistance: 2,
+        attackDistance: 2.5,
         weapon: 'sword',
         outfit: [true, 0x99ccff, 'spread', 'basic', 'black', 'basic']
     }

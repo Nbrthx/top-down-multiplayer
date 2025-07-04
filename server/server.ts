@@ -65,7 +65,7 @@ const accounts: Account[] = [
         "username": "tada",
         "pubKey": "04629fc357fa69e3a16534aba075c288a528ca96abc9218e77618b9206e4caf71692ce8aa06ec1f2202945b0d755524011d8875d7ea39086e3b94bb8b71303c7ce",
         "akey": "cb82f45fbe63ae34b8d6b5d0ce29fccfe2c510ee55495a5699dd8f07fa206df718562d7293c1e53e90b9689087c3e09a4f1c886360bcb4f21c173fd99f488d6c",
-        "xp": 0,
+        "xp": 100,
         "gold": 0,
         "health": 100,
         "outfit": {

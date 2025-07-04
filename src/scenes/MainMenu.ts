@@ -33,7 +33,7 @@ export class MainMenu extends Scene{
         logo.setScale(0.4)
 
         this.add.text(this.scale.width/2, 160, 'Insiace: Survival World', {
-            fontFamily: 'PixelFont', fontSize: 128, color: '#ffffcc',
+            fontFamily: 'm6x11', fontSize: 128, color: '#ffffcc',
             stroke: '#290f00', strokeThickness: 16,
             align: 'center'
         }).setOrigin(0.5);
@@ -73,12 +73,14 @@ export class MainMenu extends Scene{
         });
 
         logout.on('pointerup', () => {
+            if(authentication.visible) return
+            
             localStorage.removeItem('username')
             localStorage.removeItem('salt')
 
             authentication.setVisible(true)
 
-            authentication.socket.disconnect()
+            if(authentication.socket) authentication.socket.disconnect()
         })
 
         if(this.respawn) this.scene.start('Game');

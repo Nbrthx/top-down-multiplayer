@@ -60,7 +60,7 @@ export const itemList: Item[] = [
         config: {
             texture: 'bow',
             projectileTexture: 'arrow',
-            offsetMultipler: 0.8,
+            spriteOffsetMultipler: 0.8,
             hitboxSize: { width: 0.4, height: 0.1 },
             speed: 30,
             range: 5,
@@ -75,7 +75,7 @@ export const itemList: Item[] = [
         config: {
             texture: 'dagger',
             offsetMultipler: 0.2,
-            hitboxSize: { width: 1.4, height: 0.3 },
+            hitboxSize: { width: 1.4, height: 0.4 },
             hitboxOffsetMultipler: 0.4,
             cooldown: 3000,
             attackDelay: 300,
@@ -88,7 +88,7 @@ export const itemList: Item[] = [
         config: {
             texture: 'throw',
             projectileTexture: 'blue-knife',
-            offsetMultipler: 0.9,
+            spriteOffsetMultipler: 0.9,
             hitboxSize: { width: 0.2, height: 0.1 },
             speed: 20,
             range: 7,

@@ -83,8 +83,8 @@ export class GameUI extends Phaser.Scene {
         const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.5)
         bottomBox.setOrigin(0.5, 1)
 
-        this.inventoryButton = this.add.image(this.scale.width/2, this.scale.height - 80, 'icon-inventory')
-        this.inventoryButton.setScale(6).setInteractive()
+        this.inventoryButton = this.add.image(this.scale.width/2, this.scale.height - 80, 'inventory-icon')
+        this.inventoryButton.setScale(4).setInteractive()
         this.inventoryButton.on('pointerdown', () => {
             this.inventoryUI.setVisible(true)
         })

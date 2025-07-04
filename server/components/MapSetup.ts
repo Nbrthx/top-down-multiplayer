@@ -139,7 +139,7 @@ export class MapSetup{
 
             const body = scene.world.createKinematicBody(new p.Vec2((o.x+o.width/2)/32, (o.y+o.height/2)/32))
             body.createFixture({
-                shape: new p.Box(o.width/2/32, o.height/2/32),
+                shape: new p.Box(o.width/2/32-0.2, o.height/2/32-0.2),
                 isSensor: true
             })
             body.setUserData('heal')

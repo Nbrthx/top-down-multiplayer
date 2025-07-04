@@ -10,6 +10,7 @@ export class MapSetup{
     layers: Phaser.Tilemaps.TilemapLayer[]
     collision: p.Body[]
     entrances: p.Body[]
+    healAreas: p.Body[]
     enterpoint: Map<string, p.Vec2>
     npcs: NPC[]
 
@@ -20,6 +21,7 @@ export class MapSetup{
         this.layers = []
         this.collision = []
         this.entrances = []
+        this.healAreas = []
         this.enterpoint = new Map()
         this.npcs = []
 
@@ -176,6 +178,8 @@ export class MapSetup{
                 isSensor: true
             })
             body.setUserData(healArea)
+
+            this.healAreas.push(body)
         })
     }
 
@@ -230,6 +234,14 @@ export class MapSetup{
             this.scene.world.destroyBody(v)
         })
         this.entrances = []
+
+        this.healAreas.forEach(v => {
+            const object = v.getUserData() as Phaser.GameObjects.GameObject
+            if(object) object.destroy()
+
+            this.scene.world.destroyBody(v)
+        })
+        this.healAreas = []
 
         this.npcs.forEach(v => {
             v.destroy()

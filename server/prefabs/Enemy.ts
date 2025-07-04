@@ -66,13 +66,13 @@ const enemyList: EnemyConfig[] = [
     {
         id: 'enemy4',
         maxHealth: 120,
-        speed: 3.4,
+        speed: 3.6,
         visionDistance: 7,
-        attackDistance: 2,
+        attackDistance: 2.5,
         zigzagDistance: 5,
         stopDistance: 1.4,
         attackSpeed: 800,
-        attackDelay: 50,
+        attackDelay: 20,
         weapon: 'sword',
         xpReward: 8,
         itemReward: ['wood', 4]
@@ -176,7 +176,7 @@ export class Enemy{
 
             if(this.pBody.getLinearVelocity().length() > 0.1){
                 let wallDir = new p.Vec2(0, 0)
-                let minDist = 1
+                let minDist = 2
                 for(let collision of this.scene.mapSetup.collision){
                     const bodySize = collision.getUserData() as { width: number, height: number } | undefined
                     const corners = [[0, 0], [0, bodySize?.height || 0], [bodySize?.width || 0, 0], [bodySize?.width || 0, bodySize?.height || 0]]
@@ -206,7 +206,10 @@ export class Enemy{
         }
 
         if(this.attackDir.length() > 0){
-            if(this.itemInstance) this.itemInstance.use(this.attackDir.x, this.attackDir.y)
+            if(this.itemInstance){
+                this.refreshWeapon()
+                this.itemInstance.use(this.attackDir.x, this.attackDir.y)
+            }
 
             this.attackDir = new p.Vec2(0, 0)
         }
@@ -287,6 +290,16 @@ export class Enemy{
         if(!this.target){
             this.health += 0.03
             if(this.health > this.maxHealth) this.health = this.maxHealth
+        }
+    }
+
+    refreshWeapon(){
+        if(this.itemInstance){
+            this.itemInstance.destroy()
+            this.itemInstance = new ItemInstance(this.scene, this.pBody, this.config.weapon).itemInstance
+            if(this.itemInstance instanceof MeleeWeapon){
+                this.scene.addHitbox(this.itemInstance.hitbox, this.scene.entityBodys)
+            }
         }
     }
 

@@ -1,10 +1,13 @@
 <div class="card">
     <h1>Login</h1>
+    <label id="warn" style="color: red; float: left;"></label>
     <input id="username" type="text" placeholder="Username">
     <input id="password" type="password" placeholder="Password">
     <input id="trust" type="checkbox"> Trust this device
     <button id="submit">Login</button>
-    <label id='change-action'>Don't have an account?</label>
+    <label id='change-action'>Don't have an account?</label><br />
+    <br />Or<br /><br />
+    <button id="guest">Plas as Guest</button>
 </div>
 <style>
     *{
@@ -28,7 +31,7 @@
     #trust {
         margin-bottom: 10px;
     }
-    #submit {
+    #submit, #guest {
         width: calc(100% - 2px);
         padding: 10px;
         background: #33cc7b;

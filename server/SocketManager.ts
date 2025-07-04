@@ -394,10 +394,29 @@ export class SocketManager {
 
         const username = this.authedId.get(id) as string
 
-        return this.accounts.find(v => v.username == username)
+        if(!username.includes('-')) return this.accounts.find(v => v.username == username)
+        else return {
+            username: username,
+            pubKey: '',
+            akey: '',
+            xp: 0,
+            gold: 0,
+            health: 100,
+            outfit: {
+                isMale: false,
+                color: 0xffffff,
+                hair: "basic",
+                face: "basic",
+                body: "basic",
+                leg: "basic"
+            },
+            inventory: [],
+            questCompleted: []
+        }
     }
 
     removeAuthedId(id: string){
+        if(!this.authedId.has(id)) return
         this.authedId.delete(id)
     }
 }

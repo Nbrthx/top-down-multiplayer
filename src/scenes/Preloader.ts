@@ -65,7 +65,6 @@ export class Preloader extends Scene{
         this.load.image('icon-dagger', 'icon/dagger.png')
         this.load.image('icon-blue-knife', 'icon/blue-knife.png')
         this.load.image('icon-wood', 'icon/wood.png')
-        this.load.image('icon-inventory', 'icon/inventory.png')
 
         // Environtment
         this.load.image('tilemaps', 'environment/tilemaps2.png')
@@ -80,6 +79,7 @@ export class Preloader extends Scene{
 
         // UI
         this.load.image('inventory', 'ui/inventory.png')
+        this.load.image('inventory-icon', 'ui/inventory-icon.png')
         this.load.image('hotbar', 'ui/hotbar.png')
         this.load.image('stats', 'ui/stats.png')
         this.load.image('ask-button', 'ui/ask-button.png')
@@ -173,7 +173,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'sword-attack',
-            frames: this.anims.generateFrameNumbers('sword', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5] }),
+            frames: this.anims.generateFrameNumbers('sword', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 5] }),
             frameRate: 20
         })
         this.anims.create({

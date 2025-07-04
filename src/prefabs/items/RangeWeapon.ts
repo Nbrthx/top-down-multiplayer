@@ -6,7 +6,7 @@ import { SpatialSound } from "../../components/SpatialAudio";
 export interface Range{
     texture: string
     projectileTexture: string
-    offsetMultipler: number
+    spriteOffsetMultipler: number
     speed: number
     range: number
     hitboxSize: {
@@ -35,7 +35,7 @@ export class RangeWeapon extends BaseItem{
         
         this.attackState = false
 
-        this.sprite = scene.add.sprite(128*config.offsetMultipler, 0, config.texture)
+        this.sprite = scene.add.sprite(128*config.spriteOffsetMultipler, 0, config.texture)
         this.sprite.setScale(4)
         this.sprite.setVisible(false)
 
