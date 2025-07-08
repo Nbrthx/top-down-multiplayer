@@ -196,10 +196,12 @@ export class Enemy extends Phaser.GameObjects.Container{
                 if(this.damageBar.active){
                     this.damageBar.setSize(164*this.health/this.maxHealth, 16)
                     this.damageBar.setX(-82-82*this.health/-this.maxHealth)
+                    this.sprite.setPipeline('Light2D')
                 }
                 return
             }
 
+            this.sprite.resetPipeline()
             if(this.sprite.isTinted()) this.sprite.clearTint()
             else this.sprite.setTintFill(0xffffff)
             itr++

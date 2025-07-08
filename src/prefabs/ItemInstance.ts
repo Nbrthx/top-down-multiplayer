@@ -64,7 +64,7 @@ export const itemList: Item[] = [
             hitboxSize: { width: 0.4, height: 0.1 },
             speed: 30,
             range: 5,
-            cooldown: 1200,
+            cooldown: 1400,
             attackDelay: 200,
             canMove: false
         }

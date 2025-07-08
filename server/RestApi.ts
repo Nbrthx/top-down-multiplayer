@@ -18,8 +18,6 @@ export class RestApi{
         app.get("/get-akey", (req, res) => this.getAkey(req, res))
 
         app.post("/login", (req, res) => this.login(req, res))
-
-        app.post("/guestLogin", (req, res) => this.guestLogin(req, res))
     }
 
     register(req: express.Request, res: express.Response){
@@ -89,15 +87,5 @@ export class RestApi{
                 res.json({ message: "User logged in successfully!" });
             }
         }
-    }
-    
-    guestLogin(req: express.Request, res: express.Response){
-        const { message } = req.body;
-
-        const username = 'guest-'+Math.floor(Math.random()*1000000)
-        this.authedId.set(message, username)
-
-        console.log("Guest logged in: "+username)
-        res.json({ message: username });
     }
 }

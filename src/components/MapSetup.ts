@@ -30,7 +30,7 @@ export class MapSetup{
 
         map.layers.forEach(v => {
             const layer = map.createLayer(v.name, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer
-            layer.setScale(4)
+            layer.setScale(4).setPipeline('Light2D')
             this.layers.push(layer)
         })
 
@@ -68,6 +68,7 @@ export class MapSetup{
             tree.setScale(scene.gameScale).setOrigin(0.5, 0.85).setDepth(o.y-16)
             tree.setTint(i%2 == 0 ? 0xeeffee : 0xffffcc)
             tree.play('tree1-wave')
+            tree.setPipeline('Light2D')
 
             const body = scene.world.createBody(new p.Vec2((o.x+16/32)/32, (o.y+24/32)/32))
             body.createFixture(new p.Box(24/2/32, 16/2/32))
@@ -161,7 +162,6 @@ export class MapSetup{
             const healArea = scene.add.rectangle(o.x*scene.gameScale, o.y*scene.gameScale, o.width*scene.gameScale, o.height*scene.gameScale, 0x00ff00, 0.7)
             healArea.setStrokeStyle(4, 0x00cc33)
             healArea.setOrigin(0).setAlpha(0.4)
-            healArea.setRounded(16)
 
             scene.tweens.add({
                 targets: healArea,

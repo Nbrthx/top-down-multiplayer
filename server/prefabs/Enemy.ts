@@ -159,7 +159,7 @@ export class Enemy{
             }
             else if(dir.length() > this.config.stopDistance){
                 let rad = Math.atan2(dir.y, dir.x)
-                rad += (Math.floor(Date.now()/400)%3 - 1)*0.7
+                rad += (Math.floor(Date.now()/500)%3 - 1)*0.7
                 dir.x = Math.cos(rad)
                 dir.y = Math.sin(rad)
 

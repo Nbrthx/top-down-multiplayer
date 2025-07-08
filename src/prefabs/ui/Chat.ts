@@ -41,11 +41,6 @@ export class Chat extends Phaser.GameObjects.DOMElement {
     }
 
     onSubmit(){
-        if(this.chat?.value.split(' ')[0] != '/duel'){
-            this.scene.gameScene.player.textbox.writeText(this.chat?.value)
-        }
-        else this.scene.alertBox.setAlert('Duel Sented to '+this.chat?.value.split(' ')[1]+' (if player exist)', false)
-
         this.socket.emit('chat', this.chat?.value)
 
         this.chat!.value = ''
@@ -53,7 +48,23 @@ export class Chat extends Phaser.GameObjects.DOMElement {
 
         this.chat.blur()
         if(this.scene.input.keyboard) this.scene.input.keyboard.enabled = true
-        this.setVisible(false)
+    }
+
+    setVisible(value: boolean): this {
+        if(value){
+            this.scene.chatTexts.setVisible(true)
+            this.scene.chatNames.setVisible(true)
+            this.scene.chatbox.setVisible(true)
+            setTimeout(() => this.chat.focus(), 50)
+        }
+        else{
+            this.scene.chatTexts.setVisible(false)
+            this.scene.chatNames.setVisible(false)
+            this.scene.chatbox.setVisible(false)
+        }
+
+        super.setVisible(value)
+        return this
     }
 
     destroy(){

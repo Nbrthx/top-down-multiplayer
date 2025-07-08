@@ -72,13 +72,14 @@ export const itemList: Item[] = [
             hitboxSize: { width: 0.4, height: 0.1 },
             speed: 30,
             range: 6,
-            cooldown: 1200,
+            cooldown: 1400,
             attackDelay: 200,
             damage: 5,
             knockback: 20,
             force: -8,
             forceDelay: 100,
-            canMove: false
+            canMove: false,
+            isPenetrating: false
         }
     },
     {
@@ -110,11 +111,12 @@ export const itemList: Item[] = [
             range: 8,
             cooldown: 400,
             attackDelay: 300,
-            damage: 1.4,
+            damage: 1.6,
             knockback: 10,
             force: -12,
             forceDelay: 200,
-            canMove: true
+            canMove: true,
+            isPenetrating: true
         }
     },
     {

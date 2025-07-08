@@ -24,10 +24,12 @@ export class MapSetup{
     scene: Game
     gameScale: number
     collision: p.Body[]
+    waterCollision: p.Body[]
     enterpoint: Map<string, p.Vec2>
 
     constructor(scene: Game, mapName: string){
         this.collision = []
+        this.waterCollision = []
         this.enterpoint = new Map()
 
         this.scene = scene
@@ -61,7 +63,7 @@ export class MapSetup{
             const body = scene.world.createBody(new p.Vec2((o.x)/32, (o.y)/32))
             body.createFixture(new p.Box(o.width/2/32, o.height/2/32, new p.Vec2(o.width/2/32, o.height/2/32)))
             body.setUserData({ width: o.width, height: o.height })
-            this.collision.push(body)
+            this.waterCollision.push(body)
         })
 
         map.layers.find(v => v.name == 'tree1')?.objects.forEach(_o => {

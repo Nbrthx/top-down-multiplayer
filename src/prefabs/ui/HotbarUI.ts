@@ -32,7 +32,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
         this.createGrid(this.hotbarContainer);
 
         this.border = this.scene.add.rectangle(-688 + 8, -156 + 8, 112, 112)
-        this.border.setStrokeStyle(4, 0xeedd33)
+        this.border.setStrokeStyle(8, 0xffdd33)
         this.border.setOrigin(0)
 
         this.eventHandler()

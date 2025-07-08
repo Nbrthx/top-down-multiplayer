@@ -54,15 +54,12 @@ export class MeleeWeapon extends BaseItem{
     }
 
     use(x: number, y: number){
-        if(this.sprite.visible) return
-        if(!this.canUse()) return
-
         this.timestamp = Date.now()
 
         this.sprite.setFlipY(this.attackState)
         this.attackState = !this.attackState
 
-        this.sprite.play(this.config.texture+'-attack', true)
+        this.sprite.play(this.config.texture+'-attack')
         this.sprite.setVisible(true)
 
         const rad = Math.atan2(y, x)

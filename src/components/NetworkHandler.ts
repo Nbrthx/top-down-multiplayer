@@ -451,11 +451,25 @@ export class NetworkHandler{
         else if(typeof outfit === 'string') other.sprite.changeOutfit(model, outfit)
     }
 
-    chat(data: { id: string, username: string, msg: string}){
+    chat(data: { uid: string, username: string, msg: string}){
         const scene = this.scene
 
-        const other = scene.others.find(v => v.uid == data.id)
-        if(other) other.textbox.writeText(data.msg)
+        if(scene.player.uid == data.uid){
+            scene.player.textbox.writeText(data.msg)
+        }
+        else{
+            const other = scene.others.find(v => v.uid == data.uid)
+            if(other) other.textbox.writeText(data.msg)
+        }
+
+        const msg = `${data.username} : ${data.msg}`
+        console.log(scene.UI.chatTexts.getWrappedText(msg).length)
+        const wrap = new Array(scene.UI.chatTexts.getWrappedText(msg).length+1).join('\n')
+        scene.UI.chatTexts.setText(scene.UI.chatTexts.text+msg+'\n')
+        scene.UI.chatNames.setText(scene.UI.chatNames.text+data.username+wrap)
+
+        scene.UI.chatTexts.y = scene.UI.chatTexts.height > 300 ? -scene.UI.chatTexts.height+400 : 120
+        scene.UI.chatNames.y = scene.UI.chatTexts.y-2
     }
 
     duelRequest(username: string, level: number){

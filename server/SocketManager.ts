@@ -150,7 +150,7 @@ export class SocketManager {
             }
 
             this.io.to(player.scene.id).emit('chat', {
-                id: socket.id,
+                uid: socket.id,
                 username: player.account.username,
                 msg: msg
             })

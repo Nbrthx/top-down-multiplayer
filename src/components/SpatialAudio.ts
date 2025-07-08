@@ -33,8 +33,8 @@ export class SpatialAudio{
             isPlay: false,
             playSound: (x?: number, y?: number, isLoud?: boolean, isWait = true) => {
                 if(!audio.sound) return
-                if(audio.isPlay) return
-                if(isWait) audio.isPlay = true
+                if(audio.isPlay && isWait) return
+                audio.isPlay = true
 
                 const listener = this.pBody?.getPosition()
                 

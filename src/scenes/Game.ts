@@ -107,6 +107,9 @@ export class Game extends Scene{
 
             this.attackDir = dir
         })
+
+        this.lights.enable()
+        this.lights.setAmbientColor(0xcc99dd)
     }
 
     update(currentTime: number) {

@@ -72,6 +72,10 @@ export class Game{
             const hit = () => {
                 if(!isEnemy(target) && !isPlayer(target)) return;
                 if (weapon.attackDir.length() > 0) {
+                    if(weapon instanceof Projectile && !weapon.config.isPenetrating){
+                        weapon.destroy()
+                    }
+
                     target.health -= weapon.damage;
                     target.knockback = weapon.knockback;
                     target.knockbackDir = new p.Vec2(weapon.attackDir.x, weapon.attackDir.y);

@@ -79,6 +79,11 @@ export class Outfit extends Phaser.GameObjects.Container{
         this.faceImage = scene.add.sprite(0, -36, 'basic-face-female').setScale(scene.gameScale)
         this.hairImage = scene.add.sprite(0, -36, 'basic-hair-female').setScale(scene.gameScale)
 
+        this.legImage.setPipeline('Light2D')
+        this.bodyImage.setPipeline('Light2D')
+        this.faceImage.setPipeline('Light2D')
+        this.hairImage.setPipeline('Light2D')
+
         this.outfit = {
             isMale: false,
             color: 0xffffff,
@@ -196,5 +201,19 @@ export class Outfit extends Phaser.GameObjects.Container{
         this.faceImage.setTintFill(color)
         this.bodyImage.setTintFill(color)
         this.legImage.setTintFill(color)
+    }
+
+    setPipeline(pipeline: string){
+        this.hairImage.setPipeline(pipeline)
+        this.faceImage.setPipeline(pipeline)
+        this.bodyImage.setPipeline(pipeline)
+        this.legImage.setPipeline(pipeline)
+    }
+
+    resetPipeline(){
+        this.hairImage.resetPipeline()
+        this.faceImage.resetPipeline()
+        this.bodyImage.resetPipeline()
+        this.legImage.resetPipeline()
     }
 }

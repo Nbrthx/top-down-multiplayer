@@ -60,6 +60,7 @@ export class Preloader extends Scene{
         this.load.image('red-circle-particle', 'particles/red-circle.png')
 
         // Icon
+        this.load.image('icon-fc', 'icon/fracture-coins.png')
         this.load.image('icon-sword', 'icon/sword.png')
         this.load.image('icon-bow', 'icon/bow.png')
         this.load.image('icon-dagger', 'icon/dagger.png')

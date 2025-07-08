@@ -35,11 +35,14 @@ export class GameUI extends Phaser.Scene {
 
     alertBox: AlertBoxUI
     inventoryButton: Phaser.GameObjects.Image
-    chatbox: Chat
+    chat: Chat
     questUI: QuestUI
     redEffect: Phaser.GameObjects.Rectangle
-    instructionText: Phaser.GameObjects.Text
     outfitUI: OutfitUI
+    instructionText: Phaser.GameObjects.Text
+    chatTexts: Phaser.GameObjects.Text
+    chatNames: Phaser.GameObjects.Text
+    chatbox: Phaser.GameObjects.Rectangle
 
     constructor(){
         super('GameUI')
@@ -59,8 +62,51 @@ export class GameUI extends Phaser.Scene {
             color: '#fff'
         }).setOrigin(0).setWordWrapWidth(440)
 
+        this.chatbox = this.add.rectangle(this.scale.width/2, 100, 700, 300, 0x442233, 0.5).setOrigin(0.5, 0)
+        this.chatbox.setVisible(false)
+
+        this.chatbox.setInteractive()
+        this.chatbox.on('wheel', (pointer: Phaser.Input.Pointer, _deltaX: number, deltaY: number) => {
+            pointer.event.preventDefault()
+
+            this.chatTexts.y -= deltaY*0.1
+            this.chatNames.y -= deltaY*0.1
+            if(this.chatTexts.y > 120){
+                this.chatTexts.y = 120
+                this.chatNames.y = 120-2
+            }
+            else if(this.chatTexts.y < -this.chatTexts.height+400){
+                this.chatTexts.y = this.chatTexts.height > 300 ? -this.chatTexts.height+400 : 120
+                this.chatNames.y = this.chatTexts.y-2
+            }
+        })
+        this.chatbox.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if(!pointer.isDown) return
+            pointer.event.preventDefault()
+
+            this.chatTexts.y += pointer.y - pointer.prevPosition.y
+            this.chatNames.y += pointer.y - pointer.prevPosition.y
+            if(this.chatTexts.y > 120){
+                this.chatTexts.y = 120
+                this.chatNames.y = 120-2
+            }
+            else if(this.chatTexts.y < -this.chatTexts.height+400){
+                this.chatTexts.y = this.chatTexts.height > 300 ? -this.chatTexts.height+400 : 120
+                this.chatNames.y = this.chatTexts.y-2
+            }
+        })
+
+        this.chatTexts = this.add.text(this.scale.width/2-300, 120, '', {
+            fontFamily: 'PixelFont', fontSize: 24, lineSpacing: 2,
+            color: '#fff'
+        }).setOrigin(0).setWordWrapWidth(440).setMask(this.chatbox.createGeometryMask())
+        this.chatNames = this.add.text(this.scale.width/2-300-2, 120-2, '', {
+            fontFamily: 'PixelFont', fontSize: 24, fontStyle: 'bold',
+            color: '#fff', stroke: '#469', strokeThickness: 2, letterSpacing: -0.5
+        }).setOrigin(0).setWordWrapWidth(440).setMask(this.chatbox.createGeometryMask())
+
         this.debugText = this.add.text(this.scale.width - 50, 200, 'Ping: 0ms\nFPS: 0', {
-            fontSize: 24, fontStyle: 'bold', align: 'right',
+            fontFamily: 'PixelFont', fontSize: 24, fontStyle: 'bold', align: 'right',
             color: '#fff', stroke: '#000', strokeThickness: 1
         }).setOrigin(1)
 
@@ -77,8 +123,8 @@ export class GameUI extends Phaser.Scene {
         this.alertBox.setDepth(100)
         this.alertBox.setVisible(false)
 
-        this.chatbox = new Chat(this, this.socket)
-        this.chatbox.setVisible(false)
+        this.chat = new Chat(this, this.socket)
+        this.chat.setVisible(false)
 
         const bottomBox = this.add.rectangle(this.scale.width/2, this.scale.height, this.scale.width, 80, 0x111111, 0.5)
         bottomBox.setOrigin(0.5, 1)
@@ -89,14 +135,14 @@ export class GameUI extends Phaser.Scene {
             this.inventoryUI.setVisible(true)
         })
 
-        const debugToggle = this.add.image(this.scale.width - 100, 50, 'ui-debug').setScale(3)
+        const debugToggle = this.add.image(this.scale.width - 100, 50, 'ui-debug').setScale(4)
         debugToggle.setInteractive()
         debugToggle.on('pointerup', () => {
             this.gameScene.isDebug = !this.gameScene.isDebug
             this.gameScene.debugGraphics.clear()
         })
 
-        const fullscreenToggle = this.add.image(this.scale.width - 200, 50, 'ui-fullscreen').setScale(3)
+        const fullscreenToggle = this.add.image(this.scale.width - 200, 50, 'ui-fullscreen').setScale(4)
         fullscreenToggle.setInteractive()
         fullscreenToggle.on('pointerdown', () => {
             if (this.scale.isFullscreen){
@@ -107,7 +153,7 @@ export class GameUI extends Phaser.Scene {
             }
         })
 
-        const changeOutfitToggle = this.add.image(this.scale.width - 300, 50, 'ui-change-outfit').setScale(3)
+        const changeOutfitToggle = this.add.image(this.scale.width - 300, 50, 'ui-change-outfit').setScale(4)
         changeOutfitToggle.setInteractive()
         changeOutfitToggle.on('pointerdown', () => {
             if (!this.outfitUI.visible){
@@ -118,15 +164,14 @@ export class GameUI extends Phaser.Scene {
             }
         })
 
-        const chatToggle = this.add.image(this.scale.width - 400, 50, 'ui-chat').setScale(3)
+        const chatToggle = this.add.image(this.scale.width - 400, 50, 'ui-chat').setScale(4)
         chatToggle.setInteractive()
         chatToggle.on('pointerdown', () => {
-            if (!this.chatbox.visible){
-                this.chatbox.chat.focus()
-                this.chatbox.setVisible(true)
+            if (!this.chat.visible){
+                this.chat.setVisible(true)
             }
             else{
-                this.chatbox.setVisible(false)
+                this.chat.setVisible(false)
             }
         })
 
@@ -210,7 +255,7 @@ export class GameUI extends Phaser.Scene {
     handleGameEvent(){
         this.gameScene.events.on('start', () => {
             this.scene.setVisible(true)
-            this.chatbox = new Chat(this, this.socket)
+            this.chat = new Chat(this, this.socket)
         })
         this.gameScene.events.on('shutdown', () => {
             console.log('shutdown')
@@ -218,7 +263,7 @@ export class GameUI extends Phaser.Scene {
             this.hotbarUI.destroy()
             this.statsUI.destroy()
             this.inventoryUI.destroy()
-            this.chatbox.destroy()
+            this.chat.destroy()
             this.questUI.destroy()
             this.outfitUI.destroy()
         })

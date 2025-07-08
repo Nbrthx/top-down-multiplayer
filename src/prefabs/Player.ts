@@ -86,7 +86,7 @@ export class Player extends Phaser.GameObjects.Container{
         const shadow = scene.add.image(0, 19*scene.gameScale, 'shadow').setAlpha(0.4).setScale(scene.gameScale)
 
         this.nameText = scene.add.text(0, -38*scene.gameScale, username+' Lv.'+this.stats.getLevel(), {
-            fontFamily: 'PixelFont', fontSize: 24, letterSpacing: 2,
+            fontFamily: 'PixelFont', fontSize: 24,
             stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setResolution(4)
 

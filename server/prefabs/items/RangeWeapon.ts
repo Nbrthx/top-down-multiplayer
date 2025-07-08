@@ -19,6 +19,7 @@ export interface Range{
     force: number
     forceDelay: number
     canMove: boolean
+    isPenetrating: boolean
 }
 
 export class RangeWeapon extends BaseItem{
@@ -66,7 +67,8 @@ export class RangeWeapon extends BaseItem{
                     height: this.config.hitboxSize.height
                 },
                 damage: this.config.damage,
-                knockback: this.config.knockback
+                knockback: this.config.knockback,
+                isPenetrating: this.config.isPenetrating
             })
 
             this.isAttacking = false
@@ -97,6 +99,7 @@ interface ProjectileConfig {
     }
     damage: number
     knockback: number
+    isPenetrating: boolean
 }
 
 export class Projectile{
@@ -132,6 +135,11 @@ export class Projectile{
             isSensor: true
         })
         this.pBody.setUserData(this)
+
+        scene.contactEvents.addEvent(this.pBody, scene.mapSetup.collision, () => {
+            if(!config.isPenetrating) this.destroy()
+        })
+
         this.pBody.setAngle(Math.atan2(dir.y, dir.x))
     }
 

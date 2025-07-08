@@ -47,14 +47,12 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
 
         const submit = this.getChildByID('submit')
         const changeAction = this.getChildByID('change-action')
-        const guest = this.getChildByID('guest')
 
         if(changeAction) changeAction.addEventListener('pointerdown', () => this.onChange())
         if(submit){
             submit.addEventListener('pointerdown', () => this.onSubmit(true))
             this.submit = submit as HTMLButtonElement
         }
-        if(guest) guest.addEventListener('pointerdown', () => this.guestLogin())
     }
 
     onChange(){
@@ -168,26 +166,6 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
 
             this.isLoading = false
             if(this.submit) this.submit.innerHTML = 'Register'
-        })
-    }
-
-    guestLogin(){
-        this.socket = io(HOST_ADDRESS, {
-            transports: ['websocket']
-        })
-        this.socket.on('connect', () => {
-            xhrApi('POST', HOST_ADDRESS+'/guestLogin', { message: this.socket.id }, (data: { message: string }) => {
-                if(data.message){
-                    localStorage.setItem('username', data.message)
-                    if(this.scene) this.scene.registry.set('socket', this.socket)
-                    this.setVisible(false)
-                }
-                else{
-                    htmlAlert('something went wrong')
-                    localStorage.removeItem('username')
-                    this.socket.disconnect()
-                }
-            })
         })
     }
 }
