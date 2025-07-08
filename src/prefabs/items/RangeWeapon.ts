@@ -124,7 +124,7 @@ export class Projectile extends Phaser.GameObjects.Image {
     update() {
         if(!this.active) return
         if(this.attackDir.x != 0 || this.attackDir.y != 0){
-            this.setDepth(this.y/this.scene.gameScale)
+            this.setDepth(this.y/this.scene.gameScale-16)
 
             this.x = this.pBody.getPosition().x * this.scene.gameScale * 32
             this.y = this.pBody.getPosition().y * this.scene.gameScale * 32

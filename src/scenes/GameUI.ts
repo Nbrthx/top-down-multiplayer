@@ -256,6 +256,7 @@ export class GameUI extends Phaser.Scene {
         this.gameScene.events.on('start', () => {
             this.scene.setVisible(true)
             this.chat = new Chat(this, this.socket)
+            this.chat.setVisible(false)
         })
         this.gameScene.events.on('shutdown', () => {
             console.log('shutdown')

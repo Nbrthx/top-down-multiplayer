@@ -3,6 +3,7 @@ import { GameManager, InputData } from './GameManager';
 import { Server as HTTPServer } from 'http'
 import { Account, Item } from './server';
 import { QuestConfig, Quests } from './components/Quests';
+import { male, female } from './json/outfit-list.json';
 
 interface OutfitList {
     male: {
@@ -19,20 +20,7 @@ interface OutfitList {
     }
 }
 
-const outfitList: OutfitList = {
-    male: {
-        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied', 'long'],
-        face: ['basic', 'old', 'green-eye'],
-        body: ['basic', 'black', 'brown', 'red', 'white-shirt'],
-        leg: ['basic', 'grey', 'brown']
-    },
-    female: {
-        hair: ['basic', 'bodied', 'ponytail', 'short', 'long'],
-        face: ['basic', 'blue-eye'],
-        body: ['basic', 'black', 'grey', 'pink', 'barista'],
-        leg: ['basic', 'skirt', 'brown']
-    }
-}
+const outfitList: OutfitList = { male, female }
 
 export class SocketManager {
 
