@@ -1,25 +1,43 @@
 import { Server } from "socket.io";
 import { Game } from "./GameWorld";
+import { Item } from "./server";
 
 export interface InputData {
     dir: { x: number, y: number }
     attackDir: { x: number, y: number }
 }
 
+interface TradeSession {
+    player1: string
+    player2: string
+    item1: Item[]
+    item2: Item[]
+    state: boolean
+    timestamp: number
+}
+
 export class GameManager{
     
     worlds: Game[]
-    playerMap: Map<string, string>;
     io: Server;
+
+    playerMap: Map<string, string>;
     playerChangeWorld: Map<string, string>
     duelRequest: Map<string, string>
+    tradeRequest: Map<string, string>
+
+    tradeSession: TradeSession[]
 
     constructor(io: Server) {
         this.worlds = [];
-        this.playerMap = new Map();
         this.io = io
+        
+        this.playerMap = new Map();
         this.playerChangeWorld = new Map()
         this.duelRequest = new Map()
+        this.tradeRequest = new Map()
+
+        this.tradeSession = []
 
         this.createWorld('map1')
         this.createWorld('map2')

@@ -80,6 +80,8 @@ export class Preloader extends Scene{
 
         // UI
         this.load.image('inventory', 'ui/inventory.png')
+        this.load.image('clear-inventory', 'ui/clear-inventory.png')
+        this.load.image('trade', 'ui/trade.png')
         this.load.image('inventory-icon', 'ui/inventory-icon.png')
         this.load.image('hotbar', 'ui/hotbar.png')
         this.load.image('stats', 'ui/stats.png')

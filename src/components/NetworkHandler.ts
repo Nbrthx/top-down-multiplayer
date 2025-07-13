@@ -107,6 +107,18 @@ export class NetworkHandler{
 
         this.socket.on('duelStart', this.duelStart.bind(this))
 
+        this.socket.on('tradeRequest', this.tradeRequest.bind(this))
+
+        this.socket.on('tradeStart', this.tradeStart.bind(this))
+
+        this.socket.on('addTradeItem', this.addTradeItem.bind(this))
+
+        this.socket.on('dealTrade', this.dealTrade.bind(this))
+
+        this.socket.on('tradeEnd', this.tradeEnd.bind(this))
+
+        this.socket.on('serverMessage', this.serverMessage.bind(this))
+
         this.socket.on('disconnect', () => {
             this.socket.connect()
             setTimeout(() => {
@@ -489,6 +501,57 @@ export class NetworkHandler{
         
         scene.camera.centerOn(enterPos.x, enterPos.y)
         scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+    }
+
+    tradeRequest(username: string){
+        this.scene.UI.alertBox.setAlert(username+' wants to trade you', true, () => {
+            this.socket.emit('tradeAccept')
+        })
+    }
+
+    tradeStart(uid: string){
+        const scene = this.scene
+        
+        scene.UI.tradeUI.startTrade(uid, scene.others.find(v => v.uid == uid)?.username || '')
+    }
+
+    addTradeItem(selectedIndex: number, id: string, tag: 'weapon' | 'resource' | null, isSelf: boolean, quantity?: number){
+        const scene = this.scene
+        scene.UI.tradeUI.addTradeItem(selectedIndex, id, tag, isSelf, quantity)
+
+        const state = scene.UI.tradeUI.buttonAccept.text.text == 'CONFIRM' ? '(changed)' : '(ready)'
+
+        scene.UI.tradeUI.otherName.setText(this.scene.UI.tradeUI.otherName.text.split(' ')[0] + ' '+state)
+        scene.UI.tradeUI.buttonAccept.setText('Accept')
+
+        scene.UI.tradeUI.buttonAccept.off('pointerdown')
+        scene.UI.tradeUI.buttonAccept.on('pointerdown', () => {
+            this.socket.emit('dealTrade')
+            scene.UI.tradeUI.buttonAccept.setVisible(false)
+        })
+    }
+
+    dealTrade(){
+        const tradeUI = this.scene.UI.tradeUI
+
+        tradeUI.otherName.setText(this.scene.UI.tradeUI.otherName.text.split(' ')[0] + ' (accepted)')
+        tradeUI.buttonAccept.setText('CONFIRM?')
+
+        tradeUI.buttonAccept.off('pointerdown')
+        tradeUI.buttonAccept.on('pointerdown', () => {
+            this.scene.UI.alertBox.setAlert('Are you sure you want to finish the trade?', true, () => {
+                this.socket.emit('finishTrade')
+            })
+        })
+    }
+
+    tradeEnd(){
+        const scene = this.scene
+        scene.UI.tradeUI.endTrade()
+    }
+
+    serverMessage(msg: string){
+        this.scene.UI.alertBox.setAlert(msg)
     }
 
     destroy(){

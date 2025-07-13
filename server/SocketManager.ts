@@ -111,73 +111,6 @@ export class SocketManager {
             world.playerDropItem(socket.id, index, dir, quantity)
         })
 
-        socket.on('chat', msg => {
-            if(typeof msg !== 'string' && msg.length > 64) return
-
-            const player = this.getPlayer(socket.id)
-            if(!player) return
-
-            const command = msg.split(' ')
-            if(command[0] == '/duel') {
-                const player2Id = this.getIdByUsername(command[1])
-                if(!player2Id && player2Id != socket.id) return
-
-                console.log(player2Id)
-
-                const player2 = this.getPlayer(player2Id)
-                if(!player2) return
-
-                this.gameManager.duelRequest.set(player2.uid, player.uid)
-
-                setTimeout(() => {
-                    this.gameManager.duelRequest.delete(player2.uid)
-                }, 30000)
-
-                this.io.to(player2.uid).emit('duelRequest', player.account.username, player.stats.getLevel())
-                return
-            }
-
-            this.io.to(player.scene.id).emit('chat', {
-                uid: socket.id,
-                username: player.account.username,
-                msg: msg
-            })
-        })
-
-        socket.on('duelAccept', () => {
-            const player = this.getPlayer(socket.id)
-            if(!player) return
-
-            const player2Id = this.gameManager.duelRequest.get(socket.id)
-            if(!player2Id) return
-
-            const player2 = this.getPlayer(player2Id)
-            if(!player2) return
-
-            player.scene.removePlayer(socket.id)
-            player2.scene.removePlayer(player2Id)
-
-            this.io.to(socket.id).emit('duelStart')
-            this.io.to(player2Id).emit('duelStart')
-            
-            setTimeout(() => {
-                this.gameManager.getWorld('duel')?.addPlayer(socket.id, player.account)
-                this.gameManager.getWorld('duel')?.addPlayer(player2Id, player2.account)
-
-
-                this.gameManager.handleInput(socket.id, {
-                    dir: { x: 0, y: 0 },
-                    attackDir: { x: 0, y: 0 }
-                });
-                this.gameManager.handleInput(player2Id, {
-                    dir: { x: 0, y: 0 },
-                    attackDir: { x: 0, y: 0 }
-                });
-            }, 100)
-
-            this.gameManager.duelRequest.delete(socket.id)
-        })
-
         socket.on('getQuestData', (npcId: string, callback: (quest: QuestConfig | QuestConfig[], haveOtherQuest: string, progressState: number) => void) => {
             if(typeof npcId !== 'string') return
 
@@ -351,11 +284,221 @@ export class SocketManager {
             socket.broadcast.emit('changeOutfit', socket.id, model, outfit)
         })
 
+        socket.on('chat', msg => {
+            if(typeof msg !== 'string' && msg.length > 64) return
+
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const command = msg.split(' ')
+            if(command[0] == '/duel') {
+                const player2Id = this.getIdByUsername(command[1])
+                if(!player2Id) return socket.emit('serverMessage', 'Player not found')
+                if(player2Id == player.uid) return socket.emit('serverMessage', 'You cannot duel with yourself')
+                if(this.getPlayer(player2Id)?.scene.id != player.scene.id) return socket.emit('serverMessage', 'Player not in the same world')
+
+                const player2 = this.getPlayer(player2Id)
+                if(!player2) return socket.emit('serverMessage', 'Player not found')
+
+                this.gameManager.duelRequest.set(player2.uid, player.uid)
+
+                setTimeout(() => {
+                    this.gameManager.duelRequest.delete(player2.uid)
+                }, 30000)
+
+                socket.emit('serverMessage', 'Duel request sent to '+player2.account.username)
+                this.io.to(player2.uid).emit('duelRequest', player.account.username, player.stats.getLevel())
+                return
+            }
+            else if(command[0] == '/trade') {
+                const player2Id = this.getIdByUsername(command[1])
+                if(!player2Id) return socket.emit('serverMessage', 'Player not found')
+                if(player2Id == player.uid) return socket.emit('serverMessage', 'You cannot trade with yourself')
+                if(this.getPlayer(player2Id)?.scene.id != player.scene.id) return socket.emit('serverMessage', 'Player not in the same world')
+
+                const player2 = this.getPlayer(player2Id)
+                if(!player2) return socket.emit('serverMessage', 'Player not found')
+
+                if(this.gameManager.tradeSession.find(v => v.player1 == player.uid || v.player2 == player.uid)) return socket.emit('serverMessage', 'Trade already in progress')
+
+                this.gameManager.tradeRequest.set(player2.uid, player.uid)
+
+                setTimeout(() => {
+                    this.gameManager.tradeRequest.delete(player2.uid)
+                }, 30000)
+
+                socket.emit('serverMessage', 'Trade request sent to '+player2.account.username)
+                this.io.to(player2.uid).emit('tradeRequest', player.account.username)
+                return
+            }
+
+            if(msg[0] == '/') return
+
+            this.io.to(player.scene.id).emit('chat', {
+                uid: socket.id,
+                username: player.account.username,
+                msg: msg
+            })
+        })
+
+        socket.on('duelAccept', () => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const player2Id = this.gameManager.duelRequest.get(socket.id)
+            if(!player2Id) return socket.emit('serverMessage', 'Duel request not found or expired')
+
+            const player2 = this.getPlayer(player2Id)
+            if(!player2) return socket.emit('serverMessage', 'Player not found')
+
+            player.scene.removePlayer(socket.id)
+            player2.scene.removePlayer(player2Id)
+
+            this.io.to(socket.id).emit('duelStart')
+            this.io.to(player2Id).emit('duelStart')
+            
+            setTimeout(() => {
+                this.gameManager.getWorld('duel')?.addPlayer(socket.id, player.account)
+                this.gameManager.getWorld('duel')?.addPlayer(player2Id, player2.account)
+
+
+                this.gameManager.handleInput(socket.id, {
+                    dir: { x: 0, y: 0 },
+                    attackDir: { x: 0, y: 0 }
+                });
+                this.gameManager.handleInput(player2Id, {
+                    dir: { x: 0, y: 0 },
+                    attackDir: { x: 0, y: 0 }
+                });
+            }, 100)
+
+            this.gameManager.duelRequest.delete(socket.id)
+        })
+
+        socket.on('tradeAccept', () => {
+            const player = this.getPlayer(socket.id)
+            if(!player) return
+
+            const player2Id = this.gameManager.tradeRequest.get(socket.id)
+            if(!player2Id) return socket.emit('serverMessage', 'Trade request not found or expired')
+
+            const player2 = this.getPlayer(player2Id)
+            if(!player2) return socket.emit('serverMessage', 'Player not found')
+
+            this.io.to(socket.id).emit('tradeStart', player2Id)
+            this.io.to(player2Id).emit('tradeStart', socket.id)
+
+            this.gameManager.tradeRequest.delete(socket.id)
+            this.gameManager.tradeSession.push({
+                player1: socket.id,
+                player2: player2Id,
+                item1: [],
+                item2: [],
+                state: false,
+                timestamp: Date.now()
+            })
+        })
+
+        socket.on('addTradeItem', (selectedIndex: number, index: number, itemCount?: number) => {
+            const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
+            if(!tradeSession) return socket.emit('serverMessage', 'Trade session not found')
+
+            const player = this.getPlayer(tradeSession.player1 == socket.id ? tradeSession.player1 : tradeSession.player2)
+            if(!player) return socket.emit('serverMessage', 'Player not found')
+
+            const item = player.inventory.items[index] || {
+                id: '',
+                tag: null
+            }
+
+            const tradeItems = tradeSession.player1 == socket.id ? tradeSession.item1 : tradeSession.item2
+
+            const existingItem = tradeItems[selectedIndex] as Item & { quantity?: number }
+            tradeItems[selectedIndex] = item.tag != 'resource' ? item : {
+                id: item.id,
+                tag: 'resource',
+                quantity: itemCount || 1,
+                timestamp: Date.now()
+            }
+
+            tradeSession.state = false
+
+            player.inventory.removeItem(index, itemCount || 1)
+
+            if(existingItem) player.inventory.addItem(existingItem.id, existingItem.quantity || 1)
+
+            socket.emit('addTradeItem', selectedIndex, item.id, item.tag, true, itemCount)
+            socket.to(tradeSession.player1 == socket.id ? tradeSession.player2 : tradeSession.player1).emit('addTradeItem', selectedIndex, item.id, item.tag, false, itemCount)
+        })
+
+        socket.on('tradeDecline', () => {
+            const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
+            if(tradeSession){
+                tradeSession.item1.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
+                })
+                tradeSession.item2.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
+                })
+
+                this.io.to(tradeSession.player1).emit('tradeEnd')
+                this.io.to(tradeSession.player2).emit('tradeEnd')
+                this.gameManager.tradeSession.splice(this.gameManager.tradeSession.indexOf(tradeSession), 1)
+            }
+        })
+
+        socket.on('dealTrade', () => {
+            const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
+            if(tradeSession){
+                tradeSession.state = true
+                const otherId = tradeSession.player1 == socket.id ? tradeSession.player2 : tradeSession.player1
+                this.io.to(otherId).emit('dealTrade')
+            }
+        })
+
+        socket.on('finishTrade', () => {
+            const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
+            if(tradeSession){
+                if(!tradeSession.state) return socket.emit('serverMessage', 'Other player change deal')
+
+                tradeSession.item2.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
+                })
+                tradeSession.item1.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
+                })
+
+                this.io.to(tradeSession.player1).emit('tradeEnd')
+                this.io.to(tradeSession.player2).emit('tradeEnd')
+                this.gameManager.tradeSession.splice(this.gameManager.tradeSession.indexOf(tradeSession), 1)
+            }    
+        })
+
         socket.on('ping', (callback) => {
             callback()
         })
 
         socket.on('disconnect', () => {
+            const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
+            if(tradeSession){
+                tradeSession.item1.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
+                })
+                tradeSession.item2.forEach((v) => {
+                    if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
+                    else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
+                })
+
+                this.io.to(tradeSession.player1).emit('tradeEnd')
+                this.io.to(tradeSession.player2).emit('tradeEnd')
+                this.gameManager.tradeSession.splice(this.gameManager.tradeSession.indexOf(tradeSession), 1)
+            }
+
             this.gameManager.getPlayerWorld(socket.id)?.removePlayer(socket.id);
             this.removeAuthedId(socket.id)
         });
@@ -382,25 +525,7 @@ export class SocketManager {
 
         const username = this.authedId.get(id) as string
 
-        if(!username.includes('-')) return this.accounts.find(v => v.username == username)
-        else return {
-            username: username,
-            pubKey: '',
-            akey: '',
-            xp: 0,
-            gold: 0,
-            health: 100,
-            outfit: {
-                isMale: false,
-                color: 0xffffff,
-                hair: "basic",
-                face: "basic",
-                body: "basic",
-                leg: "basic"
-            },
-            inventory: [],
-            questCompleted: []
-        }
+        return this.accounts.find(v => v.username == username)
     }
 
     removeAuthedId(id: string){

@@ -9,6 +9,7 @@ import { StatsUI } from '../prefabs/ui/StatsUI'
 import { QuestUI } from '../prefabs/ui/QuestUI'
 import { OutfitUI } from '../prefabs/ui/OutfitUI'
 import { AlertBoxUI } from '../prefabs/ui/AlertBoxUI'
+import { TradeUI } from '../prefabs/ui/TradeUI'
 
 export const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -23,6 +24,7 @@ export class GameUI extends Phaser.Scene {
     inventoryUI: InventoryUI
     hotbarUI: HotbarUI
     statsUI: StatsUI
+    tradeUI: TradeUI
 
     keyboardInput: {
         up?: boolean
@@ -99,11 +101,11 @@ export class GameUI extends Phaser.Scene {
         this.chatTexts = this.add.text(this.scale.width/2-300, 120, '', {
             fontFamily: 'PixelFont', fontSize: 24, lineSpacing: 2,
             color: '#fff'
-        }).setOrigin(0).setWordWrapWidth(440).setMask(this.chatbox.createGeometryMask())
+        }).setOrigin(0).setWordWrapWidth(440, true).setMask(this.chatbox.createGeometryMask())
         this.chatNames = this.add.text(this.scale.width/2-300-2, 120-2, '', {
             fontFamily: 'PixelFont', fontSize: 24, fontStyle: 'bold',
             color: '#fff', stroke: '#469', strokeThickness: 2, letterSpacing: -0.5
-        }).setOrigin(0).setWordWrapWidth(440).setMask(this.chatbox.createGeometryMask())
+        }).setOrigin(0).setWordWrapWidth(440, true).setMask(this.chatbox.createGeometryMask())
 
         this.debugText = this.add.text(this.scale.width - 50, 200, 'Ping: 0ms\nFPS: 0', {
             fontFamily: 'PixelFont', fontSize: 24, fontStyle: 'bold', align: 'right',
@@ -354,5 +356,9 @@ export class GameUI extends Phaser.Scene {
                 ease: 'Linear'
             })
         }
+
+
+        this.tradeUI = new TradeUI(this, this.scale.width/2, this.scale.height-272, player.inventory)
+        this.tradeUI.setVisible(false)
     }
 }

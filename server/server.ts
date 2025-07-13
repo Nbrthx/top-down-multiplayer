@@ -80,7 +80,8 @@ const accounts: Account[] = [
             { "id": "dagger", "tag": "weapon", "timestamp": 0 },
             { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
             { "id": "sword", "tag": "weapon", "timestamp": 0 },
-            { "id": "bow", "tag": "weapon", "timestamp": 0 }
+            { "id": "bow", "tag": "weapon", "timestamp": 0 },
+            { "id": "wood", "tag": "resource", "quantity": 10, "timestamp": 0 }
         ],
         "questCompleted": []
     },
@@ -99,7 +100,13 @@ const accounts: Account[] = [
             "body": "basic",
             "leg": "basic"
         },
-        "inventory": [],
+        "inventory": [
+            { "id": "dagger", "tag": "weapon", "timestamp": 0 },
+            { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
+            { "id": "sword", "tag": "weapon", "timestamp": 0 },
+            { "id": "bow", "tag": "weapon", "timestamp": 0 },
+            { "id": "wood", "tag": "resource", "quantity": 10, "timestamp": 0 }
+        ],
         "questCompleted": []
     }
 ]
