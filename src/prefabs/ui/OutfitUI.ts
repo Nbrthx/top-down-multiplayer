@@ -1,5 +1,5 @@
 import { GameUI } from "../../scenes/GameUI"
-import { outfitList } from "../Outfit"
+import { OutfitList } from "../../scenes/Preloader"
 import { Player } from "../Player"
 
 export class OutfitUI extends Phaser.GameObjects.Container {
@@ -12,6 +12,7 @@ export class OutfitUI extends Phaser.GameObjects.Container {
     changeGender: Phaser.GameObjects.Text
     buttons: Phaser.GameObjects.Text[]
     hairColors: Phaser.GameObjects.Rectangle[]
+    outfitList: OutfitList
 
     constructor(scene: GameUI, player: Player) {
         super(scene, 0, scene.scale.height)
@@ -20,6 +21,8 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         this.player = player
 
         scene.add.existing(this)
+
+        this.outfitList = scene.cache.json.get('outfit-list')
 
         this.image = scene.add.nineslice(scene.scale.width/2, -200, 'box-nineslice', 0, scene.scale.width/4, 100, 16, 16, 16, 16)
         this.image.setScale(4).setInteractive()
@@ -37,14 +40,14 @@ export class OutfitUI extends Phaser.GameObjects.Container {
             this.scene.socket.emit('changeGender', !player.sprite.outfit.isMale)
             player.sprite.changeGender(!player.sprite.outfit.isMale)
 
-            this.outfitList()
+            this.showOutfitList()
         })
 
         this.add([this.image, this.background, this.changeGender])
 
         for(let i=0; i<4; i++){
             const x = scene.scale.width/2 + 280 * i - 440
-            const headerText = scene.add.text(x, -320, Object.keys(outfitList.male)[i], {
+            const headerText = scene.add.text(x, -320, Object.keys(this.outfitList.male)[i], {
                 fontSize: 40, color: '#000000', fontStyle: 'bold', fontFamily: 'PixelFont'
             })
             headerText.setOrigin(0.5, 0.5)
@@ -81,10 +84,10 @@ export class OutfitUI extends Phaser.GameObjects.Container {
             }
         }
 
-        this.outfitList()
+        this.showOutfitList()
     }
 
-    outfitList(){
+    showOutfitList(){
         if(!this.buttons) this.buttons = []
         else{
             this.buttons.forEach(v => v.destroy())
@@ -93,18 +96,18 @@ export class OutfitUI extends Phaser.GameObjects.Container {
 
         const genderKey = this.player.sprite.outfit.isMale ? 'male' : 'female'
 
-        Object.keys(outfitList[genderKey]).forEach((key, index) => {
+        Object.keys(this.outfitList[genderKey]).forEach((key, index) => {
             if(key != 'hair' && key != 'face' && key != 'body' && key != 'leg') return
 
-            for(let i = 0; i < outfitList[genderKey][key].length; i++){
+            for(let i = 0; i < this.outfitList[genderKey][key].length; i++){
                 const x = this.scene.scale.width/2 + 280 * index - 440
                 const y = 36 * i - 260
-                const button = this.scene.add.text(x, y, outfitList[genderKey][key][i], {
+                const button = this.scene.add.text(x, y, this.outfitList[genderKey][key][i], {
                     fontSize: 32, color: '#000000', fontFamily: 'PixelFont',
                     stroke: '#ffffff', strokeThickness: 4
                 }).setOrigin(0.5, 0.5).setInteractive().setName(key)
 
-                if(this.player.sprite.outfit[key] == outfitList[genderKey][key][i]){
+                if(this.player.sprite.outfit[key] == this.outfitList[genderKey][key][i]){
                     button.setStroke('#00ff00', 4)
                 }
 
@@ -137,8 +140,8 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         if(key != 'hair' && key != 'face' && key != 'body' && key != 'leg') return
 
         const genderKey = this.player.sprite.outfit.isMale ? 'male' : 'female'
-        this.player.sprite.changeOutfit(key, outfitList[genderKey][key][index])
-        this.scene.socket.emit('changeOutfit', key, outfitList[genderKey][key][index])
+        this.player.sprite.changeOutfit(key, this.outfitList[genderKey][key][index])
+        this.scene.socket.emit('changeOutfit', key, this.outfitList[genderKey][key][index])
     }
 
     onOpen(pos: { x: number, y: number }) { pos; }

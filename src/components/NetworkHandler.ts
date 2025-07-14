@@ -322,7 +322,6 @@ export class NetworkHandler{
 
 
             if(!enemy){
-                console.log('spawn enemy')
                 const newEnemy = new Enemy(scene, enemyData.pos.x*scene.gameScale*32, enemyData.pos.y*scene.gameScale*32, enemyData.id, enemyData.uid)
                 newEnemy.health = enemyData.health
                 newEnemy.barUpdate(newEnemy.damageBar)
@@ -333,7 +332,6 @@ export class NetworkHandler{
         data.droppedItems.forEach(itemData => {
             const item = scene.droppedItems.find(v => v.uid == itemData.uid)
             if(!item){
-                console.log('spawn item', itemData)
                 const newItem = new DroppedItem(scene, itemData.pos.x, itemData.pos.y, itemData.id, itemData.uid, itemData.quantity)
                 this.scene.droppedItems.push(newItem)
             }
@@ -355,7 +353,6 @@ export class NetworkHandler{
             const dir = new p.Vec2(projectileData.dir.x, projectileData.dir.y)
 
             if(!existProjectile){
-                console.log('spawn projectile', projectileData)
                 const projectile = new Projectile(this.scene, pos, dir, projectileData.config, projectileData.uid)
                 this.scene.projectiles.push(projectile)
             }
@@ -371,6 +368,18 @@ export class NetworkHandler{
             if(!projectileData){
                 scene.projectiles.splice(scene.projectiles.indexOf(projectile), 1)
                 projectile.destroy()
+
+                const x = Math.cos(projectile.pBody.getAngle())*projectile.config.hitboxSize.width*32*4
+                const y = Math.sin(projectile.pBody.getAngle())*projectile.config.hitboxSize.height*32*4
+
+                this.scene.add.particles(projectile.x+x, projectile.y+y, 'explode', {
+                    speedX: {min: -100, max: 100},
+                    speedY: {min: -100, max: 100},
+                    scale: {start: 4, end: 4},
+                    alpha: {start: 1, end: 0},
+                    anim: 'explode',
+                    lifespan: 160
+                }).explode(1)
             }
         })
         
@@ -384,16 +393,12 @@ export class NetworkHandler{
         const other = this.scene.others.find(v => v.uid == uid)
         if(!other) return
 
-        console.log('other updated', items)
-
         other.inventory.updateInventory(items)
     }
 
     otherUpdateHotbar(uid: string, index: number){
         const other = this.scene.others.find(v => v.uid == uid)
         if(!other) return
-
-        console.log('other updated hotbar', index)
 
         other.inventory.setActiveIndex(index)
     }
@@ -405,8 +410,6 @@ export class NetworkHandler{
             scene.UI.alertBox.setAlert('You need to be level '+requiredLevel+' to enter this world', false)
             return
         }
-
-        console.log('change position by client')
 
         if(isPvpAllowed) scene.UI.alertBox.setAlert('Do you want to enter pvp zone?', true, () => {
             scene.worldId = worldId
@@ -475,7 +478,6 @@ export class NetworkHandler{
         }
 
         const msg = `${data.username} : ${data.msg}`
-        console.log(scene.UI.chatTexts.getWrappedText(msg).length)
         const wrap = new Array(scene.UI.chatTexts.getWrappedText(msg).length+1).join('\n')
         scene.UI.chatTexts.setText(scene.UI.chatTexts.text+msg+'\n')
         scene.UI.chatNames.setText(scene.UI.chatNames.text+data.username+wrap)

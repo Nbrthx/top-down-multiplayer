@@ -46,6 +46,7 @@
             "config": {
                 "texture": "bow",
                 "projectileTexture": "arrow",
+                "spriteOffsetMultipler": 0.8,
                 "offsetMultipler": 0.8,
                 "hitboxSize": {
                     "width": 0.4,
@@ -89,6 +90,7 @@
             "config": {
                 "texture": "throw",
                 "projectileTexture": "blue-knife",
+                "spriteOffsetMultipler": 0.9,
                 "offsetMultipler": 0.7,
                 "hitboxSize": {
                     "width": 0.2,

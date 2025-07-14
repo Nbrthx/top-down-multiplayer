@@ -54,7 +54,7 @@ function createQuestConfig(id: string, quest: QuestConfig, isHaveOtherQuest: boo
 
     let taskText = ''
     quest.task.forEach((task) => {
-        let target = ''
+        let target = task.target
         if(task.type == 'kill') target = enemyList.find((enemy) => enemy.id == task.target)?.name || task.target
         taskText += task.type+': '+target+' x'+task.amount+'\n'
     })

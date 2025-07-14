@@ -1,6 +1,10 @@
 import { ec as EC } from 'elliptic'
 import * as express from 'express';
 import { Account } from './server';
+import { male, female } from './json/outfit-list.json';
+import { _npcList } from './json/npc-list.json';
+import { _itemList } from './json/item-list.json';
+import { _enemyList } from './json/enemy-list.json';
 
 const ec = new EC('secp256k1');
 
@@ -12,6 +16,22 @@ export class RestApi{
     constructor(app: express.Application, accounts: Account[], authedId: Map<string, string>){
         this.accounts = accounts
         this.authedId = authedId
+
+        app.get('/outfit-list', (_req, res) => {
+            res.json({ male, female });
+        });
+
+        app.get('/npc-list', (_req, res) => {
+            res.json(_npcList);
+        });
+
+        app.get('/item-list', (_req, res) => {
+            res.json(_itemList);
+        });
+
+        app.get('/enemy-list', (_req, res) => {
+            res.json(_enemyList);
+        });
 
         app.post("/register", (req, res) => this.register(req, res));
 
@@ -33,7 +53,6 @@ export class RestApi{
                 pubKey: pubKey as string,
                 akey: akey as string,
                 xp: 0,
-                gold: 0,
                 health: 100,
                 outfit: {
                     isMale: false,

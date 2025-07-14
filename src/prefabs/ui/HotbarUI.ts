@@ -1,6 +1,6 @@
 import { Inventory } from "../Inventory";
 import { GameUI } from '../../scenes/GameUI'
-import { itemList } from "../ItemInstance";
+import { ItemData } from "../ItemInstance";
 
 export class HotbarUI extends Phaser.GameObjects.Container {
 
@@ -44,6 +44,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
         for(let i=0; i<5; i++){
             const item = this.inventory.items[i]
 
+            const itemList = this.scene.cache.json.get('item-list') as ItemData[]
             const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
 
             const frameIndex = Math.floor(Math.max(Math.min((Date.now()-item.timestamp)/instanceData.config.cooldown, 1), 0)*19)
@@ -55,6 +56,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
     isActiveIndexCooldown(){
         let item = this.inventory.items[this.inventory.activeIndex]
 
+        const itemList = this.scene.cache.json.get('item-list') as ItemData[]
         const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
 
         console.log(Date.now()-item.timestamp-instanceData.config.cooldown > 0)

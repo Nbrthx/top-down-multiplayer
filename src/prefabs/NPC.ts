@@ -1,27 +1,12 @@
 import { Game } from '../scenes/Game'
 import { Outfit } from './Outfit'
 
-interface NPCConfig {
+export interface NPCConfig {
     id: string
     name: string
     biography: string
     outfit: [boolean, number, string, string, string, string]
 }
-
-export const npcList: NPCConfig[] = [
-    {
-        id: 'npc1',
-        name: 'Old Man',
-        biography: 'A wise old man, known for his wisdom and wisdom. He is always ready to share his knowledge with those who seek it.',
-        outfit: [true, 0xffccaa, 'short', 'old', 'red', 'grey']
-    },
-    {
-        id: 'npc2',
-        name: 'Forest Guardian',
-        biography: 'The Forest Guardian is a revered protector of the ancient Javanese forests. Known as "Penunggu Hutan" in Javanese, this mystical entity embodies the spirit of the wilderness. With deep-rooted wisdom and an unwavering commitment to preserving nature, the Forest Guardian watches over the flora and fauna, ensuring the delicate balance.',
-        outfit: [true, 0xffffaa, 'blangkon', 'old', 'black', 'basic']
-    }
-]
 
 export class NPC extends Phaser.GameObjects.Container{
 
@@ -34,6 +19,8 @@ export class NPC extends Phaser.GameObjects.Container{
 
     constructor(scene: Game, x: number, y: number, id: string){
         super(scene, x, y)
+
+        const npcList = scene.cache.json.get('npc-list') as NPCConfig[]
 
         this.scene = scene
         this.id = id

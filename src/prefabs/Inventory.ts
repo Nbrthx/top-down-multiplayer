@@ -1,26 +1,12 @@
-import { itemList } from "./ItemInstance";
+import { ItemData } from "./ItemInstance";
 import { Player } from "./Player";
 
-interface WeaponItem {
+export interface Item {
     id: string
-    tag: 'weapon'
+    tag: 'weapon' | 'resource' | null
     timestamp: number
+    quantity?: number
 }
-
-interface ResourceItem {
-    id: string
-    tag: 'resource'
-    quantity: number
-    timestamp: number
-}
-
-interface NoItem {
-    id: string
-    tag: null
-    timestamp: number
-}
-
-export type Item = WeaponItem | ResourceItem | NoItem
 
 export class Inventory {
 
@@ -86,6 +72,7 @@ export class Inventory {
             const item = this.items[i]
             if(!item) continue
             
+            const itemList = this.parent.scene.cache.json.get('item-list') as ItemData[]
             const instanceData = itemList.find(v => v.id === item.id) || itemList[0]
             const cooldown = instanceData.config.cooldown
             if(i == this.activeIndex && isUse) item.timestamp = Date.now()

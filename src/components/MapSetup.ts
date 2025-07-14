@@ -1,6 +1,6 @@
 import p from 'planck'
 import { Game } from '../scenes/Game'
-import { NPC, npcList } from '../prefabs/NPC'
+import { NPC, NPCConfig } from '../prefabs/NPC'
 import { handleQuest } from './HandleQuest'
 
 export class MapSetup{
@@ -103,6 +103,8 @@ export class MapSetup{
 
         map.getObjectLayer('npcs')?.objects.forEach(_o => {
             const o = _o as { name: string, x: number, y: number, width: number, height: number}
+
+            const npcList = scene.cache.json.get('npc-list') as NPCConfig[]
 
             const npc = new NPC(scene, o.x*this.gameScale, o.y*this.gameScale, o.name)
             const npcData = npcList.find(v => v.id == o.name) || {

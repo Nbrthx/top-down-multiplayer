@@ -1,7 +1,24 @@
 import { Scene } from 'phaser';
-import { outfitList, spriteFrames } from '../prefabs/Outfit';
+import { spriteFrames } from '../prefabs/Outfit';
+import { HOST_ADDRESS } from './MainMenu';
 
+export interface OutfitList {
+    male: {
+        hair: string[],
+        face: string[],
+        body: string[],
+        leg: string[]
+    },
+    female: {
+        hair: string[],
+        face: string[],
+        body: string[],
+        leg: string[]
+    }
+}
 export class Preloader extends Scene{
+
+    outfitList: OutfitList
     constructor (){
         super('Preloader');
     }
@@ -30,22 +47,6 @@ export class Preloader extends Scene{
         this.load.image('shadow', 'character/shadow.png')
         this.load.spritesheet('char', 'character/char2.png', { frameWidth: 64, frameHeight: 64 })
 
-        // Character Male
-        for (const _key in outfitList.male) {
-            const key = _key as keyof typeof outfitList.male
-            for (const outfit of outfitList.male[key]) {
-                this.load.spritesheet(`${outfit}-${key}-male`, `character/male/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
-            }
-        }
-
-        // Character Female
-        for (const _key in outfitList.female) {
-            const key = _key as keyof typeof outfitList.male
-            for (const outfit of outfitList.female[key]) {
-                this.load.spritesheet(`${outfit}-${key}-female`, `character/female/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
-            }
-        }
-
         // Visual Effects
         this.load.spritesheet('punch', 'effect/punch.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('throw', 'effect/throw.png', { frameWidth: 64, frameHeight: 64 })
@@ -53,6 +54,7 @@ export class Preloader extends Scene{
         this.load.spritesheet('bow', 'effect/bow.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('dagger', 'effect/dagger.png', { frameWidth: 96, frameHeight: 64 })
 
+        this.load.spritesheet('explode', 'effect/explode.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('arrow', 'effect/arrow.png', { frameWidth: 48, frameHeight: 16 })
         this.load.spritesheet('blue-knife', 'effect/blue-knife.png', { frameWidth: 32, frameHeight: 16 })
 
@@ -112,59 +114,6 @@ export class Preloader extends Scene{
     create (){
 
         this.anims.create({
-            key: 'idle',
-            frames: this.anims.generateFrameNumbers('char', { frames: [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }),
-            frameRate: 10,
-            repeat: -1
-        })
-        this.anims.create({
-            key: 'run-down',
-            frames: this.anims.generateFrameNumbers('char', { frames: [12, 13, 14, 15, 16, 17, 18, 19] }),
-            frameRate: 12,
-            repeat: -1
-        })
-        this.anims.create({
-            key: 'run-up',
-            frames: this.anims.generateFrameNumbers('char', { frames: [24, 25, 26, 27, 28, 29, 30, 31] }),
-            frameRate: 12,
-            repeat: -1
-        })
-
-        for (const _key in outfitList.male) {
-            const key = _key as keyof typeof outfitList.male
-
-            for (const outfit of outfitList.male[key]) {
-                const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
-                animations.forEach(anim => {
-                    const frames = spriteFrames[anim][key];
-                    this.anims.create({
-                        key: `${outfit}-${key}-male-${anim}`,
-                        frames: this.anims.generateFrameNumbers(`${outfit}-${key}-male`, { frames: frames }),
-                        frameRate: 12,
-                        repeat: -1
-                    });
-                });
-            }
-        }
-
-        for (const _key in outfitList.female) {
-            const key = _key as keyof typeof outfitList.female
-
-            for (const outfit of outfitList.female[key]) {
-                const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
-                animations.forEach(anim => {
-                    const frames = spriteFrames[anim][key];
-                    this.anims.create({
-                        key: `${outfit}-${key}-female-${anim}`,
-                        frames: this.anims.generateFrameNumbers(`${outfit}-${key}-female`, { frames: frames }),
-                        frameRate: 12,
-                        repeat: -1
-                    });
-                });
-            }
-        }
-
-        this.anims.create({
             key: 'punch-attack',
             frames: this.anims.generateFrameNumbers('punch', { frames: [0, 1, 2, 3, 4] }),
             frameRate: 20
@@ -189,6 +138,11 @@ export class Preloader extends Scene{
             frames: this.anims.generateFrameNumbers('dagger', { frames: [0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8] }),
             frameRate: 20
         })
+        this.anims.create({
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explode', { frames: [0, 1, 2, 3] }),
+            frameRate: 30
+        })
 
         this.anims.create({
             key: 'tree1-wave',
@@ -197,6 +151,78 @@ export class Preloader extends Scene{
             repeat: -1
         })
 
-        this.scene.start('MainMenu', { autoJoin: true });
+        this.externalLoader(() => {
+            this.scene.start('MainMenu', { autoJoin: true });
+        })
+    }
+
+    externalLoader(callback: () => void){
+        this.load.json('outfit-list', HOST_ADDRESS+'/outfit-list')
+        this.load.json('npc-list', HOST_ADDRESS+'/npc-list')
+        this.load.json('item-list', HOST_ADDRESS+'/item-list')
+        this.load.json('enemy-list', HOST_ADDRESS+'/enemy-list')
+        this.load.start();
+
+        this.load.on('complete', () => {
+            if(!this.outfitList){
+                this.outfitList = this.cache.json.get('outfit-list')
+
+                // Character Male
+                for (const _key in this.outfitList.male) {
+                    const key = _key as keyof typeof this.outfitList.male
+                    for (const outfit of this.outfitList.male[key]) {
+                        this.load.spritesheet(`${outfit}-${key}-male`, `character/male/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
+                    }
+                }
+
+                // Character Female
+                for (const _key in this.outfitList.female) {
+                    const key = _key as keyof typeof this.outfitList.male
+                    for (const outfit of this.outfitList.female[key]) {
+                        this.load.spritesheet(`${outfit}-${key}-female`, `character/female/${key}/${outfit}.png`, { frameWidth: 64, frameHeight: 64 });
+                    }
+                }
+
+                this.load.start();
+            }
+            else{
+                // Character Male Anims
+                for (const _key in this.outfitList.male) {
+                    const key = _key as keyof typeof this.outfitList.male
+
+                    for (const outfit of this.outfitList.male[key]) {
+                        const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
+                        animations.forEach(anim => {
+                            const frames = spriteFrames[anim][key];
+                            this.anims.create({
+                                key: `${outfit}-${key}-male-${anim}`,
+                                frames: this.anims.generateFrameNumbers(`${outfit}-${key}-male`, { frames: frames }),
+                                frameRate: 12,
+                                repeat: -1
+                            });
+                        });
+                    }
+                }
+
+                // Character Female Anims
+                for (const _key in this.outfitList.female) {
+                    const key = _key as keyof typeof this.outfitList.female
+
+                    for (const outfit of this.outfitList.female[key]) {
+                        const animations: ['idle', 'runup', 'rundown'] = ['idle', 'runup', 'rundown'];
+                        animations.forEach(anim => {
+                            const frames = spriteFrames[anim][key];
+                            this.anims.create({
+                                key: `${outfit}-${key}-female-${anim}`,
+                                frames: this.anims.generateFrameNumbers(`${outfit}-${key}-female`, { frames: frames }),
+                                frameRate: 12,
+                                repeat: -1
+                            });
+                        });
+                    }
+                }
+                callback()
+            }
+        })
     }
 }

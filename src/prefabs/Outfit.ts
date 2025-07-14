@@ -1,35 +1,5 @@
 import { Game } from "../scenes/Game";
 
-interface OutfitList {
-    male: {
-        hair: string[],
-        face: string[],
-        body: string[],
-        leg: string[]
-    },
-    female: {
-        hair: string[],
-        face: string[],
-        body: string[],
-        leg: string[]
-    }
-}
-
-export const outfitList: OutfitList = {
-    male: {
-        hair: ['basic', 'spread', 'short', 'blangkon', 'bodied', 'long'],
-        face: ['basic', 'old', 'green-eye'],
-        body: ['basic', 'black', 'brown', 'red', 'white-shirt'],
-        leg: ['basic', 'grey', 'brown']
-    },
-    female: {
-        hair: ['basic', 'bodied', 'ponytail', 'short', 'long'],
-        face: ['basic', 'blue-eye'],
-        body: ['basic', 'black', 'grey', 'pink', 'barista'],
-        leg: ['basic', 'skirt', 'brown']
-    }
-}
-
 export const spriteFrames = {
     idle: {
         hair: [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],

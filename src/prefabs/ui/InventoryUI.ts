@@ -100,7 +100,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                         const x = pointer.x - this.scene.scale.width/2
                         const y = pointer.y - this.scene.scale.height/2
 
-                        if(item.tag == 'resource' && item.quantity > 1) {
+                        if(item.tag == 'resource' && item.quantity && item.quantity > 1) {
                             this.popupRange.dropMultipleItems(i*5 + j + startIndex, { x: x, y: y }, item.quantity);
                         }
                         else this.inventory.onDropItem(i*5 + j + startIndex, { x: x, y: y })

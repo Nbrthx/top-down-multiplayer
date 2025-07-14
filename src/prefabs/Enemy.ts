@@ -19,7 +19,7 @@ interface EnemyConfig {
 export const enemyList: EnemyConfig[] = [
     {
         id: 'enemy1',
-        name: 'Swordman',
+        name: 'Swordsman',
         maxHealth: 60,
         visionDistance: 6,
         attackDistance: 2,

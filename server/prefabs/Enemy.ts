@@ -19,6 +19,7 @@ interface EnemyConfig {
     weapon: string
     xpReward: number
     itemReward?: [string, number]
+    outfit: [boolean, string, string, string, string, string]
 }
 
 const enemyList = _enemyList as EnemyConfig[]

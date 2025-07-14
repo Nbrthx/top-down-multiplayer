@@ -157,6 +157,7 @@ export class TradeUI extends Phaser.GameObjects.Container {
                     }).setOrigin(0.5, 0.5).setDepth(10000000)
 
                     itemIcon.on('pointerdown', () => {
+                        if(!item.quantity) return
                         this.popupRange.addResourceItem(this.selectedIndex, i*5+j, item.quantity)
                         this.toggleInventory(false)
                     })

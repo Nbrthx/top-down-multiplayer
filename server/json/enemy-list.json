@@ -12,7 +12,8 @@
             "attackDelay": 300,
             "weapon": "sword",
             "xpReward": 1,
-            "itemReward": ["wood", 1]
+            "itemReward": ["wood", 1],
+            "outfit": [true, "0xffaaaa", "basic", "basic", "basic", "basic"]
         },
         {
             "id": "enemy2",
@@ -26,7 +27,8 @@
             "attackDelay": 200,
             "weapon": "bow",
             "xpReward": 2,
-            "itemReward": ["wood", 2]
+            "itemReward": ["wood", 2],
+            "outfit": [true, "0xffaaaa", "basic", "basic", "basic", "basic"]
         },
         {
             "id": "enemy3",
@@ -40,7 +42,8 @@
             "attackDelay": 50,
             "weapon": "blue-knife",
             "xpReward": 4,
-            "itemReward": ["wood", 3]
+            "itemReward": ["wood", 3],
+            "outfit": [true, "0xffaaaa", "basic", "basic", "basic", "basic"]
         },
         {
             "id": "enemy4",
@@ -54,7 +57,8 @@
             "attackDelay": 20,
             "weapon": "sword",
             "xpReward": 8,
-            "itemReward": ["wood", 4]
+            "itemReward": ["wood", 4],
+            "outfit": [true, "0xffaaaa", "basic", "basic", "basic", "basic"]
         }
     ]
 }
