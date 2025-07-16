@@ -16,8 +16,8 @@ export class Inventory {
         for(let i = 0; i < 25; i++){
             this.items.push({
                 id: '',
-                tag: null,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                quantity: 0
             })
         }
     }
@@ -26,16 +26,15 @@ export class Inventory {
         return this.items.find(item => item.id === id)
     }
 
-    addItem(id: string, quantity: number): boolean {
-        const itemData = itemList.find(item => item.id === id)
+    addItem(item: Item): boolean {
+        const itemData = itemList.find(v => v.id === item.id)
         if(!itemData) return false
 
-        const existItem = this.getItem(id)
-        if(existItem && existItem.tag == 'resource'){
-            // @ts-ignore
-            existItem.quantity += quantity
+        const existItem = this.getItem(item.id)
+        if(existItem && itemData.type == 'resource'){
+            existItem.quantity += item.quantity
 
-            this.parent.questInProgress?.addProgress('collect', id, quantity)
+            this.parent.questInProgress?.addProgress('collect', item.id, item.quantity)
 
             const io = this.parent.scene.gameManager.io
             io.to(this.parent.uid).emit('updateInventory', this.items)
@@ -44,19 +43,13 @@ export class Inventory {
             return true
         }
         for(let i = 0; i < 25; i++){
-            const item = this.items[i]
-            if(!item || item.id == ''){
+            if(!this.items[i] || this.items[i].id == ''){
 
-                if(itemData.type == 'resource'){
-                    this.items[i] = { id: id, tag: 'resource', quantity: quantity, timestamp: Date.now() }
-                }
-                else{
-                    this.items[i] = { id: id, tag: 'weapon', timestamp: Date.now() }
-                }
+                this.items[i] = item
 
                 if(i == this.activeIndex) this.parent.equipItem(this.activeIndex)
 
-                this.parent.questInProgress?.addProgress('collect', id, quantity)
+                this.parent.questInProgress?.addProgress('collect', item.id, item.quantity)
 
                 const io = this.parent.scene.gameManager.io
                 io.to(this.parent.uid).emit('updateInventory', this.items)
@@ -72,31 +65,17 @@ export class Inventory {
         if(index >= 25) return false
         if(this.items[index] === undefined) return false
 
-        const tag = this.items[index].tag
-
-        if(tag == 'weapon'){
+        if(this.items[index].quantity > quantity){
+            this.items[index].quantity -= quantity
+        }
+        else if(this.items[index].quantity == quantity){
             this.items[index] = {
                 id: '',
-                tag: null,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                quantity: 0
             }
         }
-        else if(tag == 'resource'){
-            // @ts-ignore
-            if(this.items[index].quantity > quantity){
-                // @ts-ignore
-                this.items[index].quantity -= quantity
-            }
-            // @ts-ignore
-            else if(this.items[index].quantity == quantity){
-                this.items[index] = {
-                    id: '',
-                    tag: null,
-                    timestamp: Date.now()
-                }
-            }
-            else return false
-        }
+        else return false
 
         if(index == this.activeIndex) this.parent.equipItem(this.activeIndex)
             

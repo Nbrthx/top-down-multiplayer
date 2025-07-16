@@ -56,7 +56,7 @@ export class RestApi{
                 health: 100,
                 outfit: {
                     isMale: false,
-                    color: 0xffffff,
+                    color: 0x999999,
                     hair: "basic",
                     face: "basic",
                     body: "basic",

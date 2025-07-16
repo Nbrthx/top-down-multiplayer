@@ -84,10 +84,10 @@ export class TradeUI extends Phaser.GameObjects.Container {
     private createImage(xStart: number, yPos: number, container: Phaser.GameObjects.Container) {
         container.removeAll(true);
 
-        const itemList = container == this.leftImageContainer ? this.leftItemList : this.rightItemList
+        const items = container == this.leftImageContainer ? this.leftItemList : this.rightItemList
 
         for (let i = 0; i < 4; i++) {
-            const item = itemList[i]
+            const item = items[i]
             if(!item || item.id == '') continue
 
             const x = xStart + i * (28*4 + 4*4);
@@ -96,7 +96,7 @@ export class TradeUI extends Phaser.GameObjects.Container {
 
             container.add(image);
 
-            if(item.tag == 'resource'){
+            if(item.quantity > 1){
                 const itemCount = this.scene.add.text(x + 32, yPos + 32, 'x'+item.quantity, {
                     fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
                     stroke: '#000000', strokeThickness: 4
@@ -127,7 +127,8 @@ export class TradeUI extends Phaser.GameObjects.Container {
             btn.setInteractive();
             btn.on('pointerdown', () => {
                 this.selectedIndex = parseInt(i.toString())
-                this.toggleInventory(true)
+                if(this.leftItemList[this.selectedIndex] && this.leftItemList[this.selectedIndex].id != '') this.scene.socket.emit('addTradeItem', this.selectedIndex, 0)
+                else this.toggleInventory(true)
             })
 
             container.add(btn);
@@ -150,14 +151,13 @@ export class TradeUI extends Phaser.GameObjects.Container {
 
                 container.add(itemIcon);
 
-                if(item.tag == 'resource'){
+                if(item.quantity > 1){
                     const itemCount = this.scene.add.text(x + 80, y + 80, 'x'+item.quantity, {
                         fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
                         stroke: '#000000', strokeThickness: 4
                     }).setOrigin(0.5, 0.5).setDepth(10000000)
 
                     itemIcon.on('pointerdown', () => {
-                        if(!item.quantity) return
                         this.popupRange.addResourceItem(this.selectedIndex, i*5+j, item.quantity)
                         this.toggleInventory(false)
                     })
@@ -201,14 +201,13 @@ export class TradeUI extends Phaser.GameObjects.Container {
         })
     }
 
-    addTradeItem(selectedIndex: number, id: string, tag: 'weapon' | 'resource' | null, isSelf: boolean, quantity?: number){
-        console.log('addTradeItem', selectedIndex, id, tag, isSelf, quantity)
+    addTradeItem(selectedIndex: number, id: string, isSelf: boolean, quantity: number){
+        console.log('addTradeItem', selectedIndex, id, isSelf, quantity)
 
         if(isSelf){
             this.leftItemList[selectedIndex] = {
                 id: id,
-                tag: tag,
-                quantity: quantity || 1,
+                quantity: quantity,
                 timestamp: Date.now()
             }
             this.createImage(-48*4*3, 0, this.leftImageContainer)
@@ -216,8 +215,7 @@ export class TradeUI extends Phaser.GameObjects.Container {
         else{
             this.rightItemList[selectedIndex] = {
                 id: id,
-                tag: tag,
-                quantity: quantity || 1,
+                quantity: quantity,
                 timestamp: Date.now()
             }
             this.createImage(48*4, 0, this.rightImageContainer)
@@ -267,6 +265,7 @@ class PopupRange extends Phaser.GameObjects.Container {
         })
 
         const box = scene.add.rectangle(0, 0, 500, 200, 0xbbbbbb)
+        box.setInteractive()
 
         const bar = scene.add.rectangle(0, 0, 400, 10, 0x000000);
 

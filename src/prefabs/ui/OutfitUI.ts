@@ -55,7 +55,7 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         }
 
         this.hairColors = []
-        const colors = [0xff6666, 0x66ff66, 0x6666ff, 0xffff66, 0xff66ff, 0x66ffff, 0xffffff]
+        const colors = [0xcc6666, 0x66cc66, 0x6666cc, 0xcccc66, 0xcc66cc, 0x66ffff, 0xffffff, 0x999999]
 
         for(let i=0; i<4; i++){
             for(let j=0; j<4; j++){

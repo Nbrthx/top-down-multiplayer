@@ -132,7 +132,7 @@ export class HotbarUI extends Phaser.GameObjects.Container {
 
             container.add([box, cooldownBox]);
 
-            if(item.tag == 'resource'){
+            if(item.quantity > 1){
                 const itemCount = this.scene.add.text(x + 80, y + 80, 'x'+item.quantity, {
                     fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
                     stroke: '#000000', strokeThickness: 4

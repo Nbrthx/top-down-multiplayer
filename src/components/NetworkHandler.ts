@@ -216,6 +216,10 @@ export class NetworkHandler{
                 const targetPosition = new p.Vec2(playerData.pos.x, playerData.pos.y)
                 const currentPosition = scene.player.pBody.getPosition()
 
+                const normalized = targetPosition.clone().sub(currentPosition).add(new p.Vec2())
+
+                if(normalized.length() > 0.08 && scene.player.pBody.getLinearVelocity().length() < 0.08) scene.player.pBody.setLinearVelocity(normalized)
+
                 scene.player.pBody.setPosition(currentPosition.add(targetPosition.sub(currentPosition).mul(0.2)))
                 scene.player.attackDir = new p.Vec2(playerData.attackDir.x, playerData.attackDir.y)
                 scene.player.stats.setTotalXp(playerData.xp)
@@ -403,7 +407,7 @@ export class NetworkHandler{
         other.inventory.setActiveIndex(index)
     }
 
-    changeWorld(from: string, worldId: string, isPvpAllowed: boolean, requiredLevel: number){
+    changeWorld(from: string | null, worldId: string, isPvpAllowed: boolean, requiredLevel: number){
         const scene = this.scene
 
         if(scene.player.stats.getLevel() < requiredLevel){
@@ -411,22 +415,24 @@ export class NetworkHandler{
             return
         }
 
-        if(isPvpAllowed) scene.UI.alertBox.setAlert('Do you want to enter pvp zone?', true, () => {
-            scene.worldId = worldId
-            scene.mapSetup.destroy()
-            scene.mapSetup = new MapSetup(scene, worldId)
-            
-            const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
-            
-            scene.camera.centerOn(enterPos.x, enterPos.y)
-            scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
+        if(isPvpAllowed){
+            scene.UI.alertBox.setAlert('Do you want to enter pvp zone?', true, () => {
+                scene.worldId = worldId
+                scene.mapSetup.destroy()
+                scene.mapSetup = new MapSetup(scene, worldId.split('-')[0])
+                
+                const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
+                
+                scene.camera.centerOn(enterPos.x, enterPos.y)
+                scene.player.pBody.setPosition(new p.Vec2(enterPos.x/scene.gameScale/32, enterPos.y/scene.gameScale/32))
 
-            scene.world.queueUpdate(() => scene.socket.emit('confirmChangeWorld'))
-        })
+                scene.world.queueUpdate(() => scene.socket.emit('confirmChangeWorld'))
+            })
+        }
         else{
             scene.worldId = worldId
             scene.mapSetup.destroy()
-            scene.mapSetup = new MapSetup(scene, worldId)
+            scene.mapSetup = new MapSetup(scene, worldId.split('-')[0])
             
             const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
             
@@ -492,10 +498,10 @@ export class NetworkHandler{
         })
     }
 
-    duelStart(){
+    duelStart(worldId: string){
         const scene = this.scene
 
-        scene.worldId = 'duel'
+        scene.worldId = worldId
         scene.mapSetup.destroy()
         scene.mapSetup = new MapSetup(scene, 'duel')
         
@@ -517,9 +523,9 @@ export class NetworkHandler{
         scene.UI.tradeUI.startTrade(uid, scene.others.find(v => v.uid == uid)?.username || '')
     }
 
-    addTradeItem(selectedIndex: number, id: string, tag: 'weapon' | 'resource' | null, isSelf: boolean, quantity?: number){
+    addTradeItem(selectedIndex: number, id: string, isSelf: boolean, quantity: number){
         const scene = this.scene
-        scene.UI.tradeUI.addTradeItem(selectedIndex, id, tag, isSelf, quantity)
+        scene.UI.tradeUI.addTradeItem(selectedIndex, id, isSelf, quantity)
 
         const state = scene.UI.tradeUI.buttonAccept.text.text == 'CONFIRM' ? '(changed)' : '(ready)'
 

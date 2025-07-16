@@ -20,7 +20,7 @@ const config: Types.Core.GameConfig = {
     height: height,
     parent: 'game-container',
     fullscreenTarget: 'game-container',
-    backgroundColor: '#454449',
+    backgroundColor: '#554466',
     pixelArt: true,
     roundPixels: true,
     disableContextMenu: true,

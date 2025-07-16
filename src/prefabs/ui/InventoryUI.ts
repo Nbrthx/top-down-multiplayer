@@ -100,7 +100,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                         const x = pointer.x - this.scene.scale.width/2
                         const y = pointer.y - this.scene.scale.height/2
 
-                        if(item.tag == 'resource' && item.quantity && item.quantity > 1) {
+                        if(item.quantity && item.quantity > 1) {
                             this.popupRange.dropMultipleItems(i*5 + j + startIndex, { x: x, y: y }, item.quantity);
                         }
                         else this.inventory.onDropItem(i*5 + j + startIndex, { x: x, y: y })
@@ -122,7 +122,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 container.add(itemIcon);
 
-                if(item.tag == 'resource'){
+                if(item.quantity > 1){
                     const itemCount = this.scene.add.text(x + 80, y + 80, 'x'+item.quantity, {
                         fontFamily: 'PixelFont', fontSize: 24, color: '#ffffff',
                         stroke: '#000000', strokeThickness: 4
@@ -168,6 +168,7 @@ class PopupRange extends Phaser.GameObjects.Container {
         })
 
         const box = scene.add.rectangle(0, 0, 500, 200, 0xbbbbbb)
+        box.setInteractive()
 
         const bar = scene.add.rectangle(0, 0, 400, 10, 0x000000);
 

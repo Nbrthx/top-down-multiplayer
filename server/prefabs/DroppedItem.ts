@@ -42,7 +42,11 @@ export class DroppedItem{
 
             if(!(player instanceof Player)) return;
 
-            if(player.inventory.addItem(this.id, this.quantity)){
+            if(player.inventory.addItem({
+                id: this.id,
+                timestamp: Date.now(),
+                quantity: this.quantity
+            })){
                 this.isActive = false
             }
         })

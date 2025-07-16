@@ -24,12 +24,21 @@ export class Preloader extends Scene{
     }
 
     init (){
-        this.add.rectangle(this.scale.width/2, 540, 468, 32).setStrokeStyle(1, 0xffffff);
-        const bar = this.add.rectangle(this.scale.width/2-230, 540, 4, 28, 0xffffff);
+        this.add.rectangle(this.scale.width/2, this.scale.height/2, 470, 34)
+        .setStrokeStyle(2, 0xffffff)
+        .setRounded(16)
+
+        const bar = this.add.rectangle(this.scale.width/2-232, this.scale.height/2, 4, 28, 0x33ccaa);
+        bar.setRounded(16)
+        bar.setOrigin(0, 0.5);
+
+        const bar2 = this.add.rectangle(this.scale.width/2-222, this.scale.height/2, 4, 14, 0x66ffcc);
+        bar2.setRounded(4)
+        bar2.setOrigin(0, 0.8);
 
         this.load.on('progress', (progress: number) => {
-            bar.width = 4 + (460 * progress);
-
+            bar.setSize(4 + (460 * progress), 28);
+            bar2.setSize(4 + (440 * progress), 14);
         });
     }
 
@@ -130,7 +139,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'bow-attack',
-            frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 3, 4, 4, 4, 0] }),
+            frames: this.anims.generateFrameNumbers('bow', { frames: [0, 1, 2, 3, 4, 4] }),
             frameRate: 20
         })
         this.anims.create({
@@ -223,6 +232,13 @@ export class Preloader extends Scene{
                 }
                 callback()
             }
+        })
+
+        this.load.on('loaderror', () => {
+            this.add.text(this.scale.width/2, this.scale.height/2+50, 'Failed to load resources, server may be down or maintenance. Try again later.')
+            .setOrigin(0.5)
+            .setStyle({ fontSize: '32px', color: '#ffffff' })
+            .setShadow(2, 2, '#333333', 2, true, true);
         })
     }
 }

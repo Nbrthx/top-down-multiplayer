@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
-import { Game } from "./GameWorld";
-import { Item } from "./server";
+import { Game, GameConfig } from "./GameWorld";
 
 export interface InputData {
     dir: { x: number, y: number }
@@ -10,11 +9,62 @@ export interface InputData {
 interface TradeSession {
     player1: string
     player2: string
-    item1: Item[]
-    item2: Item[]
+    item1: ({ id: string, quantity: number } | null)[]
+    item2: ({ id: string, quantity: number } | null)[]
     state: boolean
     timestamp: number
 }
+
+const maps: {
+    id: string
+    config: GameConfig
+}[] = [
+    {
+        id: 'map1',
+        config: {
+            mapId: 'map1',
+            isPvpAllowed: false,
+            requiredLevel: 0,
+            isDestroyable: false
+        }
+    },
+    {
+        id: 'map2',
+        config: {
+            mapId: 'map2',
+            isPvpAllowed: false,
+            requiredLevel: 0,
+            isDestroyable: false
+        }
+    },
+    {
+        id: 'map3',
+        config: {
+            mapId: 'map3',
+            isPvpAllowed: false,
+            requiredLevel: 3,
+            isDestroyable: false
+        }
+    },
+    {
+        id: 'map4',
+        config: {
+            mapId: 'map4',
+            isPvpAllowed: false,
+            requiredLevel: 0,
+            isDestroyable: false
+        }
+    },
+    {
+        id: 'map5',
+        config: {
+            mapId: 'map5',
+            isPvpAllowed: true,
+            requiredLevel: 4,
+            isDestroyable: false
+        }
+    }
+]
 
 export class GameManager{
     
@@ -39,20 +89,17 @@ export class GameManager{
 
         this.tradeSession = []
 
-        this.createWorld('map1')
-        this.createWorld('map2')
-        this.createWorld('map3')
-        this.createWorld('map4')
-        this.createWorld('map5', true, 4)
-        this.createWorld('duel', true)
+        maps.forEach(map => {
+            this.createWorld(map.id, map.config)
+        })
 
         setInterval(() => {
             this.update();
         }, 1000 / 60);
     }
 
-    public createWorld(worldId: string, isPvpAllowed: boolean = false, requiredLevel: number = 0){
-        this.worlds.push(new Game(this, worldId, isPvpAllowed, requiredLevel))
+    public createWorld(worldId: string, config: GameConfig){
+        this.worlds.push(new Game(this, worldId, config))
     }
 
     public getWorld(worldId: string){

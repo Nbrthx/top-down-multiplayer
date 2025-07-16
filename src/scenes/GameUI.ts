@@ -233,9 +233,11 @@ export class GameUI extends Phaser.Scene {
             this.keyboardInput = { up: false, down: false, left: false, right: false }
         }
 
-        if(this.hotbarUI && this.hotbarUI instanceof HotbarUI) this.hotbarUI.update()
+        if(this.hotbarUI && this.hotbarUI.active && this.hotbarUI instanceof HotbarUI){
+            this.hotbarUI.update()
+        }
 
-        if(this.statsUI && this.statsUI instanceof StatsUI && this.gameScene.player){
+        if(this.statsUI && this.statsUI.active && this.statsUI instanceof StatsUI && this.gameScene.player){
             this.statsUI.update(this.gameScene.player.stats)
         }
 

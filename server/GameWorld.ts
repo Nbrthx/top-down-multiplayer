@@ -10,12 +10,19 @@ import { Projectile } from './prefabs/items/RangeWeapon'
 import { BaseItem } from './prefabs/BaseItem'
 import { Quests } from './components/Quests'
 
+export interface GameConfig{
+    mapId: string
+    isPvpAllowed: boolean,
+    requiredLevel: number,
+    isDestroyable: boolean
+}
+
 export class Game{
 
     id: string
     gameManager: GameManager
-    isPvpAllowed: boolean
-    requiredLevel: number
+
+    config: GameConfig
 
     world: p.World
     gameScale = 4
@@ -32,13 +39,11 @@ export class Game{
     inputData: Map<string, InputData[]>
     mapSetup: MapSetup
 
-    odd: boolean = false
-
-    constructor(gameManager: GameManager, id: string, isPvpAllowed: boolean, requiredLevel: number = 0){
+    constructor(gameManager: GameManager, id: string, config: GameConfig){
         this.gameManager = gameManager
         this.id = id
-        this.isPvpAllowed = isPvpAllowed
-        this.requiredLevel = requiredLevel
+
+        this.config = config
 
         this.world = new p.World()
 
@@ -54,7 +59,7 @@ export class Game{
         this.projectileBodys = []
         this.entityBodys = [];
 
-        this.mapSetup = new MapSetup(this, id)
+        this.mapSetup = new MapSetup(this, config.mapId)
 
         
         this.addHitbox(this.projectileBodys, this.entityBodys)
@@ -84,7 +89,7 @@ export class Game{
             
             if(isPlayer(parent) && isPlayer(target)){
                 if(target.uid == parent.uid) return
-                if(target.isPvpProtected || !this.isPvpAllowed) return
+                if(target.isPvpProtected || !this.config.isPvpAllowed) return
 
                 hit()
             }
@@ -137,13 +142,14 @@ export class Game{
 
         this.players.forEach(player => {
             if(player.health <= 0){
-                player.stats.removeXp(Math.floor(player.stats.getRealXp()/10))
+                let removedXp = Math.floor(player.stats.getRealXp()/10)
+                player.stats.removeXp(removedXp)
                 player.account.health = 100
                 this.removePlayer(player.uid)
 
-                if(this.id == 'duel') this.players.forEach(player2 => {
+                if(this.id.split('-')[0] == 'duel') this.players.forEach(player2 => {
                     player2.account.health = 100
-                    player2.stats.addXp(Math.floor(player.stats.getRealXp()/11))
+                    player2.stats.addXp(removedXp)
                     this.world.queueUpdate(() => {
                         this.gameManager.playerChangeWorld.set(player2.uid, 'map1')
                         this.gameManager.io.to(player2.uid).emit('changeWorld', null, 'map1', false, 0)
@@ -205,6 +211,7 @@ export class Game{
     broadcastOutput(){
         const gameState = {
             id: this.id,
+            mapId: this.config.mapId,
             players: this.players.map(v => {
                 return {
                     uid: v.uid,
@@ -251,7 +258,7 @@ export class Game{
 
         const player = new Player(this, enterPos.x, enterPos.y, uid, account)
 
-        if(this.isPvpAllowed){
+        if(this.config.isPvpAllowed){
             player.isPvpProtected = true
             setTimeout(() => {
                 if(player) player.isPvpProtected = false
@@ -328,6 +335,10 @@ export class Game{
         
         const socket = this.gameManager.io.sockets.sockets.get(uid)
         socket?.leave(this.id)
+
+        if(this.id.split('-')[0] == 'duel' && this.players.length <= 0){
+            this.destroy()
+        }
         
         console.log('Player '+uid+' has removed from '+this.id)
     }
@@ -346,5 +357,28 @@ export class Game{
             const droppedItem = new DroppedItem(this, pos.x, pos.y, item.id, quantity)
             this.droppedItems.push(droppedItem)
         }
+    }
+
+    destroy(){
+        this.players.forEach(v => {
+            v.destroy()
+        })
+        this.enemies.forEach(v => {
+            v.destroy()
+        })
+        this.droppedItems.forEach(v => {
+            v.destroy()
+        })
+        this.projectiles.forEach(v => {
+            v.destroy()
+        })
+
+        const allBody: p.Body[] = []
+        for(let body = this.world.getBodyList(); body; body = body.getNext()){
+            allBody.push(body)
+        }
+        allBody.forEach(body => this.world.destroyBody(body))
+
+        this.gameManager.worlds.splice(this.gameManager.worlds.indexOf(this), 1)
     }
 }

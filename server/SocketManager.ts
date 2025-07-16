@@ -85,15 +85,6 @@ export class SocketManager {
         socket.on('disconnect', () => {
             const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
             if(tradeSession){
-                tradeSession.item1.forEach((v) => {
-                    if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
-                    else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
-                })
-                tradeSession.item2.forEach((v) => {
-                    if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
-                    else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
-                })
-
                 this.io.to(tradeSession.player1).emit('tradeEnd')
                 this.io.to(tradeSession.player2).emit('tradeEnd')
                 this.gameManager.tradeSession.splice(this.gameManager.tradeSession.indexOf(tradeSession), 1)
@@ -123,10 +114,10 @@ export class SocketManager {
         const world = this.gameManager.getWorld(worldId)
         if(!world) return
 
-        if(player.stats.getLevel() < world.requiredLevel) return
+        if(player.stats.getLevel() < world.config.requiredLevel) return
 
         player.scene.removePlayer(socket.id)
-        world.addPlayer(socket.id, player.account, player.scene.id == 'duel' ? 'spawn' : player.scene.id)
+        world.addPlayer(socket.id, player.account, player.scene.id.split('-')[0] == 'duel' ? 'spawn' : player.scene.id)
 
         this.gameManager.playerChangeWorld.delete(socket.id)
     }
@@ -169,6 +160,7 @@ export class SocketManager {
 
     dropItem(socket: Socket, index: number, dir: { x: number, y: number }, quantity?: number) {
         if(!Number.isInteger(index) && typeof dir.x !== 'number' && typeof dir.y !== 'number') return
+        if(this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)) return
 
         const world = this.gameManager.getPlayerWorld(socket.id)
         if(!world) return
@@ -283,7 +275,11 @@ export class SocketManager {
             if(item.length > 0){
                 item.forEach(([itemName, itemQuantity]) => {
                     if(typeof itemName === 'string' && typeof itemQuantity === 'number') {
-                        player.inventory.addItem(itemName, itemQuantity);
+                        player.inventory.addItem({
+                            id: itemName,
+                            quantity: itemQuantity,
+                            timestamp: Date.now()
+                        });
                     }
                 });
             }
@@ -384,6 +380,7 @@ export class SocketManager {
             if(!player2) return socket.emit('serverMessage', 'Player not found')
 
             if(this.gameManager.tradeSession.find(v => v.player1 == player.uid || v.player2 == player.uid)) return socket.emit('serverMessage', 'Trade already in progress')
+            if(this.gameManager.tradeSession.find(v => v.player1 == player2.uid || v.player2 == player2.uid)) return socket.emit('serverMessage', 'Other player is in trade session')
 
             this.gameManager.tradeRequest.set(player2.uid, player.uid)
 
@@ -418,13 +415,19 @@ export class SocketManager {
         player.scene.removePlayer(socket.id)
         player2.scene.removePlayer(player2Id)
 
-        this.io.to(socket.id).emit('duelStart')
-        this.io.to(player2Id).emit('duelStart')
+        this.gameManager.createWorld('duel-'+player.uid+'-'+player2.uid, {
+            mapId: 'duel',
+            isPvpAllowed: true,
+            requiredLevel: 0,
+            isDestroyable: true
+        })
+
+        this.io.to(socket.id).emit('duelStart', 'duel-'+player.uid+'-'+player2.uid)
+        this.io.to(player2Id).emit('duelStart', 'duel-'+player.uid+'-'+player2.uid)
         
         setTimeout(() => {
-            this.gameManager.getWorld('duel')?.addPlayer(socket.id, player.account)
-            this.gameManager.getWorld('duel')?.addPlayer(player2Id, player2.account)
-
+            this.gameManager.getWorld('duel-'+player.uid+'-'+player2.uid)?.addPlayer(socket.id, player.account)
+            this.gameManager.getWorld('duel-'+player.uid+'-'+player2.uid)?.addPlayer(player2Id, player2.account)
 
             this.gameManager.handleInput(socket.id, {
                 dir: { x: 0, y: 0 },
@@ -470,43 +473,27 @@ export class SocketManager {
         const player = this.getPlayer(tradeSession.player1 == socket.id ? tradeSession.player1 : tradeSession.player2)
         if(!player) return socket.emit('serverMessage', 'Player not found')
 
-        const item = player.inventory.items[index] || {
-            id: '',
-            tag: null
-        }
+        const item = player.inventory.items[index]
+        if(!item) return
+        if(itemCount && itemCount > item.quantity) return
 
-        const tradeItems = tradeSession.player1 == socket.id ? tradeSession.item1 : tradeSession.item2
-
-        const existingItem = tradeItems[selectedIndex] as Item & { quantity?: number }
-        tradeItems[selectedIndex] = item.tag != 'resource' ? item : {
+        const addedItem = tradeSession.player1 == socket.id ? tradeSession.item1 : tradeSession.item2
+        
+        if(!addedItem[selectedIndex]) addedItem[selectedIndex] = {
             id: item.id,
-            tag: 'resource',
-            quantity: itemCount || 1,
-            timestamp: Date.now()
+            quantity: itemCount ? itemCount : 1
         }
+        else addedItem[selectedIndex] = null
 
-        tradeSession.state = false
+        const itemId = addedItem[selectedIndex] ? item.id : ''
 
-        player.inventory.removeItem(index, itemCount || 1)
-
-        if(existingItem) player.inventory.addItem(existingItem.id, existingItem.quantity || 1)
-
-        socket.emit('addTradeItem', selectedIndex, item.id, item.tag, true, itemCount)
-        socket.to(tradeSession.player1 == socket.id ? tradeSession.player2 : tradeSession.player1).emit('addTradeItem', selectedIndex, item.id, item.tag, false, itemCount)
+        socket.emit('addTradeItem', selectedIndex, itemId, true, itemCount)
+        socket.to(tradeSession.player1 == socket.id ? tradeSession.player2 : tradeSession.player1).emit('addTradeItem', selectedIndex, itemId, false, itemCount)
     }
 
     tradeDecline(socket: Socket) {
         const tradeSession = this.gameManager.tradeSession.find(v => v.player1 == socket.id || v.player2 == socket.id)
         if(tradeSession){
-            tradeSession.item1.forEach((v) => {
-                if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
-                else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
-            })
-            tradeSession.item2.forEach((v) => {
-                if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
-                else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
-            })
-
             this.io.to(tradeSession.player1).emit('tradeEnd')
             this.io.to(tradeSession.player2).emit('tradeEnd')
             this.gameManager.tradeSession.splice(this.gameManager.tradeSession.indexOf(tradeSession), 1)
@@ -527,13 +514,22 @@ export class SocketManager {
         if(tradeSession){
             if(!tradeSession.state) return socket.emit('serverMessage', 'Other player change deal')
 
-            tradeSession.item2.forEach((v) => {
-                if(v.tag == 'resource') this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, v.quantity || 1)
-                else this.getPlayer(tradeSession.player1)?.inventory.addItem(v.id, 1)
-            })
+            const player1 = this.getPlayer(tradeSession.player1)
+            const player2 = this.getPlayer(tradeSession.player2)
+
+            if(!player1 || !player2) return
+
             tradeSession.item1.forEach((v) => {
-                if(v.tag == 'resource') this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, v.quantity || 1)
-                else this.getPlayer(tradeSession.player2)?.inventory.addItem(v.id, 1)
+                if(!v) return
+
+                player2.inventory.addItem({ id: v.id, quantity: v.quantity, timestamp: Date.now() })
+                player1.inventory.removeItemById(v.id, v.quantity)
+            })
+            tradeSession.item2.forEach((v) => {
+                if(!v) return
+
+                player1.inventory.addItem({ id: v.id, quantity: v.quantity, timestamp: Date.now() })
+                player2.inventory.removeItemById(v.id, v.quantity)
             })
 
             this.io.to(tradeSession.player1).emit('tradeEnd')

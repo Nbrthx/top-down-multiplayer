@@ -3,9 +3,8 @@ import { Player } from "./Player";
 
 export interface Item {
     id: string
-    tag: 'weapon' | 'resource' | null
     timestamp: number
-    quantity?: number
+    quantity: number
 }
 
 export class Inventory {
@@ -22,8 +21,8 @@ export class Inventory {
         for(let i = 0; i < 25; i++){
             this.items.push({
                 id: '',
-                tag: null,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                quantity: 0
             })
         }
     }

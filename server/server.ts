@@ -8,9 +8,8 @@ import { RestApi } from './RestApi'
 
 export interface Item {
     id: string
-    tag: 'weapon' | 'resource' | null
     timestamp: number
-    quantity?: number
+    quantity: number
 }
 
 export interface Account{
@@ -54,18 +53,18 @@ const accounts: Account[] = [
         "health": 100,
         "outfit": {
             "isMale": false,
-            "color": 0xffffff,
+            "color": 0x999999,
             "hair": "basic",
             "face": "basic",
             "body": "basic",
             "leg": "basic"
         },
         "inventory": [
-            { "id": "dagger", "tag": "weapon", "timestamp": 0 },
-            { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
-            { "id": "sword", "tag": "weapon", "timestamp": 0 },
-            { "id": "bow", "tag": "weapon", "timestamp": 0 },
-            { "id": "wood", "tag": "resource", "quantity": 10, "timestamp": 0 }
+            { "id": "dagger", "quantity": 1, "timestamp": 0 },
+            { "id": "blue-knife", "quantity": 1, "timestamp": 0 },
+            { "id": "sword", "quantity": 1, "timestamp": 0 },
+            { "id": "bow", "quantity": 1, "timestamp": 0 },
+            { "id": "wood", "quantity": 10, "timestamp": 0 }
         ],
         "questCompleted": []
     },
@@ -77,18 +76,18 @@ const accounts: Account[] = [
         "health": 100,
         "outfit": {
             "isMale": false,
-            "color": 0xffffff,
+            "color": 0x999999,
             "hair": "basic",
             "face": "basic",
             "body": "basic",
             "leg": "basic"
         },
         "inventory": [
-            { "id": "dagger", "tag": "weapon", "timestamp": 0 },
-            { "id": "blue-knife", "tag": "weapon", "timestamp": 0 },
-            { "id": "sword", "tag": "weapon", "timestamp": 0 },
-            { "id": "bow", "tag": "weapon", "timestamp": 0 },
-            { "id": "wood", "tag": "resource", "quantity": 10, "timestamp": 0 }
+            { "id": "dagger", "quantity": 1, "timestamp": 0 },
+            { "id": "blue-knife", "quantity": 1, "timestamp": 0 },
+            { "id": "sword", "quantity": 1, "timestamp": 0 },
+            { "id": "bow", "quantity": 1, "timestamp": 0 },
+            { "id": "wood", "quantity": 10, "timestamp": 0 }
         ],
         "questCompleted": []
     }
