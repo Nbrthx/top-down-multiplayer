@@ -79,7 +79,7 @@ export class Authentication extends Phaser.GameObjects.DOMElement {
             isTrust.onfocus = () => htmlAlert('')
             
             if(username.value.length < 1) return htmlAlert('username cannot be empty')
-            else if(username.value.includes('-')) return htmlAlert('username cannot contain "-"')
+            else if(username.value.includes(':')) return htmlAlert('username cannot contain "-"')
             else if(password.value.length < 9) return htmlAlert('password must be at least 9 characters')
 
             this.isLoading = true

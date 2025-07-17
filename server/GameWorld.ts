@@ -147,7 +147,7 @@ export class Game{
                 player.account.health = 100
                 this.removePlayer(player.uid)
 
-                if(this.id.split('-')[0] == 'duel') this.players.forEach(player2 => {
+                if(this.id.split(':')[0] == 'duel') this.players.forEach(player2 => {
                     player2.account.health = 100
                     player2.stats.addXp(removedXp)
                     this.world.queueUpdate(() => {
@@ -336,7 +336,7 @@ export class Game{
         const socket = this.gameManager.io.sockets.sockets.get(uid)
         socket?.leave(this.id)
 
-        if(this.id.split('-')[0] == 'duel' && this.players.length <= 0){
+        if(this.id.split(':')[0] == 'duel' && this.players.length <= 0){
             this.destroy()
         }
         

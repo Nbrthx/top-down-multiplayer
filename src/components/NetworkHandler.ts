@@ -419,7 +419,7 @@ export class NetworkHandler{
             scene.UI.alertBox.setAlert('Do you want to enter pvp zone?', true, () => {
                 scene.worldId = worldId
                 scene.mapSetup.destroy()
-                scene.mapSetup = new MapSetup(scene, worldId.split('-')[0])
+                scene.mapSetup = new MapSetup(scene, worldId.split(':')[0])
                 
                 const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
                 
@@ -432,7 +432,7 @@ export class NetworkHandler{
         else{
             scene.worldId = worldId
             scene.mapSetup.destroy()
-            scene.mapSetup = new MapSetup(scene, worldId.split('-')[0])
+            scene.mapSetup = new MapSetup(scene, worldId.split(':')[0])
             
             const enterPos = scene.mapSetup.enterpoint.get(from || 'spawn') || { x: 100, y: 100 }
             

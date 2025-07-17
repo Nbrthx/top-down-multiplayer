@@ -35,7 +35,7 @@ export class MapSetup{
         this.scene = scene
         this.gameScale = scene.gameScale
 
-        const map = JSON.parse(fs.readFileSync(__dirname+'/../json/map/'+mapName+'.json', {encoding: 'utf8'}))
+        const map = JSON.parse(fs.readFileSync(__dirname+'/../json/'+mapName+'.json', {encoding: 'utf8'}))
 
         this.initCollision(map)
         this.createEnemy(map)

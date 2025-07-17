@@ -62,7 +62,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                 const y = i * 128;
 
                 const slot = this.scene.add.rectangle(x + 48, y + 48, 128, 128);
-                slot.setName((isHotbar ? 'hotbar' : 'inventory')+'-'+(i*5 + j + startIndex))
+                slot.setName((isHotbar ? 'hotbar' : 'inventory')+':'+(i*5 + j + startIndex))
                 slot.setInteractive({ dropZone: true });
 
                 container.add(slot);
@@ -110,7 +110,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
                         itemIcon.y = y + 48;
                     }
                     else{
-                        const index = parseInt(target.name.split('-')[1])
+                        const index = parseInt(target.name.split(':')[1])
 
                         if(index == i*5 + j + startIndex) return
 

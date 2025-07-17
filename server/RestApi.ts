@@ -1,10 +1,10 @@
 import { ec as EC } from 'elliptic'
 import * as express from 'express';
 import { Account } from './server';
-import { male, female } from './json/outfit-list.json';
-import { _npcList } from './json/npc-list.json';
-import { _itemList } from './json/item-list.json';
-import { _enemyList } from './json/enemy-list.json';
+import { male, female } from './json/.outfit-list.json';
+import { _npcList } from './json/.npc-list.json';
+import { _itemList } from './json/.item-list.json';
+import { _enemyList } from './json/.enemy-list.json';
 
 const ec = new EC('secp256k1');
 
@@ -43,7 +43,7 @@ export class RestApi{
     register(req: express.Request, res: express.Response){
         const { akey, pubKey, username } = req.body;
 
-        if(username.includes('-')) res.status(409).json({ message: "Username cannot contain '-'" })
+        if(username.includes(':')) res.status(409).json({ message: "Username cannot contain ':'" })
         else if(this.accounts.find(u => u.username === username)){
             res.status(409).json({ message: "Username already exists!" })
         }

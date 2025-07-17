@@ -4,7 +4,7 @@ import { BaseItem } from "./BaseItem";
 import { MeleeWeapon, Melee } from "./items/MeleeWeapon";
 import { RangeWeapon, Range } from "./items/RangeWeapon";
 import { Resource } from './items/ResourceItem';
-import { _itemList } from '../json/item-list.json';
+import { _itemList } from '../json/.item-list.json';
 
 interface MeleeItem {
     id: string

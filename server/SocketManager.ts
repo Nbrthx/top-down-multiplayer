@@ -3,7 +3,7 @@ import { GameManager, InputData } from './GameManager';
 import { Server as HTTPServer } from 'http'
 import { Account, Item } from './server';
 import { QuestConfig, Quests } from './components/Quests';
-import { male, female } from './json/outfit-list.json';
+import { male, female } from './json/.outfit-list.json';
 
 interface OutfitList {
     male: {
@@ -117,7 +117,7 @@ export class SocketManager {
         if(player.stats.getLevel() < world.config.requiredLevel) return
 
         player.scene.removePlayer(socket.id)
-        world.addPlayer(socket.id, player.account, player.scene.id.split('-')[0] == 'duel' ? 'spawn' : player.scene.id)
+        world.addPlayer(socket.id, player.account, player.scene.id.split(':')[0] == 'duel' ? 'spawn' : player.scene.id)
 
         this.gameManager.playerChangeWorld.delete(socket.id)
     }
@@ -415,19 +415,19 @@ export class SocketManager {
         player.scene.removePlayer(socket.id)
         player2.scene.removePlayer(player2Id)
 
-        this.gameManager.createWorld('duel-'+player.uid+'-'+player2.uid, {
+        this.gameManager.createWorld('duel-'+player.uid+':'+player2.uid, {
             mapId: 'duel',
             isPvpAllowed: true,
             requiredLevel: 0,
             isDestroyable: true
         })
 
-        this.io.to(socket.id).emit('duelStart', 'duel-'+player.uid+'-'+player2.uid)
-        this.io.to(player2Id).emit('duelStart', 'duel-'+player.uid+'-'+player2.uid)
+        this.io.to(socket.id).emit('duelStart', 'duel-'+player.uid+':'+player2.uid)
+        this.io.to(player2Id).emit('duelStart', 'duel-'+player.uid+':'+player2.uid)
         
         setTimeout(() => {
-            this.gameManager.getWorld('duel-'+player.uid+'-'+player2.uid)?.addPlayer(socket.id, player.account)
-            this.gameManager.getWorld('duel-'+player.uid+'-'+player2.uid)?.addPlayer(player2Id, player2.account)
+            this.gameManager.getWorld('duel-'+player.uid+':'+player2.uid)?.addPlayer(socket.id, player.account)
+            this.gameManager.getWorld('duel-'+player.uid+':'+player2.uid)?.addPlayer(player2Id, player2.account)
 
             this.gameManager.handleInput(socket.id, {
                 dir: { x: 0, y: 0 },

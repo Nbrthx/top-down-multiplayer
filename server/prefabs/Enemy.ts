@@ -4,7 +4,7 @@ import { BaseItem } from './BaseItem'
 import { ItemInstance } from './ItemInstance'
 import { Player } from './Player'
 import { MeleeWeapon } from './items/MeleeWeapon'
-import { _enemyList } from '../json/enemy-list.json'
+import { _enemyList } from '../json/.enemy-list.json'
 
 interface EnemyConfig {
     id: string
