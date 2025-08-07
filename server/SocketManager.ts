@@ -64,6 +64,8 @@ export class SocketManager {
 
         socket.on('changeOutfit', this.changeOutfit.bind(this, socket));
 
+        socket.on('wrapOutfit', this.wrapOutfit.bind(this, socket));
+
         socket.on('chat', this.chat.bind(this, socket));
 
         socket.on('duelAccept', this.duelAccept.bind(this, socket));
@@ -331,6 +333,10 @@ export class SocketManager {
             if(!outfitList[genderKey][key].includes(outfit)) return
         }
 
+        if(typeof outfit == 'string' && model != 'color'){
+            if(!player.account.ownedOutfits.includes(outfit+'-'+model+'-'+(player.outfit.isMale ? 'male' : 'female'))) return
+        }
+
         player.account.outfit = {
             ...player.account.outfit,
             [model]: outfit
@@ -342,6 +348,23 @@ export class SocketManager {
         }
 
         socket.broadcast.emit('changeOutfit', socket.id, model, outfit)
+    }
+
+    wrapOutfit(socket: Socket, model: string, outfit: string) {
+        const player = this.getPlayer(socket.id)
+        if(!player) return
+
+        if(['hair', 'face', 'body', 'leg'].indexOf(model) == -1) return
+        if(typeof outfit !== 'string') return
+
+        player.inventory.addItem({
+            id: 'wrapped-'+model+':'+outfit+'-'+(player.outfit.isMale ? 'male' : 'female'),
+            quantity: 1,
+            timestamp: Date.now()
+        })
+        player.account.ownedOutfits.splice(player.account.ownedOutfits.indexOf(outfit+'-'+model+'-'+(player.outfit.isMale ? 'male' : 'female')), 1)
+
+        socket.emit('changeOwnedOutfits', player.account.ownedOutfits)
     }
 
     chat(socket: Socket, msg: string){
@@ -415,19 +438,19 @@ export class SocketManager {
         player.scene.removePlayer(socket.id)
         player2.scene.removePlayer(player2Id)
 
-        this.gameManager.createWorld('duel-'+player.uid+':'+player2.uid, {
+        this.gameManager.createWorld('duel:'+player.uid+player2.uid, {
             mapId: 'duel',
             isPvpAllowed: true,
             requiredLevel: 0,
             isDestroyable: true
         })
 
-        this.io.to(socket.id).emit('duelStart', 'duel-'+player.uid+':'+player2.uid)
-        this.io.to(player2Id).emit('duelStart', 'duel-'+player.uid+':'+player2.uid)
+        this.io.to(socket.id).emit('duelStart', 'duel:'+player.uid+player2.uid)
+        this.io.to(player2Id).emit('duelStart', 'duel:'+player.uid+player2.uid)
         
         setTimeout(() => {
-            this.gameManager.getWorld('duel-'+player.uid+':'+player2.uid)?.addPlayer(socket.id, player.account)
-            this.gameManager.getWorld('duel-'+player.uid+':'+player2.uid)?.addPlayer(player2Id, player2.account)
+            this.gameManager.getWorld('duel:'+player.uid+player2.uid)?.addPlayer(socket.id, player.account)
+            this.gameManager.getWorld('duel:'+player.uid+player2.uid)?.addPlayer(player2Id, player2.account)
 
             this.gameManager.handleInput(socket.id, {
                 dir: { x: 0, y: 0 },

@@ -3,7 +3,7 @@ import { Game } from "../GameWorld";
 import { BaseItem } from "./BaseItem";
 import { MeleeWeapon, Melee } from "./items/MeleeWeapon";
 import { RangeWeapon, Range } from "./items/RangeWeapon";
-import { Resource } from './items/ResourceItem';
+import { Resource, ResourceItem as ResourceInstance } from './items/ResourceItem';
 import { _itemList } from '../json/.item-list.json';
 
 interface MeleeItem {
@@ -41,9 +41,9 @@ export class ItemInstance{
         this.parentBody = parentBody;
 
         const defaultConfig = itemList[0].config as Melee;
-        const item = itemList.find(item => item.id === itemId || '');
+        const item = itemList.find(item => item.id === itemId?.split(':')[0] || '');
 
-        if(item){
+        if(item && itemId){
             if(item.type === 'melee'){
                 this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, item.config);
             }
@@ -51,7 +51,7 @@ export class ItemInstance{
                 this.itemInstance = new RangeWeapon(this.scene, this.parentBody, item.config);
             }
             else{
-                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultConfig);
+                this.itemInstance = new ResourceInstance(this.scene, this.parentBody, item.config, itemId);
             }
         }
         else{

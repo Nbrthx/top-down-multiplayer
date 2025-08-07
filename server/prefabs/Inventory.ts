@@ -27,7 +27,7 @@ export class Inventory {
     }
 
     addItem(item: Item): boolean {
-        const itemData = itemList.find(v => v.id === item.id)
+        const itemData = itemList.find(v => v.id === item.id.split(':')[0])
         if(!itemData) return false
 
         const existItem = this.getItem(item.id)

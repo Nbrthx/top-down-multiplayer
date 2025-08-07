@@ -115,6 +115,46 @@
                 "isUsable": false,
                 "cooldown": 1000
             }
+        },
+        {
+            "id": "fracture-coins",
+            "type": "resource",
+            "config": {
+                "isUsable": false,
+                "cooldown": 1000
+            }
+        },
+        {
+            "id": "wrapped-hair",
+            "type": "resource",
+            "config": {
+                "isUsable": false,
+                "cooldown": 1000
+            }
+        },
+        {
+            "id": "wrapped-face",
+            "type": "resource",
+            "config": {
+                "isUsable": false,
+                "cooldown": 1000
+            }
+        },
+        {
+            "id": "wrapped-body",
+            "type": "resource",
+            "config": {
+                "isUsable": false,
+                "cooldown": 1000
+            }
+        },
+        {
+            "id": "wrapped-leg",
+            "type": "resource",
+            "config": {
+                "isUsable": false,
+                "cooldown": 1000
+            }
         }
     ]
 }

@@ -54,9 +54,10 @@ export class RestApi{
                 akey: akey as string,
                 xp: 0,
                 health: 100,
+                ownedOutfits: ['basic-hair-female', 'basic-face-female', 'basic-body-female', 'basic-leg-female', 'basic-hair-male', 'basic-face-male', 'basic-body-male', 'basic-leg-male'],
                 outfit: {
                     isMale: false,
-                    color: 0x999999,
+                    color: 0x888888,
                     hair: "basic",
                     face: "basic",
                     body: "basic",

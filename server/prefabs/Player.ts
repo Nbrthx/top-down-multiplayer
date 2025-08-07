@@ -15,7 +15,7 @@ export class Player{
     uid: string
     health: number
     maxHealth: number
-    speed = 4.2
+    speed = 3.6
 
     scene: Game
     pBody: p.Body

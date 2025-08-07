@@ -6,6 +6,8 @@ export class OutfitUI extends Phaser.GameObjects.Container {
 
     scene: GameUI
     player: Player
+    ownedOutfits: string[]
+    isWrapMode: boolean = false
     
     image: Phaser.GameObjects.NineSlice
     background: Phaser.GameObjects.Rectangle
@@ -13,12 +15,14 @@ export class OutfitUI extends Phaser.GameObjects.Container {
     buttons: Phaser.GameObjects.Text[]
     hairColors: Phaser.GameObjects.Rectangle[]
     outfitList: OutfitList
+    wrapOutfit: Phaser.GameObjects.Text
 
-    constructor(scene: GameUI, player: Player) {
+    constructor(scene: GameUI, player: Player, ownedOutfits: string[]) {
         super(scene, 0, scene.scale.height)
 
         this.scene = scene
         this.player = player
+        this.ownedOutfits = ownedOutfits
 
         scene.add.existing(this)
 
@@ -43,7 +47,16 @@ export class OutfitUI extends Phaser.GameObjects.Container {
             this.showOutfitList()
         })
 
-        this.add([this.image, this.background, this.changeGender])
+        this.wrapOutfit = scene.add.text(scene.scale.width-100, -230, 'Wrap Outfit', {
+            fontSize: 40, color: '#000000', fontStyle: 'bold', fontFamily: 'PixelFont',
+            stroke: '#ffffff', strokeThickness: 4
+        }).setOrigin(1, 0.5).setInteractive().on('pointerdown', () => {
+            this.isWrapMode = !this.isWrapMode
+
+            this.showOutfitList()
+        })
+
+        this.add([this.image, this.background, this.changeGender, this.wrapOutfit])
 
         for(let i=0; i<4; i++){
             const x = scene.scale.width/2 + 280 * i - 440
@@ -55,7 +68,7 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         }
 
         this.hairColors = []
-        const colors = [0xcc6666, 0x66cc66, 0x6666cc, 0xcccc66, 0xcc66cc, 0x66ffff, 0xffffff, 0x999999]
+        const colors = [0xcc6666, 0x66cc66, 0x6666cc, 0xcccc66, 0xcc66cc, 0x66ffff, 0xffffff, 0x888888]
 
         for(let i=0; i<4; i++){
             for(let j=0; j<4; j++){
@@ -99,9 +112,16 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         Object.keys(this.outfitList[genderKey]).forEach((key, index) => {
             if(key != 'hair' && key != 'face' && key != 'body' && key != 'leg') return
 
+            let j = 0
+
             for(let i = 0; i < this.outfitList[genderKey][key].length; i++){
+                if(!this.ownedOutfits.includes(this.outfitList[genderKey][key][i]+'-'+key+'-'+genderKey)){
+                    j++
+                    continue
+                }
+
                 const x = this.scene.scale.width/2 + 280 * index - 440
-                const y = 36 * i - 260
+                const y = 36 * (i-j) - 260
                 const button = this.scene.add.text(x, y, this.outfitList[genderKey][key][i], {
                     fontSize: 32, color: '#000000', fontFamily: 'PixelFont',
                     stroke: '#ffffff', strokeThickness: 4
@@ -111,15 +131,31 @@ export class OutfitUI extends Phaser.GameObjects.Container {
                     button.setStroke('#00ff00', 4)
                 }
 
-                button.on('pointerup', () => {
-                    this.changeOutfit(key, i)
-
-                    this.buttons.forEach(v => {
-                        if(v.name != key) return
-                        v.setStroke('#ffffff', 4)
+                if(this.isWrapMode){
+                    button.setStroke('#ffffff', 4)
+                    this.scene.tweens.add({
+                        targets: button,
+                        alpha: 0.2,
+                        duration: 500,
+                        yoyo: true,
+                        ease: 'Sine.easeInOut',
+                        repeat: -1
                     })
-                    button.setStroke('#00ff00', 4)
-                })
+                    button.on('pointerup', () => {
+                        this.scene.socket.emit('wrapOutfit', key, this.outfitList[genderKey][key][i])
+                    })
+                }
+                else{
+                    button.on('pointerup', () => {
+                        this.changeOutfit(key, i)
+
+                        this.buttons.forEach(v => {
+                            if(v.name != key) return
+                            v.setStroke('#ffffff', 4)
+                        })
+                        button.setStroke('#00ff00', 4)
+                    })
+                }
 
                 this.buttons.push(button)
                 this.add(button)
@@ -132,6 +168,10 @@ export class OutfitUI extends Phaser.GameObjects.Container {
         
         if(value) this.onOpen({ x: this.player.x, y: this.player.y })
         else this.onClose()
+
+        this.isWrapMode = false
+
+        this.showOutfitList()
 
         return this
     }

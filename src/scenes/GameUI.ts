@@ -274,7 +274,7 @@ export class GameUI extends Phaser.Scene {
         })
     }
 
-    setupUI(player: Player){
+    setupUI(player: Player, ownedOutfits: string[]){
         if(this.statsUI?.active) this.statsUI.destroy()
         if(this.hotbarUI?.active) this.hotbarUI.destroy()
         if(this.inventoryUI?.active) this.inventoryUI.destroy()
@@ -335,7 +335,7 @@ export class GameUI extends Phaser.Scene {
             })
         }
 
-        this.outfitUI = new OutfitUI(this, player)
+        this.outfitUI = new OutfitUI(this, player, ownedOutfits)
         this.outfitUI.setVisible(false)
 
         this.outfitUI.onOpen = (pos) => {

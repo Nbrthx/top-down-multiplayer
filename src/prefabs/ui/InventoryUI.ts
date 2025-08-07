@@ -78,7 +78,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
                 if(!item || item.id == '') continue
 
-                const itemIcon = this.scene.add.image(x + 48, y + 48, 'icon-'+item.id);
+                const itemIcon = this.scene.add.image(x + 48, y + 48, 'icon-'+item.id.split(':')[0]);
                 itemIcon.setScale(4).setDepth(100);
                 itemIcon.setInteractive({ draggable: true });
 

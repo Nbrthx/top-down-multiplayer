@@ -3,7 +3,7 @@
         {
             "id": "enemy1",
             "maxHealth": 60,
-            "speed": 2.8,
+            "speed": 2.4,
             "visionDistance": 6,
             "attackDistance": 2,
             "zigzagDistance": 3.4,
@@ -18,7 +18,7 @@
         {
             "id": "enemy2",
             "maxHealth": 80,
-            "speed": 2.4,
+            "speed": 2,
             "visionDistance": 6,
             "attackDistance": 6,
             "zigzagDistance": 7,
@@ -33,7 +33,7 @@
         {
             "id": "enemy3",
             "maxHealth": 100,
-            "speed": 3,
+            "speed": 2.2,
             "visionDistance": 7,
             "attackDistance": 7,
             "zigzagDistance": 8,
@@ -48,7 +48,7 @@
         {
             "id": "enemy4",
             "maxHealth": 120,
-            "speed": 3.6,
+            "speed": 3,
             "visionDistance": 7,
             "attackDistance": 2.5,
             "zigzagDistance": 5,

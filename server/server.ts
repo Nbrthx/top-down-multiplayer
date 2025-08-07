@@ -18,6 +18,7 @@ export interface Account{
     akey: string
     health: number
     xp: number
+    ownedOutfits: string[]
     outfit: {
         isMale: boolean
         color: number
@@ -51,9 +52,25 @@ const accounts: Account[] = [
         "akey": "cb82f45fbe63ae34b8d6b5d0ce29fccfe2c510ee55495a5699dd8f07fa206df718562d7293c1e53e90b9689087c3e09a4f1c886360bcb4f21c173fd99f488d6c",
         "xp": 100,
         "health": 100,
+        "ownedOutfits": [
+            'basic-hair-male',
+            'short-hair-male',
+            'spread-hair-male',
+            'basic-face-male',
+            'basic-body-male',
+            'brown-body-male',
+            'basic-leg-male',
+            'basic-hair-female',
+            'bodied-hair-female',
+            'ponytail-hair-female',
+            'basic-face-female',
+            'basic-body-female',
+            'grey-body-female',
+            'basic-leg-female'
+        ],
         "outfit": {
             "isMale": false,
-            "color": 0x999999,
+            "color": 0x888888,
             "hair": "basic",
             "face": "basic",
             "body": "basic",
@@ -74,9 +91,25 @@ const accounts: Account[] = [
         "akey": "6fd2f0798d96fc7ab4df873357c18f452c87bc608b4fd429c8851f439ea7fefe1974e718dd0411c76575fddd6dbf10644a8046321243589c2710fa3a47af14cf",
         "xp": 0,
         "health": 100,
+        "ownedOutfits": [
+            'basic-hair-male',
+            'short-hair-male',
+            'spread-hair-male',
+            'basic-face-male',
+            'basic-body-male',
+            'brown-body-male',
+            'basic-leg-male',
+            'basic-hair-female',
+            'bodied-hair-female',
+            'ponytail-hair-female',
+            'basic-face-female',
+            'basic-body-female',
+            'grey-body-female',
+            'basic-leg-female'
+        ],
         "outfit": {
             "isMale": false,
-            "color": 0x999999,
+            "color": 0x888888,
             "hair": "basic",
             "face": "basic",
             "body": "basic",

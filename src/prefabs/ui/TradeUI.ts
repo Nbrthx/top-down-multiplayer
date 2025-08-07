@@ -91,7 +91,7 @@ export class TradeUI extends Phaser.GameObjects.Container {
             if(!item || item.id == '') continue
 
             const x = xStart + i * (28*4 + 4*4);
-            const image = this.scene.add.image(x, yPos, 'icon-'+item.id);         
+            const image = this.scene.add.image(x, yPos, 'icon-'+item.id.split(':')[0]);         
             image.setScale(4);
 
             container.add(image);

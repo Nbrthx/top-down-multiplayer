@@ -40,6 +40,7 @@ interface Account{
     username: string,
     xp: number,
     health: number,
+    ownedOutfits: string[]
     outfit: {
         isMale: boolean
         color: number
@@ -101,6 +102,8 @@ export class NetworkHandler{
 
         this.socket.on('changeOutfit', this.changeOutfit.bind(this))
 
+        this.socket.on('changeOwnedOutfits', this.changeOwnedOutfits.bind(this))
+
         this.socket.on('chat', this.chat.bind(this))
 
         this.socket.on('duelRequest', this.duelRequest.bind(this))
@@ -150,7 +153,7 @@ export class NetworkHandler{
 
         scene.player.syncData(account.health, account.inventory, 0, account.outfit)
 
-        scene.UI.setupUI(scene.player)
+        scene.UI.setupUI(scene.player, account.ownedOutfits)
 
         others.forEach(v => {
             if(v.uid == this.socket.id) return
@@ -442,6 +445,15 @@ export class NetworkHandler{
             scene.world.queueUpdate(() => scene.socket.emit('confirmChangeWorld'))
         }
 
+    }
+
+    changeOwnedOutfits(ownedOutfits: string[]){
+        const scene = this.scene
+
+        console.log('changeOwnedOutfits', ownedOutfits)
+
+        scene.UI.outfitUI.ownedOutfits = ownedOutfits
+        scene.UI.outfitUI.showOutfitList()
     }
 
     questProgress(taskInstruction: string, taskProgress?: { type: string, target: string, progress: number, max: number }[]){

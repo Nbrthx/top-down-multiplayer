@@ -3,7 +3,7 @@ import { Game } from "../scenes/Game";
 import { BaseItem } from "./BaseItem";
 import { MeleeWeapon, Melee } from "./items/MeleeWeapon";
 import { RangeWeapon, Range } from "./items/RangeWeapon";
-import { Resource } from './items/ResourceItem';
+import { Resource, ResourceItem as ResourceInstance } from './items/ResourceItem';
 
 interface MeleeItem {
     id: string
@@ -50,7 +50,7 @@ export class ItemInstance{
                 this.itemInstance = new RangeWeapon(this.scene, this.parentBody, item.config);
             }
             else{
-                this.itemInstance = new MeleeWeapon(this.scene, this.parentBody, defaultConfig);
+                this.itemInstance = new ResourceInstance(this.scene, this.parentBody, item.config);
             }
         }
         else{

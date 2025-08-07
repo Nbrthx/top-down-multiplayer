@@ -77,6 +77,11 @@ export class Preloader extends Scene{
         this.load.image('icon-dagger', 'icon/dagger.png')
         this.load.image('icon-blue-knife', 'icon/blue-knife.png')
         this.load.image('icon-wood', 'icon/wood.png')
+        this.load.image('icon-fracture-coins', 'icon/fracture-coins.png')
+        this.load.image('icon-wrapped-hair', 'icon/wrapped-hair.png')
+        this.load.image('icon-wrapped-face', 'icon/wrapped-face.png')
+        this.load.image('icon-wrapped-body', 'icon/wrapped-body.png')
+        this.load.image('icon-wrapped-leg', 'icon/wrapped-leg.png')
 
         // Environtment
         this.load.image('tilemaps', 'environment/tilemaps2.png')
