@@ -109,7 +109,7 @@ export class Game extends Scene{
         })
 
         this.lights.enable()
-        this.lights.setAmbientColor(0xccaadd)
+        this.lights.setAmbientColor(0xffffff)
     }
 
     update(currentTime: number) {

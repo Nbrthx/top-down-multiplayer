@@ -4,7 +4,7 @@ export class TextBox extends Phaser.GameObjects.Text {
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, '', {
             fontFamily: 'PixelFont', fontSize: 38,
-            color: '#000', strokeThickness: 8, stroke: '#fff', letterSpacing: 2
+            color: '#fff', strokeThickness: 8, stroke: '#000', letterSpacing: 2
         });
         this.scene = scene;
         this.scene.add.existing(this)

@@ -319,7 +319,7 @@ export class GameUI extends Phaser.Scene {
             this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
             this.tweens.add({
                 targets: this.gameScene.camera,
-                zoom: 1.6,
+                zoom: 1.4,
                 duration: 400,
                 ease: 'Linear'
             })
@@ -343,7 +343,7 @@ export class GameUI extends Phaser.Scene {
             this.gameScene.camera.setFollowOffset(player.x - pos.x, player.y - pos.y - 40)
             this.tweens.add({
                 targets: this.gameScene.camera,
-                zoom: 1.6,
+                zoom: 1.4,
                 duration: 400,
                 ease: 'Linear'
             })

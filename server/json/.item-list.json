@@ -99,7 +99,7 @@
                 "speed": 10,
                 "range": 8,
                 "cooldown": 400,
-                "attackDelay": 300,
+                "attackDelay": 200,
                 "damage": 1.6,
                 "knockback": 10,
                 "force": -12,

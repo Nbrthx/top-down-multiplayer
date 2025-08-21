@@ -49,11 +49,6 @@ export class Outfit extends Phaser.GameObjects.Container{
         this.faceImage = scene.add.sprite(0, -36, 'basic-face-female').setScale(scene.gameScale)
         this.hairImage = scene.add.sprite(0, -36, 'basic-hair-female').setScale(scene.gameScale)
 
-        this.legImage.setPipeline('Light2D')
-        this.bodyImage.setPipeline('Light2D')
-        this.faceImage.setPipeline('Light2D')
-        this.hairImage.setPipeline('Light2D')
-
         this.outfit = {
             isMale: false,
             color: 0xffffff,
@@ -92,6 +87,8 @@ export class Outfit extends Phaser.GameObjects.Container{
     }
 
     changeOutfit(model: string, outfit: string){
+        if(model != 'hair' && model != 'face' && model != 'body' && model != 'leg') return
+
         let sprite: Phaser.GameObjects.Sprite | null = null
         if(model == 'hair') sprite = this.hairImage
         else if(model == 'face') sprite = this.faceImage
@@ -102,6 +99,7 @@ export class Outfit extends Phaser.GameObjects.Container{
 
         if(sprite && this.scene.textures.exists(`${outfit}-${model}-${genderKey}`)){
             sprite.setTexture(`${outfit}-${model}-${genderKey}`)
+            this.outfit[model] = outfit
 
             if(this.currentAnim){
                 this.stopAnim()

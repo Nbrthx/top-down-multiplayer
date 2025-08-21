@@ -134,7 +134,7 @@ export class Preloader extends Scene{
         })
         this.anims.create({
             key: 'throw-attack',
-            frames: this.anims.generateFrameNumbers('throw', { frames: [0, 0, 0, 0, 0, 0, 1, 2, 3, 4] }),
+            frames: this.anims.generateFrameNumbers('throw', { frames: [0, 0, 0, 0, 1, 2, 3, 4] }),
             frameRate: 20
         })
         this.anims.create({

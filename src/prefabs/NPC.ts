@@ -35,6 +35,7 @@ export class NPC extends Phaser.GameObjects.Container{
 
         this.askButton = scene.add.image(0, -200, 'ask-button').setScale(scene.gameScale)
         this.askButton.setInteractive()
+        this.askButton.setVisible(false)
 
         scene.tweens.add({
             targets: this.askButton,
@@ -63,6 +64,11 @@ export class NPC extends Phaser.GameObjects.Container{
         
         if(isFlip && this.askButton.x != -8) this.askButton.setX(-8)
         else if(!isFlip && this.askButton.x != 8) this.askButton.setX(8)
+
+        if(Phaser.Math.Distance.Between(this.scene.player.x, this.scene.player.y, this.x, this.y) < 300){
+            this.askButton.setVisible(true)
+        }
+        else this.askButton.setVisible(false)
     }
 
     destroy() {

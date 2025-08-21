@@ -66,7 +66,7 @@ export class MapSetup{
             const o = _o as { x: number, y: number }
             const tree = scene.add.sprite(o.x*scene.gameScale, (o.y-8)*scene.gameScale, 'tree1')
             tree.setScale(scene.gameScale).setOrigin(0.5, 0.85).setDepth(o.y-16)
-            tree.setTint(i%2 == 0 ? 0xeeffee : 0xffffcc)
+            tree.setTint(i%2 == 0 ? 0xffffff : 0xccffcc)
             tree.play('tree1-wave')
             tree.setPipeline('Light2D')
 

@@ -19,7 +19,7 @@ export class InventoryUI extends Phaser.GameObjects.Container {
 
         this.inventory = inventory;
         
-        this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
+        this.background = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.2)
         this.background.setInteractive({ dropZone: true }).setName('background')
 
         this.image = this.scene.add.image(0, 0, 'inventory');

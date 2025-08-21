@@ -108,9 +108,9 @@ export class Enemy extends Phaser.GameObjects.Container{
         this.maxHealth = this.config.maxHealth
         this.health = this.maxHealth
 
-        this.emptyBar = scene.add.rectangle(0, -130, 166, 18, 0x494449).setRounded(4)
-        this.damageBar = scene.add.rectangle(0, -130, 164, 16, 0xffccaa).setRounded(4)
-        this.healthBar = scene.add.rectangle(0, -130, 164, 16, 0xbb4433).setRounded(4)
+        this.emptyBar = scene.add.rectangle(0, -130, 166, 10, 0x393339)
+        this.damageBar = scene.add.rectangle(0, -130, 164, 8, 0xffccaa)
+        this.healthBar = scene.add.rectangle(0, -130, 164, 8, 0xbb4433)
 
         this.attackDir = new p.Vec2(0, 0)
         this.itemInstance = new ItemInstance(scene, this.pBody, this.config.weapon).itemInstance
@@ -173,7 +173,7 @@ export class Enemy extends Phaser.GameObjects.Container{
 
     barUpdate(bar: Phaser.GameObjects.Rectangle){
         if(bar.visible){
-            bar.setSize(164*this.health/this.maxHealth, 16)
+            bar.setSize(164*this.health/this.maxHealth, 8)
             bar.setX(-82-82*this.health/-this.maxHealth)
         }
     }
@@ -194,14 +194,14 @@ export class Enemy extends Phaser.GameObjects.Container{
         const splash = () => {
             if(itr >= 6){
                 if(this.damageBar.active){
-                    this.damageBar.setSize(164*this.health/this.maxHealth, 16)
+                    this.damageBar.setSize(164*this.health/this.maxHealth, 8)
                     this.damageBar.setX(-82-82*this.health/-this.maxHealth)
-                    this.sprite.setPipeline('Light2D')
+                    // this.sprite.setPipeline('Light2D')
                 }
                 return
             }
 
-            this.sprite.resetPipeline()
+            // this.sprite.resetPipeline()
             if(this.sprite.isTinted()) this.sprite.clearTint()
             else this.sprite.setTintFill(0xffffff)
             itr++
